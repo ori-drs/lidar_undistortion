@@ -7,22 +7,29 @@
 #include <tf2_ros/transform_listener.h>
 #include <Eigen/Eigen>
 #include <string>
+#include <pcl/point_cloud.h>
+#include <ouster_ros/point_os1.h>
 
 namespace lidar_undistortion {
 class LidarUndistorter {
 public:
+  const uint64_t time_offset = 1565309854000000000;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using PoseHistory = std::map<uint64_t, Eigen::Isometry3d, std::less<uint64_t>,
   Eigen::aligned_allocator<std::pair<const uint64_t, Eigen::Isometry3d> > >;
+  using OusterCloud = pcl::PointCloud<ouster_ros::OS1::PointOS1>;
+
+  using CloudHistory = std::map<uint64_t, OusterCloud::Ptr>;
   using PosePair = std::pair<uint64_t, Eigen::Isometry3d>;
 
   using Vector3d = Eigen::Vector3d;
   using Quaternion = Eigen::Quaterniond;
 
+
  public:
   LidarUndistorter(ros::NodeHandle nh, ros::NodeHandle nh_private);
 
-  void pointcloudCallback(const sensor_msgs::PointCloud2 &pointcloud_msg);
+  void pointcloudCallback(const sensor_msgs::PointCloud2::ConstPtr &pointcloud_msg);
   void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
 
  private:
@@ -74,9 +81,13 @@ public:
   }
 
   PoseHistory odometry_history_;
+  CloudHistory cloud_history_;
 
   bool getInterpolatedPose(const uint64_t &nsec,
                            Eigen::Isometry3d& pose) const;
+
+  bool processCloud(const OusterCloud::Ptr& pointcloud,
+                    const uint64_t timestamp);
 
 
 };
