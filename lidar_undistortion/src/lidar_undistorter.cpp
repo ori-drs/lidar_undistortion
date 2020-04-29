@@ -58,8 +58,11 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
   // Get the start and end times of the pointcloud
   // t_start should be the same as timestamp
   uint64_t t_start = timestamp + pointcloud->points.begin()->t;
+  if(t_start == timestamp){
+    ROS_INFO_STREAM("See? I told you they were the same!");
+  }
 
-  Eigen::Isometry3d T_S_F_original;
+  Eigen::Isometry3d T_S_F_original = Eigen::Isometry3d::Identity();
   // Get the frame that the cloud should be expressed in
   if(!getInterpolatedPose(t_start, T_S_F_original)){
     ROS_WARN_STREAM("Couldn't get interpolated start pose for time " << t_start - time_offset
@@ -68,7 +71,6 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
 
     // if the cloud is not in the cloud buffer, we add it
     if(cloud_history_.find(timestamp) == cloud_history_.end()){
-
       cloud_history_[timestamp] = pointcloud;
       ROS_WARN_STREAM("Adding cloud to cloud history."
                       << "\n Cloud history size: " << cloud_history_.size());
@@ -77,7 +79,6 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
   } else {
     // add the just computed interpolated pose to the buffer of poses
     // in case we need it later
-
     odometry_history_[timestamp] = T_S_F_original;
     ROS_INFO_STREAM("Adding interpolated pose to pose history"
                     << "\n Pose history size: " << odometry_history_.size());
@@ -110,6 +111,12 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
                           << "\n Cloud history size: " << cloud_history_.size());
         }
         return false;
+      } else {
+        // add the just computed interpolated pose to the buffer of poses
+        // in case we need it later
+        odometry_history_[point_t] = T_F_S_correct;
+        ROS_INFO_STREAM("Adding interpolated pose to pose history"
+                        << "\n Pose history size: " << odometry_history_.size());
       }
       T_S_original__S_corrected = T_S_F_original.inverse() * T_F_S_correct;
       same_t++;
@@ -119,6 +126,7 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
     // frame based on the LiDAR sensor's current true pose, and then transform
     // it back into the lidar scan frame
     point = pcl::transformPoint(point, T_S_original__S_corrected.cast<float>());
+    point.intensity = ((float)((double)point.t) * 1e-8);
   }
 
   if(timestamp == 1565309877706900736){
@@ -170,7 +178,7 @@ void LidarUndistorter::pointcloudCallback(const sensor_msgs::PointCloud2::ConstP
 
 void LidarUndistorter::poseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose_msg){
   ROS_INFO_STREAM("Gotten pose " << pose_msg.header.stamp.toNSec()- time_offset);
-  Eigen::Isometry3d pose;
+  Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
   tf2::fromMsg(pose_msg.pose.pose, pose);
   //@todo use move constructor for speedup
   odometry_history_[pose_msg.header.stamp.toNSec()] = pose * base_to_lidar_;
@@ -178,15 +186,15 @@ void LidarUndistorter::poseCallback(const geometry_msgs::PoseWithCovarianceStamp
 
   // if there are point clouds in the buffer, we process them
   if(!cloud_history_.empty()){
-    for( auto it = cloud_history_.begin(); it != cloud_history_.end(); ){
+    for(auto it = cloud_history_.begin(); it != cloud_history_.end(); ){
       ROS_INFO_STREAM("Processing cloud " << it->first - time_offset);
       if(!processCloud(it->second, it->first)){
         break;
       } else {
-      ROS_INFO_STREAM("Processed. Cloud size is: " << cloud_history_.size());
-      // the point cloud has been transformed successfully
-      // we remove it from the buffer and return
-      it = cloud_history_.erase(it);
+        ROS_INFO_STREAM("Processed. Cloud size is: " << cloud_history_.size());
+        // the point cloud has been transformed successfully
+        // we remove it from the buffer and return
+        it = cloud_history_.erase(it);
       }
     }
   }
@@ -195,7 +203,7 @@ void LidarUndistorter::poseCallback(const geometry_msgs::PoseWithCovarianceStamp
   const auto& old_it = odometry_history_.lower_bound(odometry_history_.rbegin()->first - 1000000000);
 
   if(old_it != odometry_history_.begin()){
-    ROS_INFO_STREAM("Erasing history prior to " << odometry_history_.rbegin()->first - 1000000000 - time_offset);
+    ROS_INFO_STREAM("Erasing history prior to " << old_it->first - time_offset);
     odometry_history_.erase(odometry_history_.begin(), old_it);
   } else {
     ROS_INFO_STREAM("No cleaning necessary.");
@@ -214,15 +222,13 @@ bool LidarUndistorter::getInterpolatedPose(const uint64_t &nsec,
     return false;
   }
   // this is the first element greater than utime
-  PoseHistory::const_iterator it_low = odometry_history_.upper_bound(nsec);
+  PoseHistory::const_iterator it_low = odometry_history_.lower_bound(nsec);
   // if we have reached the bottom already, we return
   if(it_low == odometry_history_.end()){
     ROS_INFO_STREAM("[ getInterpolatedPose ]: reached bottom. "
                     "\n Pose history size: " << odometry_history_.size());
     return false;
   }
-  // now it_low contains the last element smaller than nsec
-  --it_low;
   // if by chance we have the pose at that exact time, we return it
   if(it_low->first == nsec){
     pose = it_low->second;
@@ -231,6 +237,7 @@ bool LidarUndistorter::getInterpolatedPose(const uint64_t &nsec,
 
     return true;
   }
+
   // at this point we have to interpolate, and we can't do it with less than
   // two items in history
   if(odometry_history_.size() < 2){
@@ -239,8 +246,11 @@ bool LidarUndistorter::getInterpolatedPose(const uint64_t &nsec,
 
     return false;
   }
-  // it_high is the last element with time greater than it_low
-  PoseHistory::const_iterator it_high = std::prev(odometry_history_.upper_bound((std::next(it_low,1))->first),1);
+  // if we are here it means it_low has a value greater than what we ask
+  PoseHistory::const_iterator it_high = it_low;
+
+  // now it_low contains the biggest element smaller than nsec
+  --it_low;
 
   // alpha is 1 if the requested time coincides with it_low, 0 if equal to it_high
   double alpha = (double)(it_high->first - nsec) / (double)(it_high->first - it_low->first);
@@ -248,14 +258,17 @@ bool LidarUndistorter::getInterpolatedPose(const uint64_t &nsec,
   Eigen::Isometry3d iso_low = it_low->second;
   Eigen::Isometry3d iso_high = it_high->second;
 
-  pose.translation() = iso_low.translation() * alpha + iso_high.translation() * (1-alpha);
+  pose.translation() = iso_low.translation() * alpha + iso_high.translation() * (1.0 - alpha);
   // in slerp, the paramter t is used as the opposite of alpha
   // (1 - t) * p0 + t * p1
 
   // the "linear()" returns a reference to the rotation
   // matrix of the transform
-  pose.linear() = Quaternion(iso_low.rotation()).slerp(1 - alpha, Quaternion(iso_high.rotation())).toRotationMatrix();
-
+  pose.linear() = Quaternion(iso_high.rotation()).slerp(alpha, Quaternion(iso_low.rotation())).toRotationMatrix();
+  ROS_INFO_STREAM("Alpha %      : " << std::floor(alpha*100));
+  ROS_INFO_STREAM("iso low tran : " << iso_low.translation().transpose());
+  ROS_INFO_STREAM("iso intr tran: " << pose.translation().transpose());
+  ROS_INFO_STREAM("iso high tran: " << iso_high.translation().transpose()<< std::endl);
   return true;
 }
 
