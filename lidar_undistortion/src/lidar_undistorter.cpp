@@ -3,6 +3,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <tf2_eigen/tf2_eigen.h>
 #include <string>
 
 namespace lidar_undistortion {
@@ -20,9 +21,30 @@ LidarUndistorter::LidarUndistorter(ros::NodeHandle nh,
   corrected_pointcloud_pub_ = nh_private.advertise<sensor_msgs::PointCloud2>(
       "pointcloud_corrected", 100, false);
 
+  pose_sub_ = nh.subscribe("/penguin/rovio/pose_with_covariance_stamped", 100, &LidarUndistorter::poseCallback, this);
+
   // Read the odom and lidar frame names from ROS params
   nh_private.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_);
   nh_private.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_);
+  nh_private.param("base_frame_id", base_frame_id_, base_frame_id_);
+
+  // retrieve the transform from base to lidar frame
+  while(nh.ok()){
+      try{
+      geometry_msgs::TransformStamped temp_transform;
+            temp_transform = tf_buffer_.lookupTransform(base_frame_id_, lidar_frame_id_,
+                                     ros::Time(0));
+
+            base_to_lidar_ = tf2::transformToEigen(temp_transform);
+            break;
+          }
+          catch (tf2::TransformException ex){
+            ROS_ERROR("%s",ex.what());
+            ros::Duration(1.0).sleep();
+          }
+  }
+
+
 }
 
 void LidarUndistorter::pointcloudCallback(
@@ -36,71 +58,120 @@ void LidarUndistorter::pointcloudCallback(
 
   // Get the start and end times of the pointcloud
   ros::Time t_start = pointcloud_msg.header.stamp +
-                      ros::Duration(pointcloud.points.begin()->t * 1e-9);
+      ros::Duration(pointcloud.points.begin()->t * 1e-9);
   ros::Time t_end = pointcloud_msg.header.stamp +
-                    ros::Duration((--pointcloud.points.end())->t * 1e-9);
+      ros::Duration((--pointcloud.points.end())->t * 1e-9);
 
-  try {
-    // Wait for all transforms to become available
-    if (!waitForTransform(lidar_frame_id_, fixed_frame_id_, t_end, 0.05,
-                          0.25)) {
-      ROS_WARN(
-          "Could not get correction transform within allotted time. "
-          "Skipping pointcloud.");
-      return;
-    }
-
-    // Get the frame that the cloud should be expressed in
-    geometry_msgs::TransformStamped msg_T_F_S_original =
-        tf_buffer_.lookupTransform(fixed_frame_id_, lidar_frame_id_, t_start);
-    Eigen::Affine3f T_F_S_original;
-    transformMsgToEigen(msg_T_F_S_original.transform, T_F_S_original);
-
-    // Compute the transform used to project the corrected pointcloud back into
-    // lidar's scan frame, for more info see the current class' header
-    Eigen::Affine3f T_S_F_original = T_F_S_original.inverse();
-
-    // Correct the distortion on all points, using the LiDAR's true pose at
-    // each point's timestamp
-    uint32_t last_transform_update_t = 0;
-    Eigen::Affine3f T_S_original__S_corrected = Eigen::Affine3f::Identity();
-    for (ouster_ros::OS1::PointOS1 &point : pointcloud.points) {
-      // Check if the current point's timestamp differs from the previous one
-      // If so, lookup the new corresponding transform
-      if (point.t != last_transform_update_t) {
-        last_transform_update_t = point.t;
-        ros::Time point_t =
-            pointcloud_msg.header.stamp + ros::Duration(0, point.t);
-        geometry_msgs::TransformStamped msg_T_F_S_correct =
-            tf_buffer_.lookupTransform(fixed_frame_id_, lidar_frame_id_,
-                                       point_t);
-        Eigen::Affine3f T_F_S_correct;
-        transformMsgToEigen(msg_T_F_S_correct.transform, T_F_S_correct);
-        T_S_original__S_corrected = T_S_F_original * T_F_S_correct;
-      }
-
-      // Correct the point's distortion, by transforming it into the fixed
-      // frame based on the LiDAR sensor's current true pose, and then transform
-      // it back into the lidar scan frame
-      point = pcl::transformPoint(point, T_S_original__S_corrected);
-    }
-  } catch (tf2::TransformException &ex) {
-    ROS_WARN("%s", ex.what());
-    return;
+  Eigen::Isometry3d T_S_F_original;
+  // Get the frame that the cloud should be expressed in
+  if(!getInterpolatedPose(t_start.toNSec(), T_S_F_original)){
+    ROS_WARN_STREAM("Couldn't get interpolated pose for time " << t_start.toSec());
   }
 
-  // Create the corrected pointcloud ROS msg
-  sensor_msgs::PointCloud2 pointcloud_corrected_msg;
-  pcl::toROSMsg(pointcloud, pointcloud_corrected_msg);
+  // Compute the transform used to project the corrected pointcloud back into
+  // lidar's scan frame, for more info see the current class' header
 
-  // Copy the pointcloud header correctly
-  // NOTE: The header timestamp type in PCL pointclouds is narrower than in
-  //       PointCloud2 msgs. We therefore copy this field directly from the
-  //       losing timestamp accuracy.
-  pointcloud_corrected_msg.header = pointcloud_msg.header;
+  // Correct the distortion on all points, using the LiDAR's true pose at
+  // each point's timestamp
+  uint32_t last_transform_update_t = 0;
+  int n = 0;
+  int same_t = 0;
+  Eigen::Isometry3d T_S_original__S_corrected = Eigen::Isometry3d::Identity();
+  for (ouster_ros::OS1::PointOS1 &point : pointcloud.points) {
+    ROS_INFO_STREAM_COND(pointcloud_msg.header.seq==1552, "Point n " << n++ << "/" << pointcloud.points.size() << " of point cloud " << pointcloud_msg.header.seq);
+    ROS_INFO_STREAM_COND(pointcloud_msg.header.seq==1552, "Point t " << point.t);
+    ROS_INFO_STREAM_COND(pointcloud_msg.header.seq==1552, "Group same t " << same_t);
 
-  // Publish the corrected pointcloud
-  corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
+    // Check if the current point's timestamp differs from the previous one
+    // If so, lookup the new corresponding transform
+    if (point.t != last_transform_update_t) {
+      ROS_INFO_STREAM_COND(pointcloud_msg.header.seq==1552,"point.t = " << point.t << " last_transform_update_t = " << last_transform_update_t);
+      last_transform_update_t = point.t;
+      ros::Time point_t =
+          pointcloud_msg.header.stamp + ros::Duration(0, point.t);
+
+      Eigen::Isometry3d T_F_S_correct;
+      if(!getInterpolatedPose(point_t.toNSec(), T_F_S_correct)){
+        ROS_WARN_STREAM("Couldn't get interpolated pose for time " << point_t.toSec());
+        return;
+      }
+      T_S_original__S_corrected = T_S_F_original.inverse() * T_F_S_correct;
+      same_t++;
+    }
+
+    // Correct the point's distortion, by transforming it into the fixed
+    // frame based on the LiDAR sensor's current true pose, and then transform
+    // it back into the lidar scan frame
+    point = pcl::transformPoint(point, T_S_original__S_corrected.cast<float>());
+
+
+
+    // Create the corrected pointcloud ROS msg
+    sensor_msgs::PointCloud2 pointcloud_corrected_msg;
+    pcl::toROSMsg(pointcloud, pointcloud_corrected_msg);
+
+    // Copy the pointcloud header correctly
+    // NOTE: The header timestamp type in PCL pointclouds is narrower than in
+    //       PointCloud2 msgs. We therefore copy this field directly from the
+    //       losing timestamp accuracy.
+    pointcloud_corrected_msg.header = pointcloud_msg.header;
+
+    // Publish the corrected pointcloud
+    corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
+  }
+}
+
+
+void LidarUndistorter::poseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose_msg){
+  Eigen::Isometry3d pose;
+  tf2::fromMsg(pose_msg.pose.pose, pose);
+  //@todo use move constructor for speedup
+  odometry_history_[pose_msg.header.stamp.toNSec()] = pose * base_to_lidar_;
+}
+
+bool LidarUndistorter::getInterpolatedPose(const uint64_t &nsec,
+                                            Eigen::Isometry3d& pose) const
+{
+
+    if(odometry_history_.empty() || nsec < odometry_history_.begin()->first || nsec > odometry_history_.rbegin()->first)
+    {
+        return false;
+    }
+    // this is the first element greater than utime
+    PoseHistory::const_iterator it_low = odometry_history_.upper_bound(nsec);
+    // if we have reached the bottom already, we return
+    if(it_low == odometry_history_.end()){
+        return false;
+    }
+    // now it_low contains the last element smaller than nsec
+    --it_low;
+    // if by chance we have the pose at that exact time, we return it
+    if(it_low->first == nsec){
+        pose = it_low->second;
+        return true;
+    }
+    // at this point we have to interpolate, and we can't do it with less than
+    // two items in history
+    if(odometry_history_.size() < 2){
+        return false;
+    }
+    // it_high is the last element with time greater than it_low
+    PoseHistory::const_iterator it_high = std::prev(odometry_history_.upper_bound((std::next(it_low,1))->first),1);
+
+    // alpha is 1 if the requested time coincides with it_low, 0 if equal to it_high
+    double alpha = (double)(it_high->first - nsec) / (double)(it_high->first - it_low->first);
+
+    Eigen::Isometry3d iso_low = it_low->second;
+    Eigen::Isometry3d iso_high = it_high->second;
+
+    pose.translation() = iso_low.translation() * alpha + iso_high.translation() * (1-alpha);
+    // in slerp, the paramter t is used as the opposite of alpha
+    // (1 - t) * p0 + t * p1
+
+    // the "linear()" returns a reference to the rotation
+    // matrix of the transform
+    pose.linear() = Quaternion(iso_low.rotation()).slerp(1 - alpha, Quaternion(iso_high.rotation())).toRotationMatrix();
+    return true;
 }
 
 bool LidarUndistorter::waitForTransform(const std::string &from_frame_id,
