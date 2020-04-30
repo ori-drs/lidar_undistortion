@@ -188,11 +188,11 @@ void LidarUndistorter::poseCallback(const geometry_msgs::PoseWithCovarianceStamp
   ROS_INFO_STREAM("Pose history size: " << odometry_history_.size());
 
   // if there are point clouds in the buffer, we process them
-  if(!cloud_history_.empty()){
-    for(auto it = cloud_history_.begin(); it != cloud_history_.end(); ){
+  if(!cloud_history_.empty() && !odometry_history_.empty()){
+    for(auto it = cloud_history_.lower_bound(odometry_history_.begin()->first); it != cloud_history_.end(); ){
       ROS_INFO_STREAM("Processing cloud " << it->first - time_offset);
       if(!processCloud(it->second, it->first)){
-        break;
+        ++it;
       } else {
         ROS_INFO_STREAM("Processed. Cloud size is: " << cloud_history_.size());
         // the point cloud has been transformed successfully
