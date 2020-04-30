@@ -21,7 +21,7 @@ LidarUndistorter::LidarUndistorter(ros::NodeHandle nh,
   corrected_pointcloud_pub_ = nh_private.advertise<sensor_msgs::PointCloud2>(
         "pointcloud_corrected", 100, false);
 
-  pose_sub_ = nh.subscribe("/penguin/rovio/pose_with_covariance_stamped", 100, &LidarUndistorter::poseCallback, this);
+  pose_sub_ = nh.subscribe("/pose_from_tf", 100, &LidarUndistorter::poseCallback, this);
 
   // Read the odom and lidar frame names from ROS params
   nh_private.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_);
@@ -35,7 +35,7 @@ LidarUndistorter::LidarUndistorter(ros::NodeHandle nh,
       temp_transform = tf_buffer_.lookupTransform(base_frame_id_, lidar_frame_id_,
                                                   ros::Time(0));
 
-      base_to_lidar_ = tf2::transformToEigen(temp_transform);
+      //base_to_lidar_ = tf2::transformToEigen(temp_transform);
       break;
     }
     catch (tf2::TransformException ex){
@@ -134,7 +134,7 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
 
   if(timestamp == 1565309877706900736){
     pcl::PointCloud<ouster_ros::OS1::PointOS1> corrected_point_cloud_odom;
-
+    ROS_ERROR("SAVING CLOUD");
     std::stringstream ss;
     std::string path = "/home/mcamurri/Datasets/lidar_undistortion_moog/clouds/";
     uint64_t sec = timestamp / 1000000000;
@@ -217,7 +217,6 @@ void LidarUndistorter::poseCallback(const geometry_msgs::PoseWithCovarianceStamp
 bool LidarUndistorter::getInterpolatedPose(const uint64_t &nsec,
                                            Eigen::Isometry3d& pose) const
 {
-
   if(odometry_history_.empty() || nsec < odometry_history_.begin()->first || nsec > odometry_history_.rbegin()->first)
   {
     ROS_INFO_STREAM("[ getInterpolatedPose ]: empty history or requested time out of bounds. "

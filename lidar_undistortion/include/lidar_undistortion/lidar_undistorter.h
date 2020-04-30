@@ -13,7 +13,7 @@
 namespace lidar_undistortion {
 class LidarUndistorter {
 public:
-  const uint64_t time_offset = 1565309854000000000;
+  const uint64_t time_offset = 0;//1565309854000000000;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   using PoseHistory = std::map<uint64_t, Eigen::Isometry3d, std::less<uint64_t>,
   Eigen::aligned_allocator<std::pair<const uint64_t, Eigen::Isometry3d> > >;
