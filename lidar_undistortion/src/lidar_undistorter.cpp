@@ -200,7 +200,7 @@ void LidarUndistorter::poseCallback(const geometry_msgs::PoseWithCovarianceStamp
   }
   // clean up history longer than 1 s
   ROS_INFO_STREAM("Check if history has to be cleaned...");
-  const auto& old_it = odometry_history_.lower_bound(odometry_history_.rbegin()->first - 1000000000);
+  const auto& old_it = odometry_history_.lower_bound(odometry_history_.rbegin()->first - 100000000000);
 
   if(old_it != odometry_history_.begin()){
     ROS_INFO_STREAM("Erasing history prior to " << old_it->first - time_offset);
