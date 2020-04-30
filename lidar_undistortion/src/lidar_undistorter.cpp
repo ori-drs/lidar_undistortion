@@ -224,15 +224,15 @@ bool LidarUndistorter::getInterpolatedPose(const uint64_t &nsec,
                     " Pose history size: " << odometry_history_.size());
     return false;
   }
-  // this is the first element greater than utime
+  // this is the first element greater or equal than utime, or end()
   PoseHistory::const_iterator it_low = odometry_history_.lower_bound(nsec);
-  // if we have reached the bottom already, we return
+  // if it's end(), we return
   if(it_low == odometry_history_.end()){
     ROS_INFO_STREAM("[ getInterpolatedPose ]: reached bottom. "
                     "\n Pose history size: " << odometry_history_.size());
     return false;
   }
-  // if by chance we have the pose at that exact time, we return it
+  // if it's equal, we return it
   if(it_low->first == nsec){
     pose = it_low->second;
     ROS_INFO_STREAM("[ getInterpolatedPose ]: " << it_low->first << " == " << nsec <<
