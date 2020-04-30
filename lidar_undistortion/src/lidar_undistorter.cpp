@@ -178,13 +178,9 @@ void LidarUndistorter::pointcloudCallback(const sensor_msgs::PointCloud2::ConstP
 
 }
 
-
-void LidarUndistorter::poseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose_msg){
-  ROS_INFO_STREAM("Gotten pose " << pose_msg.header.stamp.toNSec()- time_offset);
-  Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
-  tf2::fromMsg(pose_msg.pose.pose, pose);
+void LidarUndistorter::addPose(uint64_t nsec, Eigen::Isometry3d &pose){
   //@todo use move constructor for speedup
-  odometry_history_[pose_msg.header.stamp.toNSec()] = pose * base_to_lidar_;
+  odometry_history_[nsec] = pose * base_to_lidar_;
   ROS_INFO_STREAM("Pose history size: " << odometry_history_.size());
 
   // if there are point clouds in the buffer, we process them
@@ -211,7 +207,14 @@ void LidarUndistorter::poseCallback(const geometry_msgs::PoseWithCovarianceStamp
   } else {
     ROS_INFO_STREAM("No cleaning necessary.");
   }
+}
 
+
+void LidarUndistorter::poseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose_msg){
+  ROS_INFO_STREAM("Gotten pose " << pose_msg.header.stamp.toNSec()- time_offset);
+  Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
+  tf2::fromMsg(pose_msg.pose.pose, pose);
+  addPose(pose_msg.header.stamp.toNSec(), pose);
 }
 
 bool LidarUndistorter::getInterpolatedPose(const uint64_t &nsec,

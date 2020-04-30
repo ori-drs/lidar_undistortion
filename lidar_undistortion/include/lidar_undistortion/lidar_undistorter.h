@@ -32,6 +32,9 @@ public:
   void pointcloudCallback(const sensor_msgs::PointCloud2::ConstPtr &pointcloud_msg);
   void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
 
+protected:
+  virtual void addPose(uint64_t nsec, Eigen::Isometry3d& pose);
+
  private:
   // TF frame name of the lidar scan frame
   std::string lidar_frame_id_;
