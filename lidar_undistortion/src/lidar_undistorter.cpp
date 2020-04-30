@@ -66,8 +66,11 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
   // Get the frame that the cloud should be expressed in
   if(!getInterpolatedPose(t_start, T_S_F_original)){
     ROS_WARN_STREAM("Couldn't get interpolated start pose for time " << t_start - time_offset
-                    << "\n Starting time: " << odometry_history_.begin()->first - time_offset
-                    << "\n End time     : " << odometry_history_.rbegin()->first- time_offset);
+                    << "\n Starting time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.begin()->first - time_offset))
+                    << "\n End time          : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.rbegin()->first- time_offset))
+                    << "\n Pose history size : " << odometry_history_.size()
+                    << "\n Cloud history size: " << cloud_history_.size()
+                    );
 
     // if the cloud is not in the cloud buffer, we add it
     if(cloud_history_.find(timestamp) == cloud_history_.end()){
@@ -102,8 +105,8 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
       Eigen::Isometry3d T_F_S_correct;
       if(!getInterpolatedPose(point_t, T_F_S_correct)){
         ROS_WARN_STREAM("Couldn't get interpolated point pose for time " << point_t- time_offset
-                        << "\n Starting time: " << odometry_history_.begin()->first- time_offset
-                        << "\n End time     : " << odometry_history_.rbegin()->first- time_offset);
+                        << "\n Starting time: " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.begin()->first - time_offset))
+                        << "\n End time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.rbegin()->first- time_offset)));
         // if the cloud is not in the cloud buffer, we add it
         if(cloud_history_.find(timestamp) == cloud_history_.end()){
           cloud_history_[timestamp] = pointcloud;
