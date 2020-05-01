@@ -11,6 +11,46 @@
 #include <ouster_ros/point_os1.h>
 
 namespace lidar_undistortion {
+
+class PoseBuffer {
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
+public:
+  using PoseHistory = std::map<uint64_t, Eigen::Isometry3d, std::less<uint64_t>,
+  Eigen::aligned_allocator<std::pair<const uint64_t, Eigen::Isometry3d> > >;
+  using Vector3d = Eigen::Vector3d;
+  using Quaternion = Eigen::Quaterniond;
+
+public:
+  inline bool empty() {
+    return odometry_history_.empty();
+  }
+
+  bool getInterpolatedPose(const uint64_t &nsec,
+                           Eigen::Isometry3d& pose) const;
+
+  virtual void addPose(uint64_t nsec, const Eigen::Isometry3d& pose);
+
+  inline uint64_t startTime(){
+    return odometry_history_.begin()->first;
+  }
+
+  inline uint64_t endTime(){
+    return odometry_history_.rbegin()->first;
+  }
+
+  inline size_t size(){
+    return odometry_history_.size();
+  }
+
+
+private:
+  PoseHistory odometry_history_;
+  uint64_t buffer_size_ =   100000000000;
+};
+
+
 class LidarUndistorter {
 public:
   const uint64_t time_offset = 0;//1565309854000000000;
@@ -21,9 +61,9 @@ public:
 
   using CloudHistory = std::map<uint64_t, OusterCloud::Ptr>;
   using PosePair = std::pair<uint64_t, Eigen::Isometry3d>;
+  using Vector3d = PoseBuffer::Vector3d;
+  using Quaternion = PoseBuffer::Quaternion;
 
-  using Vector3d = Eigen::Vector3d;
-  using Quaternion = Eigen::Quaterniond;
 
 
  public:
@@ -47,6 +87,7 @@ protected:
   //       matching the pointcloud message's frame_id and timestamp.
   std::string fixed_frame_id_;
   std::string base_frame_id_ = "imu";
+  std::string pose_topic_;
 
   // ROS subscriber and publisher for the (un)corrected pointclouds
   ros::Subscriber pointcloud_sub_;
@@ -83,11 +124,10 @@ protected:
                            transform_msg.rotation.y, transform_msg.rotation.z);
   }
 
-  PoseHistory odometry_history_;
-  CloudHistory cloud_history_;
 
-  bool getInterpolatedPose(const uint64_t &nsec,
-                           Eigen::Isometry3d& pose) const;
+  CloudHistory cloud_history_;
+  PoseBuffer odometry_history_;
+
 
   bool processCloud(const OusterCloud::Ptr& pointcloud,
                     const uint64_t timestamp);

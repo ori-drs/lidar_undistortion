@@ -1,9 +1,9 @@
 #include "lidar_undistortion/lidar_undistorter.h"
-
 #include <pcl/common/transforms.h>
-
+#include <eigen_utils/eigen_utils.hpp>
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf2_eigen/tf2_eigen.h>
+#include <tf2/utils.h>
 #include <string>
 
 namespace lidar_undistortion {
@@ -21,12 +21,14 @@ LidarUndistorter::LidarUndistorter(ros::NodeHandle nh,
   corrected_pointcloud_pub_ = nh_private.advertise<sensor_msgs::PointCloud2>(
         "pointcloud_corrected", 100, false);
 
-  pose_sub_ = nh.subscribe("/pose_from_tf", 100, &LidarUndistorter::poseCallback, this);
+  nh_private.param("pose_topic", pose_topic_, pose_topic_);
+  pose_sub_ = nh.subscribe(pose_topic_, 100, &LidarUndistorter::poseCallback, this);
 
   // Read the odom and lidar frame names from ROS params
   nh_private.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_);
   nh_private.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_);
   nh_private.param("base_frame_id", base_frame_id_, base_frame_id_);
+
 
   // retrieve the transform from base to lidar frame
   while(nh.ok()){
@@ -35,7 +37,7 @@ LidarUndistorter::LidarUndistorter(ros::NodeHandle nh,
       temp_transform = tf_buffer_.lookupTransform(base_frame_id_, lidar_frame_id_,
                                                   ros::Time(0));
 
-      //base_to_lidar_ = tf2::transformToEigen(temp_transform);
+      base_to_lidar_ = tf2::transformToEigen(temp_transform);
       break;
     }
     catch (tf2::TransformException ex){
@@ -46,7 +48,8 @@ LidarUndistorter::LidarUndistorter(ros::NodeHandle nh,
 
 
 }
-
+std::ofstream transform_debug("/home/mcamurri/Datasets/lidar_undistortion_moog/transforms/transform.txt");
+int transform_updates = 0;
 bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
                                     const uint64_t timestamp)
 {
@@ -58,16 +61,16 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
   // Get the start and end times of the pointcloud
   // t_start should be the same as timestamp
   uint64_t t_start = timestamp + pointcloud->points.begin()->t;
-  if(t_start == timestamp){
-    ROS_INFO_STREAM("See? I told you they were the same!");
-  }
+  uint64_t t_end = timestamp + pointcloud->points.rbegin()->t;
 
   Eigen::Isometry3d T_S_F_original = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d T_S_F_end;
+
   // Get the frame that the cloud should be expressed in
-  if(!getInterpolatedPose(t_start, T_S_F_original)){
+  if(!odometry_history_.getInterpolatedPose(t_start, T_S_F_original)){
     ROS_WARN_STREAM("Couldn't get interpolated start pose for time " << t_start - time_offset
-                    << "\n Starting time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.begin()->first - time_offset))
-                    << "\n End time          : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.rbegin()->first- time_offset))
+                    << "\n Starting time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.startTime() - time_offset))
+                    << "\n End time          : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.endTime() - time_offset))
                     << "\n Pose history size : " << odometry_history_.size()
                     << "\n Cloud history size: " << cloud_history_.size()
                     );
@@ -75,14 +78,38 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
     // if the cloud is not in the cloud buffer, we add it
     if(cloud_history_.find(timestamp) == cloud_history_.end()){
       cloud_history_[timestamp] = pointcloud;
-      ROS_WARN_STREAM("Adding cloud to cloud history."
+      ROS_INFO_STREAM("Adding cloud to cloud history."
                       << "\n Cloud history size: " << cloud_history_.size());
     }
     return false;
   } else {
     // add the just computed interpolated pose to the buffer of poses
     // in case we need it later
-    odometry_history_[timestamp] = T_S_F_original;
+    odometry_history_.addPose(timestamp, T_S_F_original);
+    ROS_INFO_STREAM("Adding interpolated pose to pose history"
+                    << "\n Pose history size: " << odometry_history_.size());
+  }
+
+  // Check if the end pose is available and abort if not available
+  if(!odometry_history_.getInterpolatedPose(t_end, T_S_F_end)){
+    ROS_WARN_STREAM("Couldn't get interpolated end pose for time " << t_end - time_offset
+                    << "\n Starting time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.startTime()- time_offset))
+                    << "\n End time          : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.endTime() - time_offset))
+                    << "\n Pose history size : " << odometry_history_.size()
+                    << "\n Cloud history size: " << cloud_history_.size()
+                    );
+
+    // if the cloud is not in the cloud buffer, we add it
+    if(cloud_history_.find(timestamp) == cloud_history_.end()){
+      cloud_history_[timestamp] = pointcloud;
+      ROS_INFO_STREAM("Adding cloud to cloud history."
+                      << "\n Cloud history size: " << cloud_history_.size());
+    }
+    return false;
+  } else {
+    // add the just computed interpolated pose to the buffer of poses
+    // in case we need it later
+    odometry_history_.addPose(t_end, T_S_F_end);
     ROS_INFO_STREAM("Adding interpolated pose to pose history"
                     << "\n Pose history size: " << odometry_history_.size());
   }
@@ -94,6 +121,7 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
   // each point's timestamp
   uint32_t last_transform_update_t = 0;
   int same_t = 0;
+
   Eigen::Isometry3d T_S_original__S_corrected = Eigen::Isometry3d::Identity();
   for (ouster_ros::OS1::PointOS1 &point : pointcloud->points) {
     // Check if the current point's timestamp differs from the previous one
@@ -103,25 +131,38 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
       uint64_t point_t = timestamp + point.t;
 
       Eigen::Isometry3d T_F_S_correct;
-      if(!getInterpolatedPose(point_t, T_F_S_correct)){
+      if(!odometry_history_.getInterpolatedPose(point_t, T_F_S_correct)){
         ROS_WARN_STREAM("Couldn't get interpolated point pose for time " << point_t- time_offset
-                        << "\n Starting time: " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.begin()->first - time_offset))
-                        << "\n End time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.rbegin()->first- time_offset)));
+                        << "\n Starting time: " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.startTime() - time_offset))
+                        << "\n End time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.endTime() - time_offset)));
         // if the cloud is not in the cloud buffer, we add it
         if(cloud_history_.find(timestamp) == cloud_history_.end()){
           cloud_history_[timestamp] = pointcloud;
-          ROS_WARN_STREAM("Adding cloud to cloud history."
+          ROS_INFO_STREAM("Adding cloud to cloud history."
                           << "\n Cloud history size: " << cloud_history_.size());
         }
         return false;
       } else {
         // add the just computed interpolated pose to the buffer of poses
         // in case we need it later
-        odometry_history_[point_t] = T_F_S_correct;
+        odometry_history_.addPose(point_t, T_F_S_correct);
         ROS_INFO_STREAM("Adding interpolated pose to pose history"
                         << "\n Pose history size: " << odometry_history_.size());
       }
       T_S_original__S_corrected = T_S_F_original.inverse() * T_F_S_correct;
+
+      if(timestamp == 1565309877706900736){
+        ROS_INFO("WRITING TO TRANSFORM!");
+        Vector3d xyz, rpy;
+        xyz = T_S_original__S_corrected.translation();
+        rpy = eigen_utils::getEulerAnglesDeg(Quaternion(T_S_original__S_corrected.rotation()));
+        transform_debug << std::setw(9) << point.t << " " << std::setw(10)
+                        << xyz(0) << " "<< std::setw(10) << xyz(1) << " " << std::setw(10) << xyz(2) << " "
+                        << std::setw(10) << rpy(0) << " " << std::setw(10) << rpy(1) << " " << std::setw(10) << rpy(2) << std::endl;
+        transform_updates++;
+      }
+
+
       same_t++;
     }
 
@@ -133,8 +174,12 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
   }
 
   if(timestamp == 1565309877706900736){
+    transform_debug.close();
     pcl::PointCloud<ouster_ros::OS1::PointOS1> corrected_point_cloud_odom;
     ROS_ERROR("SAVING CLOUD");
+    ROS_ERROR_STREAM("Same T = " << same_t);
+    ROS_ERROR_STREAM("Transform updates = " << transform_updates);
+    ROS_ERROR_STREAM("point cloud size: " << pointcloud->points.size());
     std::stringstream ss;
     std::string path = "/home/mcamurri/Datasets/lidar_undistortion_moog/clouds/";
     uint64_t sec = timestamp / 1000000000;
@@ -158,8 +203,6 @@ void LidarUndistorter::pointcloudCallback(const sensor_msgs::PointCloud2::ConstP
     return;
   };
 
-
-
   // Create the corrected pointcloud ROS msg
   sensor_msgs::PointCloud2 pointcloud_corrected_msg;
   pcl::toROSMsg(*pointcloud, pointcloud_corrected_msg);
@@ -170,22 +213,32 @@ void LidarUndistorter::pointcloudCallback(const sensor_msgs::PointCloud2::ConstP
   //       losing timestamp accuracy.
   pointcloud_corrected_msg.header = pointcloud_msg->header;
 
-  // DEBUGGING
-
-
   // Publish the corrected pointcloud
   corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
+}
 
+void PoseBuffer::addPose(uint64_t nsec, const Eigen::Isometry3d &pose){
+  odometry_history_[nsec] = pose;
+  // clean up history longer than 1 s
+  ROS_INFO_STREAM("Check if history has to be cleaned...");
+  const auto& old_it = odometry_history_.lower_bound(odometry_history_.rbegin()->first - buffer_size_);
+
+  if(old_it != odometry_history_.begin()){
+    ROS_INFO_STREAM("Erasing history prior to " << old_it->first);
+    odometry_history_.erase(odometry_history_.begin(), old_it);
+  } else {
+    ROS_INFO_STREAM("No cleaning necessary.");
+  }
 }
 
 void LidarUndistorter::addPose(uint64_t nsec, Eigen::Isometry3d &pose){
   //@todo use move constructor for speedup
-  odometry_history_[nsec] = pose * base_to_lidar_;
+  odometry_history_.addPose(nsec, pose * base_to_lidar_);
   ROS_INFO_STREAM("Pose history size: " << odometry_history_.size());
 
   // if there are point clouds in the buffer, we process them
   if(!cloud_history_.empty() && !odometry_history_.empty()){
-    for(auto it = cloud_history_.lower_bound(odometry_history_.begin()->first); it != cloud_history_.end(); ){
+    for(auto it = cloud_history_.lower_bound(odometry_history_.startTime()); it != cloud_history_.end(); ){
       ROS_INFO_STREAM("Processing cloud " << it->first - time_offset);
       if(!processCloud(it->second, it->first)){
         ++it;
@@ -197,16 +250,7 @@ void LidarUndistorter::addPose(uint64_t nsec, Eigen::Isometry3d &pose){
       }
     }
   }
-  // clean up history longer than 1 s
-  ROS_INFO_STREAM("Check if history has to be cleaned...");
-  const auto& old_it = odometry_history_.lower_bound(odometry_history_.rbegin()->first - 100000000000);
 
-  if(old_it != odometry_history_.begin()){
-    ROS_INFO_STREAM("Erasing history prior to " << old_it->first - time_offset);
-    odometry_history_.erase(odometry_history_.begin(), old_it);
-  } else {
-    ROS_INFO_STREAM("No cleaning necessary.");
-  }
 }
 
 
@@ -217,7 +261,7 @@ void LidarUndistorter::poseCallback(const geometry_msgs::PoseWithCovarianceStamp
   addPose(pose_msg.header.stamp.toNSec(), pose);
 }
 
-bool LidarUndistorter::getInterpolatedPose(const uint64_t &nsec,
+bool PoseBuffer::getInterpolatedPose(const uint64_t &nsec,
                                            Eigen::Isometry3d& pose) const
 {
   if(odometry_history_.empty() || nsec < odometry_history_.begin()->first || nsec > odometry_history_.rbegin()->first)

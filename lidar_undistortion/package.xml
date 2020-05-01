@@ -25,5 +25,6 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_eigen</depend>
   <depend>minkindr</depend>
-  <depend>minkindr_conversions</depend>
+<depend>eigen_utils</depend>
+<depend>minkindr_conversions</depend>
 </package>
