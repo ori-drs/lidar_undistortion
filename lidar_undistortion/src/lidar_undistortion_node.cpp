@@ -1,6 +1,6 @@
 #include <glog/logging.h>
 #include <ros/ros.h>
-#include "lidar_undistortion/lidar_undistorter.h"
+#include "lidar_undistortion/lidar_undistorter_ros.hpp"
 
 int main(int argc, char **argv) {
   // Start logging
@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh_private("~");
 
   // Launch the lidar undistorter
-  lidar_undistortion::LidarUndistorter lidar_undistorter(nh, nh_private);
+  lidar_undistortion::LidarUndistorterROS lidar_undistorter(nh, nh_private);
 
   // Spin
   ros::spin();
