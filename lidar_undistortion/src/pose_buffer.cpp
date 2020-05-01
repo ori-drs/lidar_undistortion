@@ -1,5 +1,4 @@
 #include "lidar_undistortion/pose_buffer.hpp"
-#define DEBUG_MODE 0
 #include "lidar_undistortion/print_macros.hpp"
 #include <iostream>
 

@@ -1,8 +1,8 @@
-#define DEBUG_MODE 1
 #include "lidar_undistortion/pose_buffer.hpp"
 #include <random>
 #include <iostream>
 #include <iomanip>
+
 int main(int argc, char** argv) {
   std::random_device rd;
   std::mt19937_64 gen(rd());
