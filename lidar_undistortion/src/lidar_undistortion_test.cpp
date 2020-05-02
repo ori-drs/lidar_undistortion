@@ -3,6 +3,10 @@
 
 
 using namespace lidar_undistortion;
+using OusterPointCloud = pcl::PointCloud<ouster_ros::OS1::PointOS1>;
+
+void fillWithDistortedPointcloud(OusterPointCloud& pc);
+void fillWithCorrectedPointCloud(OusterPointCloud& pc);
 
 int main(int argc, char** argv){
   LidarUndistorter lu(15e9);
@@ -21,21 +25,21 @@ int main(int argc, char** argv){
   pose.matrix()  << 0.736284, -0.58938, -0.332441, 0.666775, 0.579133, 0.802963, -0.140909, 0.900812, 0.349987, -0.0887783, 0.932538, 2.13994, 0, 0, 0, 1;
   lu.addPose(1565309877829768658, pose);
 
-  LidarUndistorter::OusterPoint point;
 
-  LidarUndistorter::OusterCloud::Ptr oc_input = boost::make_shared<LidarUndistorter::OusterCloud>();
+
+  LidarUndistorter::OusterCloud oc_input;
   LidarUndistorter::OusterCloud::Ptr oc_output = boost::make_shared<LidarUndistorter::OusterCloud>();
 
 // tedious code that fills of oc_input
-#include "oc_input.cpp"
+  fillWithDistortedPointcloud(oc_input);
+
 
   // copy the input before is being modified by processcloud
-  pcl::copyPointCloud(*oc_input, *oc_output);
+  pcl::copyPointCloud(oc_input, *oc_output);
 
   LidarUndistorter::OusterCloud oc_expected;
 
-  // tedious code that fills oc_expected
-#include "oc_expected.cpp"
+  fillWithCorrectedPointCloud(oc_expected);
 
   // finally process the cloud
   if(!lu.processCloud(oc_output, 1565309877706900736)){
@@ -49,8 +53,8 @@ int main(int argc, char** argv){
   double before_after_error = 0;
 
   // compute the error as sum of absolute errors between the 3 coordinates
-  for(const auto& point : (*oc_output)){
-    auto point_input = oc_input->points[counter];
+  for(const auto& point : *oc_output){
+    auto point_input = oc_input.points[counter];
     auto point_expected = oc_expected.points[counter++];
 
     before_after_error = std::abs(point_input.x - point_expected.x) +
