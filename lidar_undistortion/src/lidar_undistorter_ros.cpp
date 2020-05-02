@@ -69,7 +69,6 @@ void LidarUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2::Con
 }
 
 void LidarUndistorterROS::poseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose_msg){
-  ROS_INFO_STREAM("Gotten pose " << pose_msg.header.stamp.toNSec()- time_offset);
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
   tf2::fromMsg(pose_msg.pose.pose, pose);
   addPose(pose_msg.header.stamp.toNSec(), pose);

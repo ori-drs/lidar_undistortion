@@ -15,8 +15,10 @@ void PoseBuffer::addPose(uint64_t nsec, const Eigen::Isometry3d &pose){
   // clean up history longer than 1 s
   DEBUG_PRINTLN("Check if history has to be cleaned...");
   DEBUG_PRINTLN(toString());
-  DEBUG_PRINTLN("Buffer size: " << buffer_size_);
+  DEBUG_PRINTLN("Buffer size  : " << buffer_size_);
+  DEBUG_PRINTLN("Buffer length: " << endTime() - startTime());
   const auto& old_it = pose_history_.lower_bound(pose_history_.rbegin()->first - buffer_size_);
+
 
   if(old_it != pose_history_.end()){
     DEBUG_PRINTLN("Erasing history prior to " << old_it->first);

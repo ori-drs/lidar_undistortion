@@ -13,17 +13,29 @@ class LidarUndistorter {
 public:
   const uint64_t time_offset = 0;
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  using OusterCloud = pcl::PointCloud<ouster_ros::OS1::PointOS1>;
+  using OusterPoint = ouster_ros::OS1::PointOS1;
+  using OusterCloud = pcl::PointCloud<OusterPoint>;
   using CloudHistory = std::map<uint64_t, OusterCloud::Ptr>;
   using PosePair = std::pair<uint64_t, Eigen::Isometry3d>;
   using Vector3d = PoseBuffer::Vector3d;
   using Quaternion = PoseBuffer::Quaternion;
 
-protected:
+  LidarUndistorter() = default;
+
+  LidarUndistorter(uint64_t pose_buffer_length) : odometry_history_(pose_buffer_length){
+
+  }
+
+  virtual ~LidarUndistorter() {
+
+  }
+
   virtual void addPose(uint64_t nsec, Eigen::Isometry3d& pose);
 
   virtual bool processCloud(const OusterCloud::Ptr& pointcloud,
                             const uint64_t timestamp);
+
+
 
 protected:
   Eigen::Isometry3d base_to_lidar_ = Eigen::Isometry3d::Identity();

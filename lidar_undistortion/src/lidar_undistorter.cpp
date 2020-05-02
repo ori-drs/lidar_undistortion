@@ -79,7 +79,6 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
   // Correct the distortion on all points, using the LiDAR's true pose at
   // each point's timestamp
   uint32_t last_transform_update_t = 0;
-  int same_t = 0;
 
   Eigen::Isometry3d T_S_original__S_corrected = Eigen::Isometry3d::Identity();
   for (ouster_ros::OS1::PointOS1 &point : pointcloud->points) {
@@ -109,36 +108,16 @@ bool LidarUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
                         << "\n Pose history size: " << odometry_history_.size());
       }
       T_S_original__S_corrected = T_S_F_original.inverse() * T_F_S_correct;
-
-      same_t++;
     }
 
     // Correct the point's distortion, by transforming it into the fixed
     // frame based on the LiDAR sensor's current true pose, and then transform
     // it back into the lidar scan frame
     point = pcl::transformPoint(point, T_S_original__S_corrected.cast<float>());
-    point.intensity = ((float)((double)point.t) * 1e-8);
-  }
-
-  if(timestamp == 1565309877706900736){
-    pcl::PointCloud<ouster_ros::OS1::PointOS1> corrected_point_cloud_odom;
-    DEBUG_PRINTLN("SAVING CLOUD");
-    DEBUG_PRINTLN("Same T = " << same_t);
-    DEBUG_PRINTLN("point cloud size: " << pointcloud->points.size());
-    std::stringstream ss;
-    std::string path = "/home/mcamurri/Datasets/lidar_undistortion_moog/clouds/";
-    uint64_t sec = timestamp / 1000000000;
-    uint64_t nsec = timestamp - sec * 1000000000;
-    ss << "cloud_" << sec << "_" << std::setw(9) << std::setfill('0')
-       << nsec;
-
-    pcl::transformPointCloud(*pointcloud, corrected_point_cloud_odom, T_S_F_original.cast<float>());
-    pcl::io::savePCDFile(path + ss.str() + "_fixed_new.pcd", corrected_point_cloud_odom);
   }
 
   return true;
 }
-
 
 void LidarUndistorter::addPose(uint64_t nsec, Eigen::Isometry3d &pose){
   //@todo use move constructor for speedup
@@ -159,12 +138,6 @@ void LidarUndistorter::addPose(uint64_t nsec, Eigen::Isometry3d &pose){
       }
     }
   }
-
 }
-
-
-
-
-
 
 }  // namespace lidar_undistortion
