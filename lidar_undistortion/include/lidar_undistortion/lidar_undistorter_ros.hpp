@@ -8,11 +8,11 @@
 
 namespace lidar_undistortion {
 
-class LidarUndistorterROS : public LidarUndistorter {
+class OusterUndistorterROS : public OusterUndistorter {
 public:
- LidarUndistorterROS(ros::NodeHandle nh, ros::NodeHandle nh_private);
+ OusterUndistorterROS(ros::NodeHandle nh, ros::NodeHandle nh_private);
 
- void pointcloudCallback(const sensor_msgs::PointCloud2::ConstPtr &pointcloud_msg);
+ void pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg);
  void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
 private:
  // TF frame name of a frame that can be considered fixed
@@ -26,8 +26,6 @@ private:
  std::string pose_topic_;
  // TF frame name of the lidar scan frame
  std::string lidar_frame_id_;
-
-
 
  // ROS subscriber and publisher for the (un)corrected pointclouds
  ros::Subscriber pointcloud_sub_;

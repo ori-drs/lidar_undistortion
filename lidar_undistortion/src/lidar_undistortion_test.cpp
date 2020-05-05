@@ -3,13 +3,13 @@
 
 
 using namespace lidar_undistortion;
-using OusterPointCloud = pcl::PointCloud<ouster_ros::OS1::PointOS1>;
+using OusterCloud = pcl::PointCloud<ouster_ros::OS1::PointOS1>;
 
-void fillWithDistortedPointcloud(OusterPointCloud& pc);
-void fillWithCorrectedPointCloud(OusterPointCloud& pc);
+void fillWithDistortedPointcloud(OusterCloud& pc);
+void fillWithCorrectedPointCloud(OusterCloud& pc);
 
 int main(int argc, char** argv){
-  LidarUndistorter lu(15e9);
+  OusterUndistorter lu(15e9);
 
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
   pose.matrix()  << 0.517125, -0.829254, -0.211943, 1.11246, 0.786797, 0.558045, -0.263697, 1.21906, 0.336946, -0.0303919, 0.941033, 2.15745, 0, 0, 0, 1;
@@ -27,8 +27,8 @@ int main(int argc, char** argv){
 
 
 
-  LidarUndistorter::OusterCloud oc_input;
-  LidarUndistorter::OusterCloud::Ptr oc_output = boost::make_shared<LidarUndistorter::OusterCloud>();
+  OusterCloud oc_input;
+  OusterCloud::Ptr oc_output = boost::make_shared<OusterCloud>();
 
 // tedious code that fills of oc_input
   fillWithDistortedPointcloud(oc_input);
@@ -37,7 +37,7 @@ int main(int argc, char** argv){
   // copy the input before is being modified by processcloud
   pcl::copyPointCloud(oc_input, *oc_output);
 
-  LidarUndistorter::OusterCloud oc_expected;
+  OusterCloud oc_expected;
 
   fillWithCorrectedPointCloud(oc_expected);
 

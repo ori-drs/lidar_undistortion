@@ -2,9 +2,9 @@
 #include <pcl/point_cloud.h>
 
 using OusterPoint = ouster_ros::OS1::PointOS1;
-using OusterPointCloud = pcl::PointCloud<OusterPoint>;
+using OusterCloud = pcl::PointCloud<OusterPoint>;
 
-void fillWithDistortedPointcloud(OusterPointCloud& pc) {
+void fillWithDistortedPointcloud(OusterCloud& pc) {
   OusterPoint point;
   pc.clear();
   point.x = 6.1887012; point.y = -0.38334876; point.z = 1.9799253; point.t = 97024;
@@ -2056,7 +2056,7 @@ void fillWithDistortedPointcloud(OusterPointCloud& pc) {
 }
 
 
-void fillWithCorrectedPointCloud(OusterPointCloud& pc) {
+void fillWithCorrectedPointCloud(OusterCloud& pc) {
   OusterPoint point;
   pc.clear();
   point.x = 6.1884069; point.y = -0.38401872; point.z = 1.9801339; point.t = 97024;

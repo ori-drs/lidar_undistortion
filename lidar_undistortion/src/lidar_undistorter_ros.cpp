@@ -4,7 +4,7 @@
 
 using namespace lidar_undistortion;
 
-LidarUndistorterROS::LidarUndistorterROS(ros::NodeHandle nh,
+OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle nh,
                                          ros::NodeHandle nh_private)
   : fixed_frame_id_("odom"),
     lidar_frame_id_("os1_lidar"),
@@ -12,7 +12,7 @@ LidarUndistorterROS::LidarUndistorterROS(ros::NodeHandle nh,
 {
   // Subscribe to the undistorted pointcloud topic
   pointcloud_sub_ = nh.subscribe("pointcloud", 100,
-                                 &LidarUndistorterROS::pointcloudCallback, this);
+                                 &OusterUndistorterROS::pointcloudCallback, this);
 
   // Advertise the corrected pointcloud topic
   corrected_pointcloud_pub_ = nh_private.advertise<sensor_msgs::PointCloud2>(
@@ -20,7 +20,7 @@ LidarUndistorterROS::LidarUndistorterROS(ros::NodeHandle nh,
 
   nh_private.param("pose_topic", pose_topic_, pose_topic_);
 
-  pose_sub_ = nh.subscribe(pose_topic_, 100, &LidarUndistorterROS::poseCallback, this);
+  pose_sub_ = nh.subscribe(pose_topic_, 100, &OusterUndistorterROS::poseCallback, this);
 
   // Read the odom and lidar frame names from ROS params
   nh_private.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_);
@@ -45,12 +45,12 @@ LidarUndistorterROS::LidarUndistorterROS(ros::NodeHandle nh,
   }
 }
 
-void LidarUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2::ConstPtr& pointcloud_msg) {
+void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg) {
   // Convert the pointcloud to PCL
   OusterCloud::Ptr pointcloud = boost::make_shared<OusterCloud>();
-  pcl::fromROSMsg(*pointcloud_msg, *pointcloud);
+  pcl::fromROSMsg(pointcloud_msg, *pointcloud);
 
-  if(!processCloud(pointcloud, pointcloud_msg->header.stamp.toNSec())){
+  if(!processCloud(pointcloud, pointcloud_msg.header.stamp.toNSec())){
     return;
   };
 
@@ -62,13 +62,13 @@ void LidarUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2::Con
   // NOTE: The header timestamp type in PCL pointclouds is narrower than in
   //       PointCloud2 msgs. We therefore copy this field directly from the
   //       losing timestamp accuracy.
-  pointcloud_corrected_msg.header = pointcloud_msg->header;
+  pointcloud_corrected_msg.header = pointcloud_msg.header;
 
   // Publish the corrected pointcloud
   corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
 }
 
-void LidarUndistorterROS::poseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose_msg){
+void OusterUndistorterROS::poseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose_msg){
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
   tf2::fromMsg(pose_msg.pose.pose, pose);
   addPose(pose_msg.header.stamp.toNSec(), pose);

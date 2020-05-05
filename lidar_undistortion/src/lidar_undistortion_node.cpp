@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh_private("~");
 
   // Launch the lidar undistorter
-  lidar_undistortion::LidarUndistorterROS lidar_undistorter(nh, nh_private);
+  lidar_undistortion::OusterUndistorterROS lidar_undistorter(nh, nh_private);
 
   // Spin
   ros::spin();
