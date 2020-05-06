@@ -7,6 +7,7 @@
 #include <pcl/common/transforms.h>
 #include "lidar_undistortion/pose_buffer.hpp"
 #include "lidar_undistortion/print_macros.hpp"
+#include <algorithm>
 
 namespace lidar_undistortion {
 
@@ -64,7 +65,7 @@ protected:
   uint16_t beams_ = 1024; // number of beams per each ring
   // container that returns the time offset from the start of the scan given
   // the beam number
-  std::vector<uint32_t> times_lut_;
+  std::vector<int32_t> times_lut_;
 };
 
 
@@ -77,17 +78,22 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
   }
   // Get the start and end times of the pointcloud
   // t_start should be the same as timestamp
-  uint64_t t_start = timestamp + times_lut_.front();
-  uint64_t t_end = timestamp + times_lut_.back();
+  const auto minmax_time = std::minmax_element(begin(times_lut_), end(times_lut_));
+  uint64_t t_start = timestamp + (*minmax_time.first );
+  uint64_t t_end =   timestamp + (*minmax_time.second);
 
   Eigen::Isometry3d T_S_F_original = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d T_S_F_end = Eigen::Isometry3d::Identity();
 
+  if(!odometry_history_.canInterpolate(t_start)){
+    return false;
+  }
+
   // Get the frame that the cloud should be expressed in
-  if(!odometry_history_.getInterpolatedPose(t_start, T_S_F_original))
+  if(!odometry_history_.getInterpolatedPose(timestamp, T_S_F_original))
 
   {
-    DEBUG_PRINTLN("Couldn't get interpolated start pose for time " << t_start - time_offset
+    DEBUG_PRINTLN("Couldn't get interpolated start pose for time " << t_start
                     << "\n Starting time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.startTime() - time_offset))
                     << "\n End time          : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.endTime() - time_offset))
                     << "\n Pose history size : " << odometry_history_.size()
@@ -111,7 +117,7 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
 
   // Check if the end pose is available and abort if not available
   if(!odometry_history_.getInterpolatedPose(t_end, T_S_F_end)){
-    DEBUG_PRINTLN("Couldn't get interpolated end pose for time " << t_end - time_offset
+    DEBUG_PRINTLN("Couldn't get interpolated end pose for time " << t_end
                     << "\n Starting time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.startTime()- time_offset))
                     << "\n End time          : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.endTime() - time_offset))
                     << "\n Pose history size : " << odometry_history_.size()
