@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <node name="lidar_undistortion" pkg="lidar_undistortion" type="ouster_undistortion_node" output="screen">
+    <node name="velodyne_undistortion" pkg="lidar_undistortion" type="velodyne_undistortion_node" output="screen">
         <remap from="pointcloud" to="/penguin/os1_cloud_node/points" />
         <param name="pose_topic" value="/penguin/rovio/pose_with_covariance_stamped" />
         <param name="base_frame_id" value="imu" />
         <param name="odom_frame_id" value="odom" />
-        <param name="lidar_frame_id" value="os1_lidar" />
+        <param name="lidar_frame_id" value="velodyne" />
     </node>
 </launch>

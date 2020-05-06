@@ -1,8 +1,10 @@
 #pragma once
-#include "lidar_undistortion/velodyne_undistorter.hpp"
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
+#include <velodyne_pointcloud/rawdata.h>
+#include <velodyne_pointcloud/pointcloudXYZIR.h>
+#include "lidar_undistorter.hpp"
 
 namespace lidar_undistortion {
 
@@ -14,7 +16,7 @@ namespace lidar_undistortion {
   uint16_t num_lasers = 16;       ///< number of lasers
 };
 
-class VelodyneUndistorterROS : public VelodyneUndistorter {
+class VelodyneUndistorterROS : public LidarUndistorter<velodyne_rawdata::VPoint> {
 public:
   VelodyneUndistorterROS(ros::NodeHandle nh,
                          ros::NodeHandle private_nh);
@@ -31,6 +33,7 @@ private:
   boost::optional<velodyne_pointcloud::Calibration> calibration_;
   velodyne_pointcloud::PointcloudXYZIR container_;              ///< input packet point cloud
   velodyne_rawdata::VPointCloud pointcloud_;
+  velodyne_rawdata::RawData data_;
 
   std::string fixed_frame_id_;
   std::string base_frame_id_ = "imu";

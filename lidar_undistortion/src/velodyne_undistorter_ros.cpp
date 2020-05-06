@@ -24,8 +24,7 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle nh,
   }
 
   // advertise output point cloud (before subscribing to input data)
-  point_cloud_pub_ =
-      nh.advertise<sensor_msgs::PointCloud2>("velodyne_points", 10);
+  point_cloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>("velodyne_points", 10);
 
   scan_sub_ = nh.subscribe("velodyne_packets", 10, &VelodyneUndistorterROS::scanCallback, this);
 
@@ -61,9 +60,14 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle nh,
 }
 
 void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan &scan_msg){
-  if (point_cloud_pub_.getNumSubscribers() == 0){         // no one listening?
-    return;                                     // avoid much work
-  }
+
+  // Create the corrected pointcloud ROS msg
+  sensor_msgs::PointCloud2 pointcloud_corrected_msg;
+
+
+
+
+
   // allocate an output point cloud with same time as raw data
   velodyne_rawdata::VPointCloud::Ptr outMsg(new velodyne_rawdata::VPointCloud());
   outMsg->header.stamp = pcl_conversions::toPCL(scan_msg.header).stamp;
@@ -73,44 +77,34 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan &sca
   beams_ = scan_msg.packets.size();
   times_lut_.clear();
 
+  // clear input point cloud to handle this packet
+  container_.pc->points.clear();
+  container_.pc->width = 0;
+  container_.pc->height = 1;
+
   // process each packet provided by the driver
-  for (size_t next = 0; next < scan_msg.packets.size(); ++next)
-    {
+  for (size_t next = 0; next < scan_msg.packets.size(); ++next) {
     // append all timings to the lut
     std::vector<uint32_t> t(scan_msg.header.stamp.toNSec() - scan_msg.packets[next].stamp.toNSec(), data_.scansPerPacket());
     times_lut_.insert(times_lut_.end(), t.begin(), t.end());
 
-      // clear input point cloud to handle this packet
-      container_.pc->points.clear();
-      container_.pc->width = 0;
-      container_.pc->height = 1;
-      std_msgs::Header header;
-      header.stamp = scan_msg.packets[next].stamp;
-      header.frame_id = scan_msg.header.frame_id;
-      pcl_conversions::toPCL(header, container_.pc->header);
+    // unpack the raw data and append to cloud
+    data_.unpack(scan_msg.packets[next], container_);
+  }
 
-      // unpack the raw data
-      data_.unpack(scan_msg.packets[next], container_);
+  processCloud(container_.pc, scan_msg.header.stamp.toNSec());
 
-      // clear transform point cloud for this packet
-      pointcloud_.points.clear();           // is this needed?
-      pointcloud_.width = 0;
-      pointcloud_.height = 1;
-      header.stamp = scan_msg.packets[next].stamp;
-      pcl_conversions::toPCL(header, pointcloud_.header);
-      pointcloud_.header.frame_id = lidar_frame_id_;
-
-      // append transformed packet data to end of output message
-      outMsg->points.insert(outMsg->points.end(),
-                           pointcloud_.points.begin(),
-                           pointcloud_.points.end());
-      outMsg->width += pointcloud_.points.size();
-    }
+  pcl::toROSMsg(*container_.pc, pointcloud_corrected_msg);
+  // Copy the pointcloud header correctly
+  // NOTE: The header timestamp type in PCL pointclouds is narrower than in
+  //       PointCloud2 msgs. We therefore copy this field directly from the
+  //       losing timestamp accuracy.
+  pointcloud_corrected_msg.header = scan_msg.header;
 
   // publish the accumulated cloud message
   ROS_DEBUG_STREAM("Publishing " << outMsg->height * outMsg->width
                    << " Velodyne points, time: " << outMsg->header.stamp);
-  point_cloud_pub_.publish(outMsg);
+  point_cloud_pub_.publish(pointcloud_corrected_msg);
 }
 
 void VelodyneUndistorterROS::poseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose_msg){
