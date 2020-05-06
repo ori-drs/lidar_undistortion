@@ -1,5 +1,5 @@
 #pragma once
-#include "lidar_undistortion/lidar_undistorter.h"
+#include "lidar_undistortion/ouster_undistorter.hpp"
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>

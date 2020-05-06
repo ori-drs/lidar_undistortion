@@ -20,7 +20,7 @@ target_link_libraries(lidar_undistortion_node
 cs_add_executable(pose_buffer_test src/pose_buffer.cpp
                                    src/pose_buffer_test.cpp)
 
-cs_add_executable(lidar_undistortion_test src/lidar_undistortion_test.cpp
-                                          src/fill_clouds.cpp)
+cs_add_executable(ouster_undistortion_test src/lidar_undistortion_test.cpp
+                                           src/fill_clouds.cpp)
 
-target_link_libraries(lidar_undistortion_test lidar_undistortion)
+target_link_libraries(ouster_undistortion_test lidar_undistortion)

@@ -1,4 +1,4 @@
-#include "lidar_undistortion/lidar_undistorter.h"
+#include "lidar_undistortion/ouster_undistorter.hpp"
 
 
 #include <eigen_utils/eigen_utils.hpp>

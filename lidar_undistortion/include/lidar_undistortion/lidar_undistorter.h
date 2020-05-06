@@ -4,7 +4,6 @@
 #include <Eigen/Eigen>
 #include <string>
 #include <pcl/point_cloud.h>
-#include <ouster_ros/point_os1.h>
 #include <pcl/common/transforms.h>
 #include "lidar_undistortion/pose_buffer.hpp"
 #include "lidar_undistortion/print_macros.hpp"
@@ -206,33 +205,6 @@ inline void LidarUndistorter<PointT>::addPose(uint64_t nsec, Eigen::Isometry3d &
     }
   }
 }
-
-using OusterPoint = ouster_ros::OS1::PointOS1;
-
-class OusterUndistorter : public LidarUndistorter<OusterPoint> {
-public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-
-  using OusterCloud = pcl::PointCloud<OusterPoint>;
-
-  OusterUndistorter() : LidarUndistorter() {
-
-  }
-
-  OusterUndistorter(uint64_t pose_buffer_length) :
-    LidarUndistorter(pose_buffer_length)
-  {
-
-  }
-
-  bool processCloud(const OusterCloud::Ptr& pointcloud,
-                    const uint64_t timestamp) override;
-
-
-};
-
-
-
 
 }  // namespace lidar_undistortion
 
