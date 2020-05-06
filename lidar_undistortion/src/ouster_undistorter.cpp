@@ -1,7 +1,5 @@
 #include "lidar_undistortion/ouster_undistorter.hpp"
 
-
-#include <eigen_utils/eigen_utils.hpp>
 #include <pcl_conversions/pcl_conversions.h>
 #include <string>
 #include <iostream>

@@ -1,4 +1,4 @@
-#include "lidar_undistortion/lidar_undistorter_ros.hpp"
+#include "lidar_undistortion/ouster_undistorter_ros.hpp"
 #include <tf2_eigen/tf2_eigen.h>
 #include <pcl_conversions/pcl_conversions.h>
 
