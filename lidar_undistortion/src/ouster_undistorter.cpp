@@ -12,6 +12,7 @@ bool OusterUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
 {
   // Assert that the pointcloud is not empty
   if (pointcloud->empty()){
+    DEBUG_PRINTLN("Point cloud empty!");
     return false;
   }
 

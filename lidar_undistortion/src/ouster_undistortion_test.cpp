@@ -74,6 +74,7 @@ int main(int argc, char** argv){
               << before_after_error << "." << std::endl;
     return 0;
   } else {
+    std::cout << "Error sum is " << error_sum << " > " << "5e-3" << std::endl;
     std::cout << "TEST FAILED!" << std::endl;
     return -1;
   }

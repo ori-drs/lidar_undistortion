@@ -3,6 +3,41 @@
 #include <iostream>
 #include <iomanip>
 
+bool testCanInterpolate(){
+  bool result = true;
+  PoseBuffer b1;
+
+  // the buffer is empty, no value can be interpolated
+  result &= !b1.canInterpolate(10);
+
+  b1.addPose(10, Eigen::Isometry3d::Identity());
+
+  // only one element identical to what given, should be a match
+  result &= b1.canInterpolate(10);
+
+  // only one element, different to what given, should say no
+  result &= !b1.canInterpolate(11);
+
+  b1.addPose(9, Eigen::Isometry3d::Identity());
+
+  // this should still be a no, because 11 is bigger than the biggest element
+  // in the buffer
+  result &= !b1.canInterpolate(11);
+
+  // still a no, 8 is smaller than the smallest element in the buffer
+  result &= !b1.canInterpolate(8);
+
+  // this is a bad input, should be approximated to 9 and therefore should be a
+  // match, even though not what we would expect
+  result &= b1.canInterpolate(9.5);
+
+  b1.addPose(12, Eigen::Isometry3d::Identity());
+
+  // this time we should be OK 11 can fit in the buffer: [9 10 12]
+  result &= b1.canInterpolate(11);
+  return result;
+}
+
 int main(int argc, char** argv) {
   std::random_device rd;
   std::mt19937_64 gen(rd());
@@ -55,6 +90,8 @@ int main(int argc, char** argv) {
 
     test_passed = test_passed && temp_result;
 
+
+
     if(!temp_result) {
         std::cerr << "FAILURE!!" << std::endl;
         std::cout << "alpha      : "<< std::setprecision(15) << alpha << std::endl;
@@ -66,6 +103,11 @@ int main(int argc, char** argv) {
         std::cerr << std::endl << expected.matrix() << std::endl;
         std::cerr << std::endl << expected.matrix() - result.matrix() << std::endl;
       }
+  }
+
+  if(!testCanInterpolate()){
+    std::cerr << "FAILURE!!" << std::endl;
+    std::cerr << "testCanInterpolate was wrong!" << std::endl;
   }
 
   if(test_passed){

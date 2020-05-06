@@ -3,15 +3,17 @@
 #include <iostream>
 
 bool PoseBuffer::canInterpolate(uint64_t nsec){
-  return !(pose_history_.empty() ||
-           nsec < pose_history_.begin()->first ||
-           nsec > pose_history_.rbegin()->first ||
-           pose_history_.find(nsec) == pose_history_.end() ||
-           pose_history_.size() < 2);
+  return !pose_history_.empty() &&
+    nsec >= pose_history_.begin()->first &&
+    nsec <= pose_history_.rbegin()->first &&
+    (pose_history_.find(nsec) != pose_history_.end() ||
+           pose_history_.size() >= 2);
 }
 
 void PoseBuffer::addPose(uint64_t nsec, const Eigen::Isometry3d &pose){
+  DEBUG_PRINTLN("Adding new element to pose history...");
   pose_history_[nsec] = pose;
+  DEBUG_PRINTLN("Pose history size: " << pose_history_.size());
   // clean up history longer than 1 s
   DEBUG_PRINTLN("Check if history has to be cleaned...");
   DEBUG_PRINTLN(toString());
@@ -23,6 +25,7 @@ void PoseBuffer::addPose(uint64_t nsec, const Eigen::Isometry3d &pose){
   if(old_it != pose_history_.end()){
     DEBUG_PRINTLN("Erasing history prior to " << old_it->first);
     pose_history_.erase(pose_history_.begin(), old_it);
+    DEBUG_PRINTLN("Pose history size: " << pose_history_.size());
   } else {
     DEBUG_PRINTLN("No cleaning necessary.");
   }
