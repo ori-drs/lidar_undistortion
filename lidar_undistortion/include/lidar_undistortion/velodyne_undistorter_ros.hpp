@@ -9,20 +9,19 @@ namespace lidar_undistortion {
 /// configuration parameters
  struct VelodyneUndistorterConfig
 {
-  bool organize_cloud = false;       ///< enable/disable organized cloud structure
   double max_range = 100;          ///< maximum range to publish
   double min_range = 0;          ///< minimum range to publish
   uint16_t num_lasers = 16;       ///< number of lasers
 };
 
 class VelodyneUndistorterROS : public VelodyneUndistorter {
-  VelodyneUndistorterROS(ros::NodeHandle node,
-                         ros::NodeHandle private_nh,
-                         std::string const & node_name = ros::this_node::getName());
+public:
+  VelodyneUndistorterROS(ros::NodeHandle nh,
+                         ros::NodeHandle private_nh);
   ~VelodyneUndistorterROS()
   {
   }
-public:
+
   void scanCallback(const velodyne_msgs::VelodyneScan& scan_msg);
   void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
 private:
