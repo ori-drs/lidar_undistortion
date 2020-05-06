@@ -99,9 +99,8 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
 
   // Get the frame that the cloud should be expressed in
   if(!odometry_history_.getInterpolatedPose(timestamp, T_S_F_original))
-
   {
-    DEBUG_PRINTLN("Couldn't get interpolated start pose for time " << t_start
+    DEBUG_PRINTLN("Couldn't get interpolated timestamp pose for time " << timestamp
                     << "\n Starting time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.startTime()))
                     << "\n End time          : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.endTime()))
                     << "\n Pose history size : " << odometry_history_.size()
