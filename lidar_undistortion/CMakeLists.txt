@@ -53,8 +53,7 @@ endif()
 
 if(${velodyne_pointcloud_FOUND})
   include_directories(${velodyne_pointcloud_INCLUDE_DIRS})
-  add_library(velodyne_undistortion src/velodyne_undistorter.cpp
-                                    src/pointcloud_xyzir.cpp)
+  add_library(velodyne_undistortion src/pointcloud_xyzir.cpp)
   target_link_libraries(velodyne_undistortion lidar_undistortion
                                               ${catkin_LIBRARIES}
                                               ${velodyne_pointcloud_LIBRARIES})

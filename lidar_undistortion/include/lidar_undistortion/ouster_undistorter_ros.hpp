@@ -14,6 +14,10 @@ public:
 
  void pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg);
  void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
+
+ // this re-implementation is identical in all ROS implementations, but
+ // an abstraction would lead to the Inheritance Diamond Problem so we leave it
+ void reprocessCloudBuffer() override;
 private:
  // TF frame name of a frame that can be considered fixed
  // NOTE: When correcting the pointcloud distortion, each point is first

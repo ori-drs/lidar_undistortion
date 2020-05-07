@@ -23,14 +23,14 @@ public:
   using Vector3d = PoseBuffer::Vector3d;
   using Quaternion = PoseBuffer::Quaternion;
 
-  LidarUndistorter() : times_lut_(beams_, 0) {
-
-  }
 
   LidarUndistorter(uint64_t pose_buffer_length) : odometry_history_(pose_buffer_length),
-  times_lut_(beams_, 0){
-
+  times_lut_(beams_*rings_, 0){
   }
+
+  LidarUndistorter() : LidarUndistorter(1e9) {
+  }
+
 
   virtual ~LidarUndistorter() {
 
@@ -56,6 +56,21 @@ public:
   virtual bool processCloud(const typename PointCloud::Ptr& pointcloud,
                             const uint64_t timestamp);
 
+  virtual void reprocessCloudBuffer();
+
+  /**
+   * @brief setRingsAndBeams sets the number of rings and of beams of the
+   * LIDAR device. This changes the internal size of the timings' LUT
+   * @param rings
+   * @param beams
+   */
+  void setRingsAndBeams(uint8_t rings, uint16_t beams){
+    rings_ = rings;
+    beams_ = beams;
+    if(times_lut_.size() != rings_*beams_){
+      times_lut_.resize(rings_*beams_);
+    }
+  }
 
 protected:
   Eigen::Isometry3d base_to_lidar_ = Eigen::Isometry3d::Identity();
@@ -96,7 +111,6 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
     }
     return false;
   }
-
   // Get the frame that the cloud should be expressed in
   if(!odometry_history_.getInterpolatedPose(timestamp, T_S_F_original))
   {
@@ -199,7 +213,11 @@ inline void LidarUndistorter<PointT>::addPose(uint64_t nsec, Eigen::Isometry3d &
   //@todo use move constructor for speedup
   odometry_history_.addPose(nsec, pose * base_to_lidar_);
   DEBUG_PRINTLN("Pose history size: " << odometry_history_.size());
+  reprocessCloudBuffer();
+}
 
+template <class PointT>
+inline void LidarUndistorter<PointT>::reprocessCloudBuffer(){
   // if there are point clouds in the buffer, we process them
   if(!cloud_history_.empty() && !odometry_history_.empty()){
     for(auto it = cloud_history_.lower_bound(odometry_history_.startTime()); it != cloud_history_.end(); ){

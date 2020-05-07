@@ -15,8 +15,7 @@ bool OusterUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
     DEBUG_PRINTLN("Point cloud empty!");
     return false;
   }
-
-  uint16_t timing_counter = 0;
+  size_t timing_counter = 0;
   // save all the timings from the point cloud
   // this has redundancy because we copy the same value multiple times
   // but it is more generic because it does not assume the same timing occurs
@@ -24,7 +23,6 @@ bool OusterUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
   for(auto it = pointcloud->points.begin(); it != pointcloud->points.end(); ++it){
     times_lut_[timing_counter++] = it->t;
   }
-
   return LidarUndistorter::processCloud(pointcloud, timestamp);
 }
 

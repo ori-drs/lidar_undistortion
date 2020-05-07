@@ -21,7 +21,6 @@ public:
   OusterUndistorter(uint64_t pose_buffer_length) :
     LidarUndistorter(pose_buffer_length)
   {
-
   }
 
   bool processCloud(const OusterCloud::Ptr& pointcloud,
