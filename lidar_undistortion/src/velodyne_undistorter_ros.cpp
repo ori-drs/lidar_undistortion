@@ -72,18 +72,20 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
   container_.pc->width = 0;
   container_.pc->height = 1;
   // process each packet provided by the driver
-  for (size_t next = 0; next < scan_msg.packets.size(); ++next) {
 
+  int64_t time_start = scan_msg->packets.front().stamp.toNSec();
+  int64_t time_end =  scan_msg->packets.back().stamp.toNSec();
+  for (size_t next = 0; next < scan_msg->packets.size(); ++next) {
     // append all timings to the lut
-    int32_t v = static_cast<int64_t>(scan_msg.packets[next].stamp.toNSec()) - static_cast<int64_t>(scan_msg.header.stamp.toNSec());
+    int32_t v = scan_msg->packets[next].stamp.toNSec() - time_start;
     std::vector<int32_t> t(data_.scansPerPacket(), v);
     times_lut_.insert(times_lut_.end(), t.begin(), t.end());
 
     // unpack the raw data and append to cloud
-    data_.unpack(scan_msg.packets[next], container_);
+    data_.unpack(scan_msg->packets[next], container_);
   }
 
-  if(!processCloud(container_.pc, scan_msg.header.stamp.toNSec())){
+  if(!processCloud(container_.pc, time_start)){
     return;
   }
 
@@ -92,7 +94,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
   // NOTE: The header timestamp type in PCL pointclouds is narrower than in
   //       PointCloud2 msgs. We therefore copy this field directly from the
   //       losing timestamp accuracy.
-  pointcloud_corrected_msg.header = scan_msg.header;
+  pointcloud_corrected_msg.header = scan_msg->header;
 
   // publish the accumulated cloud message
   corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
@@ -123,6 +125,8 @@ void VelodyneUndistorterROS::reprocessCloudBuffer(){
         // the point cloud has been transformed successfully
         // we remove it from the buffer and return
         it = cloud_history_.erase(it);
+        DEBUG_PRINTLN("Processed. Cloud buffer size is: " << cloud_history_.size());
+
       }
     }
   }
