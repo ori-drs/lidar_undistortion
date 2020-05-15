@@ -4,7 +4,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <velodyne_pointcloud/rawdata.h>
 #include <velodyne_pointcloud/pointcloudXYZIR.h>
-#include "lidar_undistorter.hpp"
+#include "lidar_undistortion/lidar_undistorter.hpp"
 
 namespace lidar_undistortion {
 
@@ -24,7 +24,7 @@ public:
   {
   }
 
-  void scanCallback(const velodyne_msgs::VelodyneScan& scan_msg);
+  void scanCallback(const velodyne_msgs::VelodyneScan::ConstPtr& scan_msg);
   void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
   void reprocessCloudBuffer() override;
 private:

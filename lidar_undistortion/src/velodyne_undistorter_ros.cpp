@@ -60,7 +60,7 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh,
   }
 }
 
-void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan &scan_msg){
+void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::ConstPtr &scan_msg){
   // // Create the corrected pointcloud ROS msg
   sensor_msgs::PointCloud2 pointcloud_corrected_msg;
   //
@@ -93,7 +93,6 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan &sca
   //       PointCloud2 msgs. We therefore copy this field directly from the
   //       losing timestamp accuracy.
   pointcloud_corrected_msg.header = scan_msg.header;
-  ROS_WARN_STREAM(pointcloud_corrected_msg.data.size());
 
   // publish the accumulated cloud message
   corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
@@ -111,7 +110,6 @@ void VelodyneUndistorterROS::reprocessCloudBuffer(){
   // if there are point clouds in the buffer, we process them
   if(!cloud_history_.empty() && !odometry_history_.empty()){
     for(auto it = cloud_history_.lower_bound(odometry_history_.startTime()); it != cloud_history_.end(); ){
-      ROS_WARN_STREAM("Processing cloud " << it->first);
 
       DEBUG_PRINTLN("Processing cloud " << it->first);
       if(!processCloud(it->second, it->first)){
@@ -122,8 +120,6 @@ void VelodyneUndistorterROS::reprocessCloudBuffer(){
         out_msg.header.stamp = ros::Time().fromNSec(it->first);
         out_msg.header.frame_id = lidar_frame_id_;
         corrected_pointcloud_pub_.publish(out_msg);
-        DEBUG_PRINTLN("Processed. Cloud size is: " << cloud_history_.size());
-        ROS_WARN_STREAM("Processed. Cloud size is: " << cloud_history_.size());
         // the point cloud has been transformed successfully
         // we remove it from the buffer and return
         it = cloud_history_.erase(it);

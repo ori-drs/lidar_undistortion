@@ -2,6 +2,7 @@
 #include <tf2_eigen/tf2_eigen.h>
 #include <pcl_conversions/pcl_conversions.h>
 
+
 using namespace lidar_undistortion;
 
 OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle nh,
@@ -9,7 +10,9 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle nh,
   : fixed_frame_id_("odom"),
     lidar_frame_id_("os1_lidar"),
     tf_listener_(tf_buffer_),
-    OusterUndistorter(2e9)
+    OusterUndistorter(2e9),
+    img_transp_(nh_private),
+    corrected_range_pub_(img_transp_.advertise("corrected_range",1))
 {
   // Subscribe to the undistorted pointcloud topic
   pointcloud_sub_ = nh.subscribe("pointcloud", 100,
@@ -86,6 +89,26 @@ void OusterUndistorterROS::reprocessCloudBuffer(){
         out_msg.header.frame_id = lidar_frame_id_;
         corrected_pointcloud_pub_.publish(out_msg);
         DEBUG_PRINTLN("Processed. Cloud size is: " << cloud_history_.size());
+
+        cvt_->convert(*it->second, ranges_, altitudes_, azimuths_);
+
+        cv::MatIterator_<double> img_it;
+        cv::MatIterator_<uchar> out_it;
+        cv::MatIterator_<double> end;
+        for(img_it = ranges_.begin<double>(),
+            end = ranges_.end<double>(),
+            out_it = ranges_viz_.begin<uchar>();
+            img_it != end; ++img_it, ++out_it)
+        {
+          // cap at 30 m and convert into char
+          (*out_it) = static_cast<uchar>(255.0 * std::min(*img_it, 30.0) / 30.0);
+        }
+
+        range_img_msg_ = cv_bridge::CvImage(std_msgs::Header(), "mono8", ranges_viz_).toImageMsg();
+
+        range_img_msg_->header.stamp.fromNSec(it->first);
+        corrected_range_pub_.publish(range_img_msg_);
+
         // the point cloud has been transformed successfully
         // we remove it from the buffer and return
         it = cloud_history_.erase(it);

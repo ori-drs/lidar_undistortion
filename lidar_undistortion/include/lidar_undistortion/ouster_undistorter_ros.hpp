@@ -4,6 +4,9 @@
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2_ros/transform_listener.h>
+#include <lidar_undistortion/RangeImage.h>
+#include <cv_bridge/cv_bridge.h>
+#include <image_transport/image_transport.h>
 
 
 namespace lidar_undistortion {
@@ -36,6 +39,9 @@ private:
  ros::Subscriber pose_sub_;
 
  ros::Publisher corrected_pointcloud_pub_;
+ image_transport::ImageTransport img_transp_;
+ image_transport::Publisher corrected_range_pub_;
+ sensor_msgs::ImagePtr range_img_msg_;
 
  tf2_ros::Buffer tf_buffer_;
  tf2_ros::TransformListener tf_listener_;

@@ -25,4 +25,9 @@
   <depend>tf2_geometry_msgs</depend>
   <depend>tf2_eigen</depend>
   <depend>velodyne_pointcloud</depend>
+
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+
 </package>
