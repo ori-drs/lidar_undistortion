@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <node name="lidar_undistortion" pkg="lidar_undistortion" type="ouster_undistortion_node" output="screen">
+    <node name="lidar_undistortion" pkg="lidar_undistortion" type="ouster_undistortion_node" output="screen" launch-prefix="gdb -ex run --args">
         <remap from="pointcloud" to="/penguin/os1_cloud_node/points" />
         <param name="pose_topic" value="/penguin/rovio/pose_with_covariance_stamped" />
         <param name="base_frame_id" value="imu" />

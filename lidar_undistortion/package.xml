@@ -5,7 +5,8 @@
   <description>Undistort pointclouds using an odometry TF input</description>
 
   <maintainer email="victorr@ethz.ch">Victor Reijgwart</maintainer>
-
+  <maintainer email="mcamurri@robots.ox.ac.uk">Marco Camurri</maintainer>
+  
   <author>Victor Reijgwart</author>
 
   <license>ASL 2.0</license>
@@ -22,6 +23,11 @@
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
   <depend>tf2_geometry_msgs</depend>
-  <depend>minkindr</depend>
-  <depend>minkindr_conversions</depend>
+  <depend>tf2_eigen</depend>
+  <depend>velodyne_pointcloud</depend>
+
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+
 </package>

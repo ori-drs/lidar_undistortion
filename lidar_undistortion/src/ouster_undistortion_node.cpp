@@ -1,11 +1,7 @@
-#include <glog/logging.h>
 #include <ros/ros.h>
-#include "lidar_undistortion/lidar_undistorter.h"
+#include "lidar_undistortion/ouster_undistorter_ros.hpp"
 
 int main(int argc, char **argv) {
-  // Start logging
-  google::InitGoogleLogging(argv[0]);
-
   // Register with ROS master
   ros::init(argc, argv, "lidar_undistortion");
 
@@ -14,7 +10,7 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh_private("~");
 
   // Launch the lidar undistorter
-  lidar_undistortion::LidarUndistorter lidar_undistorter(nh, nh_private);
+  lidar_undistortion::OusterUndistorterROS lidar_undistorter(nh, nh_private);
 
   // Spin
   ros::spin();
