@@ -69,8 +69,10 @@ endif()
 
 if(${velodyne_pointcloud_FOUND})
   include_directories(${velodyne_pointcloud_INCLUDE_DIRS})
-  add_library(velodyne_undistortion src/pointcloud_xyzir.cpp)
-                                    #src/organized_pointcloud_xyzir.cpp)
+  add_library(velodyne_undistortion src/pointcloud_xyzir.cpp
+                                    src/velodyne_cloud_organized.cpp
+                                    src/velodyne_image_converter.cpp)
+
   target_link_libraries(velodyne_undistortion lidar_undistortion
                                               ${catkin_LIBRARIES}
                                               ${velodyne_pointcloud_LIBRARIES}
@@ -78,8 +80,14 @@ if(${velodyne_pointcloud_FOUND})
 
   add_executable(velodyne_undistortion_node src/velodyne_undistortion_node.cpp
                                             src/velodyne_undistorter_ros.cpp)
+
   target_link_libraries(velodyne_undistortion_node velodyne_undistortion
                                                    ${catkin_LIBRARIES})
+
+  add_executable(velodyne_image_converter_node src/velodyne_image_converter_node.cpp)
+  target_link_libraries(velodyne_image_converter_node velodyne_undistortion
+                                                      ${velodyne_pointcloud_LIBRARIES}
+                                                      ${catkin_LIBRARIES})
   
 endif()
 
