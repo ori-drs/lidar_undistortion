@@ -62,6 +62,9 @@ if(${ouster_ros_FOUND})
                                           src/fill_clouds.cpp)
 
   target_link_libraries(ouster_undistortion_test ouster_undistortion)
+
+  add_executable(ouster_image_converter_node src/ouster_image_converter_node.cpp)
+  target_link_libraries(ouster_image_converter_node ouster_undistortion ${catkin_LIBRARIES})
 endif()
 
 if(${velodyne_pointcloud_FOUND})
@@ -77,6 +80,7 @@ if(${velodyne_pointcloud_FOUND})
                                             src/velodyne_undistorter_ros.cpp)
   target_link_libraries(velodyne_undistortion_node velodyne_undistortion
                                                    ${catkin_LIBRARIES})
+  
 endif()
 
 add_executable(pose_buffer_test src/pose_buffer.cpp

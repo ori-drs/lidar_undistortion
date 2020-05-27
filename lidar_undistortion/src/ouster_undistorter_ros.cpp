@@ -91,18 +91,7 @@ void OusterUndistorterROS::reprocessCloudBuffer(){
         DEBUG_PRINTLN("Processed. Cloud size is: " << cloud_history_.size());
 
         cvt_->convert(*it->second, ranges_, altitudes_, azimuths_);
-
-        cv::MatIterator_<double> img_it;
-        cv::MatIterator_<uchar> out_it;
-        cv::MatIterator_<double> end;
-        for(img_it = ranges_.begin<double>(),
-            end = ranges_.end<double>(),
-            out_it = ranges_viz_.begin<uchar>();
-            img_it != end; ++img_it, ++out_it)
-        {
-          // cap at 30 m and convert into char
-          (*out_it) = static_cast<uchar>(255.0 * std::min(*img_it, 30.0) / 30.0);
-        }
+        cvt_->rangeImageToMono(ranges_, ranges_viz_);
 
         range_img_msg_ = cv_bridge::CvImage(std_msgs::Header(), "mono8", ranges_viz_).toImageMsg();
 
