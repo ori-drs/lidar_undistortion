@@ -69,9 +69,10 @@ endif()
 
 if(${velodyne_pointcloud_FOUND})
   include_directories(${velodyne_pointcloud_INCLUDE_DIRS})
-  add_library(velodyne_undistortion src/pointcloud_xyzir.cpp
-                                    src/velodyne_cloud_organized.cpp
-                                    src/velodyne_image_converter.cpp)
+  add_library(velodyne_undistortion src/velodyne_container.cpp
+                                    src/velodyne_container_organized.cpp
+                                    src/velodyne_image_converter.cpp
+                                    src/velodyne_rawdata.cpp)
 
   target_link_libraries(velodyne_undistortion lidar_undistortion
                                               ${catkin_LIBRARIES}

@@ -1,3 +1,4 @@
+#pragma once
 // Copyright (C) 2012, 2019 Austin Robot Technology, Jack O'Quin, Joshua Whitley, Sebastian Pütz
 // All rights reserved.
 //
@@ -30,32 +31,72 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef VELODYNE_POINTCLOUD_ORGANIZED_CLOUDXYZIR_H
-#define VELODYNE_POINTCLOUD_ORGANIZED_CLOUDXYZIR_H
-
-#include <velodyne_pointcloud/datacontainerbase.h>
+#include <tf/transform_listener.h>
+#include <velodyne_msgs/VelodyneScan.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
+#include <Eigen/Dense>
 #include <string>
+#include <algorithm>
+#include <cstdarg>
 
-namespace velodyne_pointcloud
-{
-class OrganizedCloudXYZIR : public velodyne_rawdata::DataContainerBase
-{
-public:
-  OrganizedCloudXYZIR(const double max_range, const double min_range, const std::string& target_frame,
-                      const std::string& fixed_frame, const unsigned int num_lasers, const unsigned int scans_per_block,
-                      boost::shared_ptr<tf::TransformListener> tf_ptr = boost::shared_ptr<tf::TransformListener>());
+namespace velodyne {
 
-  virtual void newLine();
+struct VelodyneContainerConfig {
+  double max_range;          ///< maximum range to publish
+  double min_range;          ///< minimum range to publish
+  unsigned int init_width;
+  unsigned int init_height;
+  bool is_dense;
+  unsigned int scans_per_packet;
 
-  virtual void setup(const velodyne_msgs::VelodyneScan::ConstPtr& scan_msg);
+  VelodyneContainerConfig() = default;
 
-  virtual void addPoint(float x, float y, float z, const uint16_t ring, const uint16_t azimuth, const float distance,
-                        const float intensity, const float time);
-
-private:
-  sensor_msgs::PointCloud2Iterator<float> iter_x, iter_y, iter_z, iter_intensity, iter_time;
-  sensor_msgs::PointCloud2Iterator<uint16_t> iter_ring;
+  VelodyneContainerConfig(double max_range,
+         double min_range,
+         unsigned int init_width,
+         unsigned int init_height,
+         bool is_dense,
+         unsigned int scans_per_packet)
+    : max_range(max_range),
+      min_range(min_range),
+      init_width(init_width),
+      init_height(init_height),
+      is_dense(is_dense),
+      scans_per_packet(scans_per_packet)
+  {
+  }
 };
-} /* namespace velodyne_pointcloud */
-#endif  // VELODYNE_POINTCLOUD_ORGANIZED_CLOUDXYZIR_H
+
+class VelodyneContainerBase {
+public:
+  VelodyneContainerBase() = default;
+  virtual ~VelodyneContainerBase() = default;
+
+
+  virtual void setup(const VelodyneContainerConfig& config) {
+    config_ = config;
+  }
+
+  virtual void addPoint(float x,
+                        float y,
+                        float z,
+                        const uint16_t ring,
+                        const uint16_t azimuth,
+                        const float distance,
+                        const float intensity,
+                        const float time) = 0;
+
+  virtual void newLine() {
+
+  }
+
+
+  virtual bool pointInRange(float range) const {
+    return (range >= config_.min_range && range <= config_.max_range);
+  }
+
+protected:
+  VelodyneContainerConfig config_;
+};
+
+}

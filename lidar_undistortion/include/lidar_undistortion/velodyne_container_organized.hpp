@@ -30,60 +30,26 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef VELODYNE_POINTCLOUD_ORGANIZED_CLOUDXYZIR_H
-#define VELODYNE_POINTCLOUD_ORGANIZED_CLOUDXYZIR_H
+#pragma once
 
-#include <velodyne_pointcloud/datacontainerbase.h>
+#include "lidar_undistortion/velodyne_container_base.hpp"
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <string>
 #include <pcl/point_cloud.h>
-#include <velodyne_pointcloud/point_types.h>
 
 
-namespace velodyne_pointcloud {
+namespace velodyne {
 
-struct OrganizedCloudConfig
-{
-  double max_range;          ///< maximum range to publish
-  double min_range;          ///< minimum range to publish
-  unsigned int init_width;
-  unsigned int init_height;
-  bool is_dense;
-  unsigned int scans_per_packet;
-
-  OrganizedCloudConfig() = default;
-
-  OrganizedCloudConfig(double max_range,
-                       double min_range,
-                       unsigned int init_width,
-                       unsigned int init_height,
-                       bool is_dense,
-                       unsigned int scans_per_packet)
-    : max_range(max_range),
-      min_range(min_range),
-      init_width(init_width),
-      init_height(init_height),
-      is_dense(is_dense),
-      scans_per_packet(scans_per_packet)
-  {
-    /*ROS_INFO_STREAM("Initialized container with "
-                    << "min_range: " << min_range << ", max_range: " << max_range
-                    << ", target_frame: " << target_frame << ", fixed_frame: " << fixed_frame
-                    << ", init_width: " << init_width << ", init_height: " << init_height
-                    << ", is_dense: " << is_dense << ", scans_per_packet: " << scans_per_packet);
-  */}
-};
-
-class OrganizedCloudXYZIR : public velodyne_rawdata::DataContainerBase
+class VelodyneContainerOrganized : public velodyne::VelodyneContainerBase
 {
 public:
   // using VelodyneCloud = pcl::PointCloud<velodyne_pointcloud::PointXYZIR>;
   using VelodyneCloud = sensor_msgs::PointCloud2;
 
 public:
-  OrganizedCloudXYZIR() = default;
 
-  OrganizedCloudXYZIR(const OrganizedCloudConfig& cfg) :
+
+  VelodyneContainerOrganized(const VelodyneContainerConfig& cfg) :
     iter_x(cloud, "x"),
     iter_y(cloud, "y"),
     iter_z(cloud, "z"),
@@ -94,26 +60,31 @@ public:
 
   }
 
-  OrganizedCloudXYZIR(const double max_range,
+  VelodyneContainerOrganized() : VelodyneContainerOrganized(VelodyneContainerConfig()) {
+
+  }
+
+  VelodyneContainerOrganized(const double max_range,
                       const double min_range,
                       const unsigned int num_lasers,
                       const unsigned int scans_per_block) :
-    OrganizedCloudXYZIR(OrganizedCloudConfig(max_range, min_range, 1800, 16, false, scans_per_block))
+    VelodyneContainerOrganized(VelodyneContainerConfig(max_range, min_range, 1800, 16, false, scans_per_block))
   {
 
   }
 
   virtual void newLine();
 
-  virtual void setup(const OrganizedCloudConfig& config);
+  virtual void setup(const VelodyneContainerConfig& config);
 
-  void addPoint(const float& x,
-                const float& y,
-                const float& z,
-                const uint16_t& ring,
-                const uint16_t& azimuth,
-                const float& distance,
-                const float& intensity) override;
+  void addPoint(float x,
+                float y,
+                float z,
+                uint16_t ring,
+                uint16_t azimuth,
+                float distance,
+                float intensity,
+                float time) override;
 
   virtual bool pointInRange(float distance) {
     return distance > 0;
@@ -127,10 +98,9 @@ private:
   sensor_msgs::PointCloud2Iterator<float> iter_intensity;
   sensor_msgs::PointCloud2Iterator<uint16_t> iter_ring;
 
-  OrganizedCloudConfig config_;
+  VelodyneContainerConfig config_;
 
 
 };
 } /* namespace velodyne_pointcloud */
-#endif  // VELODYNE_POINTCLOUD_ORGANIZED_CLOUDXYZIR_H
 

@@ -82,7 +82,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
     times_lut_.insert(times_lut_.end(), t.begin(), t.end());
 
     // unpack the raw data and append to cloud
-    data_.unpack(scan_msg->packets[next], container_);
+    data_.unpack(scan_msg->packets[next], container_, scan_msg->packets[next].stamp.toNSec());
   }
 
   if(!processCloud(container_.pc, time_start)){
