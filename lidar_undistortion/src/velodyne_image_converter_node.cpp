@@ -29,11 +29,11 @@ public:
   {
     // TODO some conversion from msg to cloud_in_
     img_cvt_.scanToPointCloud(*msg, cloud_in_);
-    img_cvt_.convert(cloud_in_, range_in_, altitude_in_, azimuth_in_);
-    cv::Mat range_mono(range_in_.rows, range_in_.cols, CV_8UC1);
-    img_cvt_.rangeImageToMono(range_in_, range_mono);
-    sensor_msgs::ImagePtr img_msg = cv_bridge::CvImage(msg->header, "mono8", range_mono).toImageMsg();
-    img_pub_.publish(img_msg);
+    //img_cvt_.convert(cloud_in_, range_in_, altitude_in_, azimuth_in_);
+    //cv::Mat range_mono(range_in_.rows, range_in_.cols, CV_8UC1);
+    //img_cvt_.rangeImageToMono(range_in_, range_mono);
+    //sensor_msgs::ImagePtr img_msg = cv_bridge::CvImage(msg->header, "mono8", range_mono).toImageMsg();
+    //img_pub_.publish(img_msg);
   }
 private:
   ros::NodeHandle& nh_;

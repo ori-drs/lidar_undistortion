@@ -53,8 +53,7 @@
 #include <velodyne_pointcloud/calibration.h>
 #include "lidar_undistortion/velodyne_container_base.hpp"
 
-namespace velodyne
-{
+namespace velodyne {
 /**
  * Raw Velodyne packet constants and structures.
  */
@@ -128,14 +127,20 @@ typedef struct raw_packet
 }
 raw_packet_t;
 
+struct RawDataConfig {
+  std::string model;
+  std::string calibrationFile;  ///< calibration file name
+  double max_range;             ///< maximum range to publish
+  double min_range;             ///< minimum range to publish
+  double view_direction;
+  double view_width;
+};
+
 /** \brief Velodyne data conversion class */
-class RawData
-{
+class RawData {
 public:
-  RawData();
-  ~RawData()
-  {
-  }
+  RawData() = default;
+  virtual ~RawData() = default;
 
   /** \brief Set up for data processing.
    *
@@ -147,7 +152,11 @@ public:
    *  @param private_nh private node handle for ROS parameters
    *  @returns an optional calibration
    */
-  boost::optional<velodyne_pointcloud::Calibration> setup(ros::NodeHandle private_nh);
+  std::string getCalibrationFilename(ros::NodeHandle private_nh);
+
+  int numLasers() {
+    return calibration_.num_lasers;
+  }
 
 
   /** \brief Set up for data processing offline.
@@ -158,39 +167,24 @@ public:
    * @param calibration_file path to the calibration file
    * @param max_range_ cutoff for maximum range
    * @param min_range_ cutoff for minimum range
+   * @param model
    * @returns 0 if successful;
    *           errno value for failure
    */
-  int setupOffline(std::string calibration_file,
-                   double max_range_,
-                   double min_range_);
+  int setup(const RawDataConfig& config);
 
   void unpack(const velodyne_msgs::VelodynePacket& pkt,
               velodyne::VelodyneContainerBase& data,
               const uint64_t& scan_start_time);
 
-  void setParameters(double min_range,
-                     double max_range,
-                     double view_direction,
-                     double view_width);
-
   int scansPerPacket() const;
 
 private:
   /** configuration parameters */
-  typedef struct
-  {
-    std::string model;
-    std::string calibrationFile;  ///< calibration file name
-    double max_range;             ///< maximum range to publish
-    double min_range;             ///< minimum range to publish
-    int min_angle;                ///< minimum angle to publish
-    int max_angle;                ///< maximum angle to publish
 
-    double tmp_min_angle;
-    double tmp_max_angle;
-  } Config;
-  Config config_;
+  RawDataConfig config_;
+  int min_angle;                ///< minimum angle to publish
+  int max_angle;                ///< maximum angle to publish
 
   /**
    * Calibration file
@@ -209,6 +203,8 @@ private:
    *  NOTE: Does not support all sensors yet (vlp16, vlp32, and hdl32 are currently supported)
    */
   bool buildTimings();
+
+  void setParameters();
 
   /** add private function to handle the VLP16 **/
   void unpack_vlp16(const velodyne_msgs::VelodynePacket& pkt,

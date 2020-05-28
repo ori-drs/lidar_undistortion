@@ -24,8 +24,7 @@ public:
 public:
   VelodyneUndistorterROS(ros::NodeHandle& nh,
                          ros::NodeHandle& private_nh);
-  ~VelodyneUndistorterROS()
-  {
+  ~VelodyneUndistorterROS() override {
   }
 
   void scanCallback(const velodyne_msgs::VelodyneScan::ConstPtr& scan_msg);

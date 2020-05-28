@@ -9,25 +9,24 @@ using namespace velodyne_pointcloud;
 
 VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh,
                                                ros::NodeHandle& private_nh)
-  : calibration_(data_.setup(private_nh)),
-    fixed_frame_id_("odom"),
+  : fixed_frame_id_("odom"),
     lidar_frame_id_("velodyne"),
     tf_listener_(tf_buffer_)
 {
-  if(calibration_)
-  {
-    ROS_DEBUG_STREAM("Calibration file loaded.");
-    rings_ = static_cast<uint8_t>(calibration_->num_lasers);
-  }
-  else
-  {
-    ROS_ERROR_STREAM("Could not load calibration file!");
-    rings_ = 16;
-  }
+  velodyne::RawDataConfig cfg;
+
+  cfg.calibrationFile = data_.getCalibrationFilename(private_nh);
+  cfg.max_range = 30;
+  cfg.min_range = 0;
+  cfg.model = "VLP16";
+  cfg.view_direction = 0;
+  cfg.view_width = 2*M_PI;
+
+  data_.setup(cfg);
+
+  rings_ = static_cast<uint8_t>(data_.numLasers());
 
   // set full 360 FoV and nominal range
-  data_.setParameters(0, 100, 0, 2*M_PI);
-
   scan_sub_ = nh.subscribe("/velodyne_packets", 10, &VelodyneUndistorterROS::scanCallback, this);
 
   // Advertise the corrected pointcloud topic

@@ -10,7 +10,6 @@ void VelodyneContainerOrganized::newLine()
   *iter_ring =      *iter_ring + config_.init_width;
   *iter_intensity = *iter_intensity + config_.init_width;
   *iter_time = *iter_time + config_.init_width;
-  ++cloud.height;
 }
 
 void VelodyneContainerOrganized::setup(const VelodyneContainerConfig& config) {
@@ -36,6 +35,8 @@ void VelodyneContainerOrganized::addPoint(float x,
      * NaN.
      */
   if (pointInRange(distance)) {
+    std::cerr << "iter_x" << iter_x.get() << std::endl;
+    std::cerr << &(*(*iter_x)) << std::endl;
     *(*iter_x + ring) = x;
     *(*iter_y + ring) = y;
     *(*iter_z + ring) = z;

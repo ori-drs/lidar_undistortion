@@ -39,9 +39,7 @@ public:
   }
 
 
-  virtual ~LidarUndistorter() {
-
-  }
+  virtual ~LidarUndistorter() = default;
 
   virtual void addPose(uint64_t nsec, Eigen::Isometry3d& pose);
 

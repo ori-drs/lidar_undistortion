@@ -52,6 +52,14 @@ public:
   {
     VelodyneCloud vc;
     pcl::toROSMsg(vc, cloud);
+    cloud.height = config_.init_height;
+    cloud.width = config_.init_width;
+    cloud.data.resize(cloud.point_step * cloud.width * cloud.height);
+    cloud.is_dense = config_.is_dense;
+    std::cerr << "row_step: " << cloud.row_step << std::endl;
+    std::cerr << "point_step: " << cloud.point_step << std::endl;
+    std::cerr << "width: " << cloud.width << std::endl;
+    std::cerr << "height: " << cloud.height << std::endl;
 
     iter_x          = std::make_unique<sensor_msgs::PointCloud2Iterator<float>> (cloud, "x");
     iter_y          = std::make_unique<sensor_msgs::PointCloud2Iterator<float>> (cloud, "y");
@@ -59,6 +67,7 @@ public:
     iter_intensity  = std::make_unique<sensor_msgs::PointCloud2Iterator<float>> (cloud, "intensity");
     iter_ring       = std::make_unique<sensor_msgs::PointCloud2Iterator<uint16_t>> (cloud, "ring");
     iter_time       = std::make_unique<sensor_msgs::PointCloud2Iterator<uint32_t>> (cloud, "time");
+
   }
 
   VelodyneContainerOrganized() : VelodyneContainerOrganized(VelodyneContainerConfig()) {
