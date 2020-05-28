@@ -1,13 +1,16 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(lidar_undistortion)
 
-add_definitions(-std=c++14)
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(catkin REQUIRED COMPONENTS std_msgs
   cv_bridge message_generation image_transport)
 
 find_package(Eigen3)
 find_package(OpenCV REQUIRED COMPONENTS core)
+find_package(PCL REQUIRED COMPONENTS common io)
 
 set(LIBRARIES_TO_BUILD "lidar_undistortion")
 set(EXECUTABLES_TO_BUILD "")
@@ -35,7 +38,8 @@ catkin_package(LIBRARIES ${LIBRARIES_TO_BUILD}
 
 
 
-include_directories(include ${EIGEN3_INCLUDE_DIRS})
+include_directories(include ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
+
 
 add_library(lidar_undistortion src/pose_buffer.cpp)
 
@@ -50,8 +54,7 @@ if(${ouster_ros_FOUND})
                                             ${OpenCV_LIBRARIES})
 
   add_executable(ouster_undistortion_node src/ouster_undistortion_node.cpp
-                                          src/ouster_undistorter_ros.cpp
-                                          )
+                                          src/ouster_undistorter_ros.cpp)
 
   target_link_libraries(ouster_undistortion_node ouster_undistortion
                                                  ${catkin_LIBRARIES})
@@ -77,7 +80,8 @@ if(${velodyne_pointcloud_FOUND})
   target_link_libraries(velodyne_undistortion lidar_undistortion
                                               ${catkin_LIBRARIES}
                                               ${velodyne_pointcloud_LIBRARIES}
-                                              ${OpenCV_LIBRARIES})
+                                              ${OpenCV_LIBRARIES}
+                                              ${PCL_LIBRARIES})
 
   add_executable(velodyne_undistortion_node src/velodyne_undistortion_node.cpp
                                             src/velodyne_undistorter_ros.cpp)

@@ -48,12 +48,7 @@ public:
 public:
   VelodyneContainer(const VelodyneContainerConfig& cfg) :
     pc(boost::make_shared<VelodyneCloud>()),
-    iter_x(cloud, "x"),
-    iter_y(cloud, "y"),
-    iter_z(cloud, "z"),
-    iter_intensity(cloud, "intensity"),
-    iter_ring(cloud, "ring"),
-    config_(cfg)
+    VelodyneContainerBase(cfg)
   {
 
   }
@@ -87,17 +82,13 @@ public:
   bool pointInRange(float distance) const override {
     return distance > 0;
   }
-public:
-  VelodyneCloud::Ptr pc;
-private:
-  sensor_msgs::PointCloud2 cloud;
-  sensor_msgs::PointCloud2Iterator<float> iter_x;
-  sensor_msgs::PointCloud2Iterator<float> iter_y;
-  sensor_msgs::PointCloud2Iterator<float> iter_z;
-  sensor_msgs::PointCloud2Iterator<float> iter_intensity;
-  sensor_msgs::PointCloud2Iterator<uint16_t> iter_ring;
-  VelodyneContainerConfig config_;
 
+  VelodyneCloud::Ptr getCloud() {
+    return pc;
+  }
+
+private:
+  VelodyneCloud::Ptr pc;
 
 };
 } /* namespace velodyne */

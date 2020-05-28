@@ -1,5 +1,6 @@
 #include "lidar_undistortion/velodyne_undistorter_ros.hpp"
-#include <velodyne_pointcloud/pointcloudXYZIR.h>
+#include "lidar_undistortion/velodyne_container.hpp"
+#include <pcl_conversions/pcl_conversions.h>
 #include <yaml-cpp/node/detail/node.h>
 #include <tf2_eigen/tf2_eigen.h>
 
@@ -65,12 +66,13 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
   sensor_msgs::PointCloud2 pointcloud_corrected_msg;
   //
   // beams_ = scan_msg.packets.size();
-   times_lut_.clear();
+  times_lut_.clear();
+  auto pc = container_.getCloud();
   //
   // // clear input point cloud to handle this packet
-  container_.pc->points.clear();
-  container_.pc->width = 0;
-  container_.pc->height = 1;
+  pc->points.clear();
+  pc->width = 0;
+  pc->height = 1;
   // process each packet provided by the driver
 
   int64_t time_start = scan_msg->packets.front().stamp.toNSec();
@@ -85,11 +87,11 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
     data_.unpack(scan_msg->packets[next], container_, scan_msg->packets[next].stamp.toNSec());
   }
 
-  if(!processCloud(container_.pc, time_start)){
+  if(!processCloud(pc, time_start)){
     return;
   }
 
-  pcl::toROSMsg(*container_.pc, pointcloud_corrected_msg);
+  pcl::toROSMsg(*pc, pointcloud_corrected_msg);
   // Copy the pointcloud header correctly
   // NOTE: The header timestamp type in PCL pointclouds is narrower than in
   //       PointCloud2 msgs. We therefore copy this field directly from the

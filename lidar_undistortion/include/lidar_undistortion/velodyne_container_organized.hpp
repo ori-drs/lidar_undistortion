@@ -91,13 +91,19 @@ public:
     return distance > 0;
   }
 
+  VelodyneCloud::Ptr getCloud() override {
+    VelodyneCloud::Ptr pc = boost::make_shared<VelodyneCloud>();
+    pcl::fromROSMsg(cloud, *pc);
+    return pc;
+  }
+
 private:
   sensor_msgs::PointCloud2 cloud;
 
-  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>   > iter_x;
-  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>   > iter_y;
-  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>   > iter_z;
-  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>   > iter_intensity;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>> iter_x;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>> iter_y;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>> iter_z;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>> iter_intensity;
   std::unique_ptr<sensor_msgs::PointCloud2Iterator<uint16_t>> iter_ring;
   std::unique_ptr<sensor_msgs::PointCloud2Iterator<uint32_t>> iter_time;
 

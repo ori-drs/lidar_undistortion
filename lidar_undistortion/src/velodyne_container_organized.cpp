@@ -13,16 +13,10 @@ void VelodyneContainerOrganized::newLine()
   ++cloud.height;
 }
 
-void VelodyneContainerOrganized::setup(const VelodyneContainerConfig& config){
-
+void VelodyneContainerOrganized::setup(const VelodyneContainerConfig& config) {
   config_ = config;
-  /*DataContainerBase::setup(scan_msg);
-    iter_x = sensor_msgs::PointCloud2Iterator<float>(cloud, "x");
-    iter_y = sensor_msgs::PointCloud2Iterator<float>(cloud, "y");
-    iter_z = sensor_msgs::PointCloud2Iterator<float>(cloud, "z");
-    iter_intensity = sensor_msgs::PointCloud2Iterator<float>(cloud, "intensity");
-    iter_ring = sensor_msgs::PointCloud2Iterator<uint16_t >(cloud, "ring");
-    iter_time = sensor_msgs::PointCloud2Iterator<float >(cloud, "time");*/
+  cloud.height = config_.init_height;
+  cloud.width = config_.init_width;
 }
 
 
@@ -41,17 +35,14 @@ void VelodyneContainerOrganized::addPoint(float x,
      * To keep the right ordering, the filtered values are set to
      * NaN.
      */
-  if (pointInRange(distance))
-  {
+  if (pointInRange(distance)) {
     *(*iter_x + ring) = x;
     *(*iter_y + ring) = y;
     *(*iter_z + ring) = z;
     *(*iter_intensity + ring) = intensity;
     *(*iter_ring + ring) = ring;
     *(*iter_time + ring) = time;
-  }
-  else
-  {
+  } else {
     *(*iter_x + ring) = nanf("");
     *(*iter_y + ring) = nanf("");
     *(*iter_z + ring) = nanf("");

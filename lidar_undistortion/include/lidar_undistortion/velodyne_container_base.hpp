@@ -38,6 +38,8 @@
 #include <string>
 #include <algorithm>
 #include <cstdarg>
+#include "lidar_undistortion/velodyne_point.hpp"
+#include <pcl/point_cloud.h>
 
 namespace velodyne {
 
@@ -69,7 +71,12 @@ struct VelodyneContainerConfig {
 
 class VelodyneContainerBase {
 public:
+  using VelodyneCloud = pcl::PointCloud<velodyne::PointXYZIRT>;
+public:
   VelodyneContainerBase() = default;
+  VelodyneContainerBase(const VelodyneContainerConfig& cfg) : config_(cfg) {
+
+  }
   virtual ~VelodyneContainerBase() = default;
 
 
@@ -89,6 +96,8 @@ public:
   virtual void newLine() {
 
   }
+
+  virtual VelodyneCloud::Ptr getCloud() = 0;
 
 
   virtual bool pointInRange(float range) const {

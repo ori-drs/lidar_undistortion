@@ -20,8 +20,7 @@ public:
                         VelodyneCloud& cloud)
   {
     // process each packet provided by the driver
-    for (size_t i = 0; i < scan.packets.size(); ++i)
-    {
+    for (size_t i = 0; i < scan.packets.size(); ++i) {
       raw_data_.unpack(scan.packets[i], org_cloud_, scan.header.stamp.toNSec());
     }
   }
