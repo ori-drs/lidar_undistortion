@@ -4,11 +4,12 @@ using namespace velodyne;
 
 void VelodyneContainerOrganized::newLine()
 {
-  iter_x = iter_x + config_.init_width;
-  iter_y = iter_y + config_.init_width;
-  iter_z = iter_z + config_.init_width;
-  iter_ring = iter_ring + config_.init_width;
-  iter_intensity = iter_intensity + config_.init_width;
+  *iter_x =         *iter_x + config_.init_width;
+  *iter_y =         *iter_y + config_.init_width;
+  *iter_z =         *iter_z + config_.init_width;
+  *iter_ring =      *iter_ring + config_.init_width;
+  *iter_intensity = *iter_intensity + config_.init_width;
+  *iter_time = *iter_time + config_.init_width;
   ++cloud.height;
 }
 
@@ -31,7 +32,8 @@ void VelodyneContainerOrganized::addPoint(float x,
                                           uint16_t ring,
                                           uint16_t azimuth,
                                           float distance,
-                                          float intensity, float time)
+                                          float intensity,
+                                          uint64_t time)
 {
   /** The laser values are not ordered, the organized structure
      * needs ordered neighbour points. The right order is defined
@@ -41,19 +43,21 @@ void VelodyneContainerOrganized::addPoint(float x,
      */
   if (pointInRange(distance))
   {
-    *(iter_x+ring) = x;
-    *(iter_y+ring) = y;
-    *(iter_z+ring) = z;
-    *(iter_intensity+ring) = intensity;
-    *(iter_ring+ring) = ring;
+    *(*iter_x + ring) = x;
+    *(*iter_y + ring) = y;
+    *(*iter_z + ring) = z;
+    *(*iter_intensity + ring) = intensity;
+    *(*iter_ring + ring) = ring;
+    *(*iter_time + ring) = time;
   }
   else
   {
-    *(iter_x+ring) = nanf("");
-    *(iter_y+ring) = nanf("");
-    *(iter_z+ring) = nanf("");
-    *(iter_intensity+ring) = nanf("");
-    *(iter_ring+ring) = ring;
+    *(*iter_x + ring) = nanf("");
+    *(*iter_y + ring) = nanf("");
+    *(*iter_z + ring) = nanf("");
+    *(*iter_intensity + ring) = nanf("");
+    *(*iter_ring + ring) = ring;
+    *(*iter_time + ring) = time;
   }
 }
 

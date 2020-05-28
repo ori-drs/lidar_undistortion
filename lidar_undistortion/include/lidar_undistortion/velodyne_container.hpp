@@ -82,7 +82,7 @@ public:
                 uint16_t azimuth,
                 float distance,
                 float intensity,
-                float time) override;
+                uint64_t time) override;
 
   bool pointInRange(float distance) const override {
     return distance > 0;

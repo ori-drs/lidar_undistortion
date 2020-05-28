@@ -33,31 +33,32 @@
 #pragma once
 
 #include "lidar_undistortion/velodyne_container_base.hpp"
+#include "lidar_undistortion/velodyne_point.hpp"
 #include <sensor_msgs/point_cloud2_iterator.h>
 #include <string>
 #include <pcl/point_cloud.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 
 namespace velodyne {
 
-class VelodyneContainerOrganized : public velodyne::VelodyneContainerBase
-{
+class VelodyneContainerOrganized : public velodyne::VelodyneContainerBase {
 public:
-  // using VelodyneCloud = pcl::PointCloud<velodyne_pointcloud::PointXYZIR>;
-  using VelodyneCloud = sensor_msgs::PointCloud2;
+  using VelodyneCloud = pcl::PointCloud<velodyne::PointXYZIRT>;
 
 public:
-
-
   VelodyneContainerOrganized(const VelodyneContainerConfig& cfg) :
-    iter_x(cloud, "x"),
-    iter_y(cloud, "y"),
-    iter_z(cloud, "z"),
-    iter_intensity(cloud, "intensity"),
-    iter_ring(cloud, "ring"),
     config_(cfg)
   {
+    VelodyneCloud vc;
+    pcl::toROSMsg(vc, cloud);
 
+    iter_x          = std::make_unique<sensor_msgs::PointCloud2Iterator<float>> (cloud, "x");
+    iter_y          = std::make_unique<sensor_msgs::PointCloud2Iterator<float>> (cloud, "y");
+    iter_z          = std::make_unique<sensor_msgs::PointCloud2Iterator<float>> (cloud, "z");
+    iter_intensity  = std::make_unique<sensor_msgs::PointCloud2Iterator<float>> (cloud, "intensity");
+    iter_ring       = std::make_unique<sensor_msgs::PointCloud2Iterator<uint16_t>> (cloud, "ring");
+    iter_time       = std::make_unique<sensor_msgs::PointCloud2Iterator<uint32_t>> (cloud, "time");
   }
 
   VelodyneContainerOrganized() : VelodyneContainerOrganized(VelodyneContainerConfig()) {
@@ -84,19 +85,21 @@ public:
                 uint16_t azimuth,
                 float distance,
                 float intensity,
-                float time) override;
+                uint64_t time) override;
 
   virtual bool pointInRange(float distance) {
     return distance > 0;
   }
 
 private:
-  VelodyneCloud cloud;
-  sensor_msgs::PointCloud2Iterator<float> iter_x;
-  sensor_msgs::PointCloud2Iterator<float> iter_y;
-  sensor_msgs::PointCloud2Iterator<float> iter_z;
-  sensor_msgs::PointCloud2Iterator<float> iter_intensity;
-  sensor_msgs::PointCloud2Iterator<uint16_t> iter_ring;
+  sensor_msgs::PointCloud2 cloud;
+
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>   > iter_x;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>   > iter_y;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>   > iter_z;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>   > iter_intensity;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<uint16_t>> iter_ring;
+  std::unique_ptr<sensor_msgs::PointCloud2Iterator<uint32_t>> iter_time;
 
   VelodyneContainerConfig config_;
 

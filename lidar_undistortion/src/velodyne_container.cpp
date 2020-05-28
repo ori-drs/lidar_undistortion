@@ -10,7 +10,7 @@ void VelodyneContainer::addPoint(float x,
                                  uint16_t /*azimuth*/,
                                  float /*distance*/,
                                  float intensity,
-                                 float time)
+                                 uint64_t time)
 {
   // convert polar coordinates to Euclidean XYZ
   velodyne::PointXYZIRT point;

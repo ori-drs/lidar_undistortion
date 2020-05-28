@@ -84,7 +84,7 @@ public:
                         const uint16_t azimuth,
                         const float distance,
                         const float intensity,
-                        const float time) = 0;
+                        const uint64_t time) = 0;
 
   virtual void newLine() {
 
