@@ -23,6 +23,17 @@ public:
     cfg.view_direction = 0;
     cfg.view_width = 2*M_PI;
     raw_data_.setup(cfg);
+
+    velodyne::VelodyneContainerConfig vc_cfg;
+
+    vc_cfg.init_height = H;
+    vc_cfg.init_width = W;
+    vc_cfg.is_dense = false;
+    vc_cfg.max_range = cfg.max_range;
+    vc_cfg.min_range = cfg.min_range;
+    vc_cfg.scans_per_packet = raw_data_.scansPerPacket();
+
+    org_cloud_.setup(vc_cfg);
   }
 
   void scanToPointCloud(const velodyne_msgs::VelodyneScan& scan,
@@ -32,21 +43,24 @@ public:
     for (size_t i = 0; i < scan.packets.size(); ++i) {
       raw_data_.unpack(scan.packets[i], org_cloud_, scan.header.stamp.toNSec());
     }
-
     auto cloud_ptr = org_cloud_.getCloud();
     cloud = *cloud_ptr;
+    pivot_offset = org_cloud_.getPivot();
   }
 
   void convert(const VelodyneCloud& pc,
                cv::Mat& ranges,
                cv::Mat& altitudes,
-               cv::Mat& azimuths) override;
+               cv::Mat& azimuths,
+               cv::Mat& intensities,
+               cv::Mat& reflectivities) override;
 
 private:
   int W;
   int H;
   velodyne::VelodyneContainerOrganized org_cloud_;
   velodyne::RawData raw_data_;
+  size_t pivot_offset = 0;
 };
 
 }

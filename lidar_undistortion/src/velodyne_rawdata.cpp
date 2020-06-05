@@ -235,7 +235,7 @@ void RawData::unpack(const velodyne_msgs::VelodynePacket &pkt,
                      const uint64_t& scan_start_time)
 {
   using velodyne_pointcloud::LaserCorrection;
-  ROS_DEBUG_STREAM("Received packet, time: " << pkt.stamp);
+  ROS_DEBUG_STREAM("Received packet, time: " << pkt.stamp.toNSec());
 
   /** special parsing for the VLP16 **/
   if (calibration_.num_lasers == 16) {
@@ -416,7 +416,7 @@ void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt,
   const raw_packet_t *raw = (const raw_packet_t *) &pkt.data[0];
 
   for (int block = 0; block < BLOCKS_PER_PACKET; block++) {
-    std::cerr << "Block: " << block << std::endl;
+    //std::cerr << "Block: " << block << std::endl;
 
     // ignore packets with mangled or otherwise different contents
     if (UPPER_BANK != raw->blocks[block].header) {
@@ -453,9 +453,9 @@ void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt,
     }
 
     for (int firing=0, k=0; firing < VLP16_FIRINGS_PER_BLOCK; firing++){
-      std::cerr << "Firing: " << firing << std::endl;
+      //std::cerr << "Firing: " << firing << std::endl;
       for (int dsr=0; dsr < VLP16_SCANS_PER_FIRING; dsr++, k+=RAW_SCAN_SIZE){
-        std::cerr << "DSR: " << dsr << std::endl;
+        //std::cerr << "DSR: " << dsr << std::endl;
         velodyne_pointcloud::LaserCorrection &corrections = calibration_.laser_corrections[dsr];
 
         /** Position Calculation */
@@ -573,11 +573,10 @@ void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt,
           intensity = (intensity > max_intensity) ? max_intensity : intensity;
 
           uint64_t time = 0;
-          std::cerr << timing_offsets.size() << std::endl;
           if (timing_offsets.size())
             time = static_cast<uint64_t>(timing_offsets[block][firing * 16 + dsr]*1e9)
                 + static_cast<uint64_t>(time_diff_start_to_this_packet);
-          std::cerr << "data.addPoint("<<x_coord<<", "<<y_coord<<", " << z_coord << ", " << corrections.laser_ring << ", " << azimuth_corrected << ", " << distance << ", "<< intensity << ", " << time << ")" << std::endl;
+          //std::cerr << "[" << u++ << "]" << " data.addPoint("<<x_coord<<", "<<y_coord<<", " << z_coord << ", " << corrections.laser_ring << ", " << azimuth_corrected << ", " << distance << ", "<< intensity << ", " << time << ")" << std::endl;
           data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, azimuth_corrected, distance, intensity, time);
         } else {
           ROS_WARN_STREAM("NOT ANGLE");

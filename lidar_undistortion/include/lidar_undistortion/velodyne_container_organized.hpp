@@ -44,30 +44,13 @@ namespace velodyne {
 
 class VelodyneContainerOrganized : public velodyne::VelodyneContainerBase {
 public:
-  using VelodyneCloud = pcl::PointCloud<velodyne::PointXYZIRT>;
+  using VelodynePoint = velodyne::PointXYZIRT;
+  using VelodyneCloud = pcl::PointCloud<VelodynePoint>;
 
 public:
-  VelodyneContainerOrganized(const VelodyneContainerConfig& cfg) :
-    config_(cfg)
+  VelodyneContainerOrganized(const VelodyneContainerConfig& cfg)
   {
-    VelodyneCloud vc;
-    pcl::toROSMsg(vc, cloud);
-    cloud.height = config_.init_height;
-    cloud.width = config_.init_width;
-    cloud.data.resize(cloud.point_step * cloud.width * cloud.height);
-    cloud.is_dense = config_.is_dense;
-    std::cerr << "row_step: " << cloud.row_step << std::endl;
-    std::cerr << "point_step: " << cloud.point_step << std::endl;
-    std::cerr << "width: " << cloud.width << std::endl;
-    std::cerr << "height: " << cloud.height << std::endl;
-
-    iter_x          = std::make_unique<sensor_msgs::PointCloud2Iterator<float>> (cloud, "x");
-    iter_y          = std::make_unique<sensor_msgs::PointCloud2Iterator<float>> (cloud, "y");
-    iter_z          = std::make_unique<sensor_msgs::PointCloud2Iterator<float>> (cloud, "z");
-    iter_intensity  = std::make_unique<sensor_msgs::PointCloud2Iterator<float>> (cloud, "intensity");
-    iter_ring       = std::make_unique<sensor_msgs::PointCloud2Iterator<uint16_t>> (cloud, "ring");
-    iter_time       = std::make_unique<sensor_msgs::PointCloud2Iterator<uint32_t>> (cloud, "time");
-
+    setup(cfg);
   }
 
   VelodyneContainerOrganized() : VelodyneContainerOrganized(VelodyneContainerConfig()) {
@@ -101,24 +84,40 @@ public:
   }
 
   VelodyneCloud::Ptr getCloud() override {
-    VelodyneCloud::Ptr pc = boost::make_shared<VelodyneCloud>();
-    pcl::fromROSMsg(cloud, *pc);
-    return pc;
+    //for(auto& idx : cloud_indices){
+    //  std::cerr << "cloud_indices[" << i++ << "] = " << idx << std::endl;
+    //}
+    //std::cerr << "-------------------" << std::endl;
+    cloud_indices = std::vector<size_t>(config_.init_height, 0);
+    size_t offset_count = 0;
+    for(auto it = azimuths.begin(); it != std::prev(azimuths.end()); ++it, ++offset_count)
+    {
+      if(*it > *std::next(it)){
+        raw_offset = offset_count;
+      }
+    }
+
+    azimuths.clear();
+
+    return cloud;
+  }
+
+  size_t getPivot(){
+    return raw_offset;
   }
 
 private:
-  sensor_msgs::PointCloud2 cloud;
+  VelodyneCloud::Ptr cloud;
+  VelodynePoint pt;
+  std::vector<size_t> cloud_indices;
+  std::vector<uint16_t> azimuths;
+  size_t raw_offset = 0;
 
-  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>> iter_x;
-  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>> iter_y;
-  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>> iter_z;
-  std::unique_ptr<sensor_msgs::PointCloud2Iterator<float>> iter_intensity;
-  std::unique_ptr<sensor_msgs::PointCloud2Iterator<uint16_t>> iter_ring;
-  std::unique_ptr<sensor_msgs::PointCloud2Iterator<uint32_t>> iter_time;
 
   VelodyneContainerConfig config_;
 
 
 };
+
 } /* namespace velodyne_pointcloud */
 

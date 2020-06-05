@@ -15,13 +15,15 @@ public:
   using VelodyneCloud = VelodyneImageConverter::VelodyneCloud;
 public:
   VelodyneImageConverterNode() = delete;
-  VelodyneImageConverterNode(ros::NodeHandle& nh) : nh_(nh), img_transp_(nh_), img_cvt_(1024,64)
+  VelodyneImageConverterNode(ros::NodeHandle& nh) : nh_(nh), img_transp_(nh_), img_cvt_(1824,16)
   {
     cloud_sub_ = nh_.subscribe("/velodyne_packets",10, &VelodyneImageConverterNode::velodyneCloudCallback, this);
     img_pub_ = img_transp_.advertise("velodyne_image", 1);
-    range_in_.create(16, 1800, CV_64FC1);
-    azimuth_in_.create(16, 1800, CV_64FC1);
-    altitude_in_.create(16, 1800, CV_64FC1);
+    range_in_.create(128, 1824, CV_64FC1);
+    azimuth_in_.create(128, 1824, CV_64FC1);
+    altitude_in_.create(128, 1824, CV_64FC1);
+    intensity_in_.create(128, 1824, CV_64FC1);
+    reflectivity_in_.create(128, 1824, CV_64FC1);
     ros::spin();
   }
 
@@ -29,11 +31,11 @@ public:
   {
     // TODO some conversion from msg to cloud_in_
     img_cvt_.scanToPointCloud(*msg, cloud_in_);
-    //img_cvt_.convert(cloud_in_, range_in_, altitude_in_, azimuth_in_);
-    //cv::Mat range_mono(range_in_.rows, range_in_.cols, CV_8UC1);
-    //img_cvt_.rangeImageToMono(range_in_, range_mono);
-    //sensor_msgs::ImagePtr img_msg = cv_bridge::CvImage(msg->header, "mono8", range_mono).toImageMsg();
-    //img_pub_.publish(img_msg);
+    img_cvt_.convert(cloud_in_, range_in_, altitude_in_, azimuth_in_, intensity_in_, reflectivity_in_);
+    cv::Mat range_mono(range_in_.rows, range_in_.cols, CV_8UC1);
+    img_cvt_.floatImageToMono(range_in_, range_mono);
+    sensor_msgs::ImagePtr img_msg = cv_bridge::CvImage(msg->header, "mono8", range_mono).toImageMsg();
+    img_pub_.publish(img_msg);
   }
 private:
   ros::NodeHandle& nh_;
@@ -45,11 +47,13 @@ private:
   cv::Mat range_in_;
   cv::Mat azimuth_in_;
   cv::Mat altitude_in_;
+  cv::Mat intensity_in_;
+  cv::Mat reflectivity_in_;
 
 };
 
 int main(int argc, char** argv){
-  ros::init(argc, argv, "ouster_image_converter");
+  ros::init(argc, argv, "velodyne_image_converter");
   ros::NodeHandle nh;
   VelodyneImageConverterNode node(nh);
   return 0;

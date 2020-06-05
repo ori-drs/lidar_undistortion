@@ -17,22 +17,24 @@ public:
   virtual void convert(const pcl::PointCloud<PointT>& pc,
                        cv::Mat& ranges,
                        cv::Mat& altitudes,
-                       cv::Mat& azimuths) = 0;
+                       cv::Mat& azimuths,
+                       cv::Mat& intensities,
+                       cv::Mat& reflectivities) = 0;
 
-  virtual void rangeImageToMono(const cv::Mat& range_in,
-                                cv::Mat& range_out,
-                                const double max_range = 30.0) const
+  virtual void floatImageToMono(const cv::Mat& img_in,
+                                cv::Mat& img_out,
+                                const double max_val = 30.0) const
   {
     cv::MatConstIterator_<double> img_it;
     cv::MatIterator_<uchar> out_it;
     cv::MatConstIterator_<double> end;
-    for(img_it = range_in.begin<double>(),
-        end = range_in.end<double>(),
-        out_it = range_out.begin<uchar>();
+    for(img_it = img_in.begin<double>(),
+        end = img_in.end<double>(),
+        out_it = img_out.begin<uchar>();
         img_it != end; ++img_it, ++out_it)
     {
-      // cap at 30 m and convert into char
-      (*out_it) = static_cast<uchar>(255.0 * std::min(*img_it, max_range) / max_range);
+      // for range images, cap at 30 m by default and convert into char
+      (*out_it) = static_cast<uchar>(255.0 * std::min(*img_it, max_val) / max_val);
     }
   }
 protected:
@@ -54,7 +56,7 @@ protected:
     * \f$(x, y, z)\f$ into polar coordinates \f$(r, \theta, \phi)\f$, which
     * correspond to range (in mm), beam altitude and azimuth angles (in radians),
     * respectively.
-    * @param[in] cartesian vector in cartesina coordinates (in meters)
+    * @param[in] cartesian vector in cartesian coordinates (in meters)
     * @return a vector representing range, altitude and azimuth angles.
     */
    virtual Eigen::Vector3d cartesianToPolar(const Eigen::Vector3d& cartesian) {

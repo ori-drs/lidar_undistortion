@@ -16,24 +16,9 @@ public:
   void convert(const OusterCloud& pc,
                cv::Mat& ranges,
                cv::Mat& altitudes,
-               cv::Mat& azimuths) override;
-
-  void rangeImageToMono(const cv::Mat& range_in,
-                        cv::Mat& range_out,
-                        const double max_range = 30.0) const
-  {
-    cv::MatConstIterator_<double> img_it;
-    cv::MatIterator_<uchar> out_it;
-    cv::MatConstIterator_<double> end;
-    for(img_it = range_in.begin<double>(),
-        end = range_in.end<double>(),
-        out_it = range_out.begin<uchar>();
-        img_it != end; ++img_it, ++out_it)
-    {
-      // cap at 30 m and convert into char
-      (*out_it) = static_cast<uchar>(255.0 * std::min(*img_it, max_range) / max_range);
-    }
-  }
+               cv::Mat& azimuths,
+               cv::Mat& intensities,
+               cv::Mat& reflectivities) override;
 
 private:
   int W;
