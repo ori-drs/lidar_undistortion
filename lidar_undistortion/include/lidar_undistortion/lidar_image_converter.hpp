@@ -37,33 +37,74 @@ public:
       (*out_it) = static_cast<uchar>(255.0 * std::min(*img_it, max_val) / max_val);
     }
   }
-protected:
+
   /**
-   * @brief cartesianToPolar
-   * @param cartesian
-   * @return
+   * @brief cartesianToSpherical converts a vector \f$ \mathbf{v} = (x, y, z)\f$
+   * expressed Cartesian coordinates into a vector \f$\mathbf{s} = (r, \theta,
+   * \phi)\f$ expressed in spherical coordinates according to the
+   * ISO 80000-2:2009 standard
+   * (see https://en.wikipedia.org/wiki/Spherical_coordinate_system#Conventions)
+   * @param[in] cartesian vector in cartesian coordinates (in meters)
+   * @param[out] spherical vector representing range (meters),
+   * azimuth (rad) and altitude (rad) angles according to the ISO 80000-2:2009
+   * standard
    * @sa cartesianToPolar(const Eigen::Vector3d& cartesian)
    */
-   virtual void cartesianToPolar(const Eigen::Vector3d& cartesian,
-                    Eigen::Vector3d& polar) {
-    polar << cartesian.norm(),
-             std::atan2(cartesian(1),cartesian(0)),
-             std::acos(cartesian(2) / cartesian.norm());
+   virtual void cartesianToSpherical(const Eigen::Vector3d& cartesian,
+                                        Eigen::Vector3d& spherical) const
+   {
+    double R = cartesian.norm();
+    if(R == 0){
+      spherical = Eigen::Vector3d::Zero();
+      return;
+    }
+    double phi = std::atan2(cartesian(1),cartesian(0));
+    spherical << cartesian.norm(),                           // range
+                 std::acos(cartesian(2) / R),                // theta
+                 (std::isnan(phi) ? 0 : phi);                // phi
   }
 
    /**
     * @brief cartesianToPolar converts a vector in Cartesian coordinates
-    * \f$(x, y, z)\f$ into polar coordinates \f$(r, \theta, \phi)\f$, which
-    * correspond to range (in mm), beam altitude and azimuth angles (in radians),
-    * respectively.
-    * @param[in] cartesian vector in cartesian coordinates (in meters)
-    * @return a vector representing range, altitude and azimuth angles.
+    *  into spherical coordinates
+    * @param[in] cartesian
+    * @return spherical
+    * @sa cartesianToSpherical(const Eigen::Vector3d& cartesian,
+                                        Eigen::Vector3d& spherical)
     */
-   virtual Eigen::Vector3d cartesianToPolar(const Eigen::Vector3d& cartesian) {
-     Eigen::Vector3d polar;
-     cartesianToPolar(cartesian, polar);
-     return polar;
+   virtual Eigen::Vector3d cartesianToSpherical(const Eigen::Vector3d& cartesian) const
+   {
+     Eigen::Vector3d spherical;
+     cartesianToSpherical(cartesian, spherical);
+     return spherical;
    }
+
+  /**
+    * @brief sphericalToCartesian converts a a vector \f$\mathbf{s} = (r,
+    * \theta, \phi)\f$ expressed in spherical coordinates according to the
+    * ISO 80000-2:2009 standard into a vector\f$ \mathbf{v} = (x, y, z)\f$
+    * expressed Cartesian coordinates
+    * @param[in] spherical vector representing range (meters),
+    * azimuth (rad) and altitude (rad) angles according to the ISO 80000-2:2009
+    * standard
+    * @param[out] cartesian vector in cartesian coordinates (in meters)
+    * @sa cartesianToSpherical(const Eigen::Vector3d& cartesian,
+                                     Eigen::Vector3d& spherical)
+    */
+   virtual void sphericalToCartesian(const Eigen::Vector3d& spherical,
+                                           Eigen::Vector3d& cartesian) const
+  {
+    double sin_theta = std::sin(spherical(1));
+    double cos_theta = std::cos(spherical(1));
+    double sin_phi = std::sin(spherical(2));
+    double cos_phi = std::cos(spherical(2));
+
+    cartesian(0) = spherical(0) * sin_theta * cos_phi;
+    cartesian(1) = spherical(0) * sin_theta * sin_phi;
+    cartesian(2) = spherical(0) * cos_theta;
+  }
+
+
 
 };
 

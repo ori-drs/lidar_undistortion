@@ -1,9 +1,11 @@
 #include "lidar_undistortion/ouster_undistorter.hpp"
+#include "lidar_undistortion/ouster_image_converter.hpp"
 #include <pcl/io/pcd_io.h>
 
 
 using namespace lidar_undistortion;
-using OusterCloud = pcl::PointCloud<ouster_ros::OS1::PointOS1>;
+using OusterPoint = ouster_ros::OS1::PointOS1;
+using OusterCloud = pcl::PointCloud<OusterPoint>;
 
 void fillWithDistortedPointcloud(OusterCloud& pc);
 void fillWithCorrectedPointCloud(OusterCloud& pc);
@@ -38,6 +40,7 @@ int main(int argc, char** argv){
   pcl::copyPointCloud(oc_input, *oc_output);
 
   OusterCloud oc_expected;
+  OusterImageConverter oic(1024, 64);
 
   fillWithCorrectedPointCloud(oc_expected);
 
@@ -52,6 +55,8 @@ int main(int argc, char** argv){
   double error_sum = 0;
   double before_after_error = 0;
 
+  bool cartesian_to_spherical_check = true;
+
   // compute the error as sum of absolute errors between the 3 coordinates
   for(const auto& point : *oc_output){
     auto point_input = oc_input.points[counter];
@@ -63,6 +68,27 @@ int main(int argc, char** argv){
 
     error_sum = std::abs(point.x - point_expected.x) + std::abs(point.y - point_expected.y) +std::abs(point.z - point_expected.z);
 
+    Eigen::Vector3d spherical = Eigen::Vector3d::Zero();
+    Eigen::Vector3d cartesian;
+    Eigen::Vector3d cartesian_out;
+
+    cartesian << point_input.x, point_input.y, point_input.z;
+    oic.cartesianToSpherical(cartesian, spherical);
+    oic.sphericalToCartesian(spherical, cartesian_out);
+
+
+    cartesian_to_spherical_check &= cartesian.isApprox(cartesian_out, 1e-9);
+
+    if(!cartesian_to_spherical_check){
+      // if the processing fails, we report failure and quit
+      std::cout << "TEST FAILED! Cartesian to Spherical failed" << std::endl;
+      std::cout << cartesian.transpose() << std::endl;
+      std::cout << spherical.transpose() << std::endl;
+      std::cout << cartesian_out.transpose() << std::endl;
+      std::cerr << std::boolalpha << cartesian.isApprox(cartesian_out, 1e-3) << std::endl;
+
+      //return -1;
+    }
   }
 
   // if the sum of all coordinates errors is

@@ -20,7 +20,7 @@ void VelodyneImageConverter::convert(const VelodyneCloud& pc,
       Eigen::Vector3d cartesian;
       Eigen::Vector3d polar;
       cartesian << pt.x, pt.y, pt.z;
-      cartesianToPolar(cartesian, polar);
+      cartesianToSpherical(cartesian, polar);
       // std::cerr << "[" << v << ", " << u  << "] " << std::endl;
         //std::cerr << ranges.cols << " " << ranges.rows << std::endl;
         //std::cerr << altitudes.cols << " " << altitudes.rows << std::endl;

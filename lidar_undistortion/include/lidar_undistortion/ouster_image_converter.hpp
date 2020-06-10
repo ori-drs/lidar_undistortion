@@ -9,7 +9,9 @@ public:
   using OusterPoint = ouster_ros::OS1::PointOS1;
   using OusterCloud = pcl::PointCloud<OusterPoint>;
 
-  OusterImageConverter(int w, int h) : W(w), H(h), pixel_offset_(ouster::OS1::get_px_offset(W)) {
+  OusterImageConverter(int w, int h) :
+    W(w), H(h), pixel_offset_(ouster::OS1::get_px_offset(W))
+  {
 
   }
 
@@ -19,6 +21,30 @@ public:
                cv::Mat& azimuths,
                cv::Mat& intensities,
                cv::Mat& reflectivities) override;
+
+  void cartesianToSpherical(const Eigen::Vector3d& cartesian,
+                            Eigen::Vector3d& spherical) const override
+  {
+    // convert cartesian into ISO convention
+    LidarImageConverter::cartesianToSpherical(cartesian, spherical);
+    // convert from ISO to Ouster convention
+    double theta_ouster = 2*M_PI - spherical(2);
+    double phi_ouster = M_PI_4 - spherical(1);
+    spherical(1) = theta_ouster;
+    spherical(2) = phi_ouster;
+  }
+
+  void sphericalToCartesian(const Eigen::Vector3d &spherical,
+                            Eigen::Vector3d &cartesian) const override
+  {
+    // convert from Ouster to ISO convention
+    double theta_iso = M_PI_4 - spherical(2);
+    double phi_iso = 2*M_PI - spherical(1);
+    Eigen::Vector3d spherical_iso;
+    spherical_iso << spherical(0), theta_iso, phi_iso;
+    // convert from ISO to cartesian
+    LidarImageConverter::sphericalToCartesian(spherical_iso, cartesian);
+  }
 
 private:
   int W;
