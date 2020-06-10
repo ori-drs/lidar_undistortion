@@ -61,10 +61,7 @@ if(${ouster_ros_FOUND})
 
   add_dependencies(ouster_undistortion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-  add_executable(ouster_undistortion_test src/ouster_undistortion_test.cpp
-                                          src/fill_clouds.cpp)
 
-  target_link_libraries(ouster_undistortion_test ouster_undistortion)
 
   add_executable(ouster_image_converter_node src/ouster_image_converter_node.cpp)
   target_link_libraries(ouster_image_converter_node ouster_undistortion ${catkin_LIBRARIES})
@@ -96,8 +93,13 @@ if(${velodyne_pointcloud_FOUND})
   
 endif()
 
-add_executable(pose_buffer_test src/pose_buffer.cpp
-                                src/pose_buffer_test.cpp)
 
+catkin_add_gtest(test_pose_buffer test/pose_buffer_test.cpp)
+target_link_libraries(test_pose_buffer gtest_main lidar_undistortion)
+
+catkin_add_gtest(test_ouster_undistortion test/fill_clouds.cpp
+                                          test/ouster_undistortion_test.cpp)
+
+target_link_libraries(test_ouster_undistortion gtest_main ouster_undistortion)
 
 
