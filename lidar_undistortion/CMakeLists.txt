@@ -6,18 +6,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_package(catkin REQUIRED COMPONENTS std_msgs
-  cv_bridge message_generation image_transport)
+                                        cv_bridge
+                                        message_generation
+                                        image_transport)
 
 find_package(Eigen3)
 find_package(OpenCV REQUIRED COMPONENTS core)
 find_package(PCL REQUIRED COMPONENTS common io)
 
 list(APPEND LIBRARIES_TO_BUILD "lidar_undistortion")
+list(APPEND CATKIN_DEP_TO_ADD "message_runtime")
 set(EXECUTABLES_TO_BUILD "")
 
 find_package(ouster_ros QUIET)
 if(${ouster_ros_FOUND})
   list(APPEND LIBRARIES_TO_BUILD "ouster_undistortion")
+  list(APPEND CATKIN_DEP_TO_ADD ouster_ros)
 else()
   message(WARNING "package ouster_ros not found. Not building ouster_undistortion.")
 endif()
@@ -33,8 +37,9 @@ endif()
 add_message_files(FILES RangeImage.msg)
 generate_messages(DEPENDENCIES std_msgs)
 
-catkin_package(LIBRARIES ${LIBRARIES_TO_BUILD}
-               CATKIN_DEPENDS message_runtime)
+catkin_package(INCLUDE_DIRS include
+               LIBRARIES ${LIBRARIES_TO_BUILD}
+               CATKIN_DEPENDS ${CATKIN_DEP_TO_ADD})
 
 
 
