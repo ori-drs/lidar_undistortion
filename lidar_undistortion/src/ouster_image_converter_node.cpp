@@ -1,4 +1,5 @@
 #include "lidar_undistortion/ouster_image_converter.hpp"
+#include <lidar_undistortion/RangeImage.h>
 #include <ros/publisher.h>
 #include <ros/subscriber.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -20,17 +21,43 @@ public:
     range_img_pub_ = img_transp_.advertise("ouster_range_image", 1);
     intensity_img_pub_ = img_transp_.advertise("ouster_intensity_image",1);
     reflectivity_img_pub_ = img_transp_.advertise("ouster_reflectivity_image",1);
+    range_data_pub_ = nh_.advertise<lidar_undistortion::RangeImage>("ouster_range_data",1);
     range_in_.create(64, 1024, CV_64FC1);
     azimuth_in_.create(64, 1024, CV_64FC1);
     altitude_in_.create(64, 1024, CV_64FC1);
     intensity_in_.create(64, 1024, CV_64FC1);
     reflectivity_in_.create(64, 1024, CV_64FC1);
+    range_msg_.height = 64;
+    range_msg_.width = 1024;
+    range_msg_.ranges.resize(range_msg_.height * range_msg_.width);
+    range_msg_.azimuths.resize(range_msg_.height * range_msg_.width);
+    range_msg_.altitude.resize(range_msg_.height * range_msg_.width);
+
     ros::spin();
   }
 
   void ousterCloudCallback(const sensor_msgs::PointCloud2ConstPtr& msg){
     pcl::fromROSMsg(*msg, cloud_in_);
-    img_cvt_.convert(cloud_in_, range_in_,altitude_in_,azimuth_in_, intensity_in_, reflectivity_in_);
+
+    img_cvt_.convert(cloud_in_,
+                     range_in_,
+                     altitude_in_,
+                     azimuth_in_,
+                     intensity_in_,
+                     reflectivity_in_);
+    // TODO check if there are memory tricks to avoid this deep copy
+    // with a for loop
+    range_msg_.header = msg->header;
+
+    for(size_t i = 0; i < range_msg_.height; i++){
+      for(size_t j = 0; j < range_msg_.width; j++){
+        range_msg_.ranges[i*range_msg_.width + j] = range_in_.at<double>(i,j);
+        range_msg_.azimuths[i*range_msg_.width + j] = azimuth_in_.at<double>(i,j);
+        range_msg_.altitude[i*range_msg_.width + j] = altitude_in_.at<double>(i,j);
+      }
+    }
+    range_data_pub_.publish(range_msg_);
+
     cv::Mat range_mono(range_in_.rows, range_in_.cols, CV_8UC1);
     img_cvt_.floatImageToMono(range_in_, range_mono);
     sensor_msgs::ImagePtr img_msg = cv_bridge::CvImage(msg->header, "mono8", range_mono).toImageMsg();
@@ -50,7 +77,10 @@ private:
   image_transport::Publisher range_img_pub_;
   image_transport::Publisher intensity_img_pub_;
   image_transport::Publisher reflectivity_img_pub_;
+  ros::Publisher range_data_pub_;
   OusterImageConverter img_cvt_;
+  RangeImage range_msg_;
+
   OusterCloud cloud_in_;
   ros::Subscriber cloud_sub_;
 
