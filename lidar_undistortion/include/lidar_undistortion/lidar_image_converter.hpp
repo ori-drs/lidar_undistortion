@@ -23,7 +23,8 @@ public:
 
   virtual void floatImageToMono(const cv::Mat& img_in,
                                 cv::Mat& img_out,
-                                const double max_val = 30.0) const
+                                const double max_val = 30.0,
+                                const double min_val = 0) const
   {
     cv::MatConstIterator_<double> img_it;
     cv::MatIterator_<uchar> out_it;
@@ -34,7 +35,7 @@ public:
         img_it != end; ++img_it, ++out_it)
     {
       // for range images, cap at 30 m by default and convert into char
-      (*out_it) = static_cast<uchar>(255.0 * std::min(*img_it, max_val) / max_val);
+      (*out_it) = static_cast<uchar>(255.0 * std::min(*img_it - min_val, max_val) / max_val);
     }
   }
 

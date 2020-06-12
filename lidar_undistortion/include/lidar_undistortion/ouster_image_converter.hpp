@@ -28,6 +28,8 @@ public:
     // convert cartesian into ISO convention
     LidarImageConverter::cartesianToSpherical(cartesian, spherical);
     // convert from ISO to Ouster convention
+    // theta ouster is azimuth
+    // phi ouster is altitude
     double theta_ouster = 2*M_PI - spherical(2);
     double phi_ouster = M_PI_4 - spherical(1);
     spherical(1) = theta_ouster;
@@ -38,6 +40,8 @@ public:
                             Eigen::Vector3d &cartesian) const override
   {
     // convert from Ouster to ISO convention
+    // theta_iso is is altitude
+    // phi_iso is azimuth
     double theta_iso = M_PI_4 - spherical(2);
     double phi_iso = 2*M_PI - spherical(1);
     Eigen::Vector3d spherical_iso;

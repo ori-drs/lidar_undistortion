@@ -20,8 +20,8 @@ void OusterImageConverter::convert(const OusterCloud& pc,
       cartesian << pt.x, pt.y, pt.z;
       cartesianToSpherical(cartesian, spherical);
       ranges.at<double>(cv::Point(v,u)) = spherical(0);
-      altitudes.at<double>(cv::Point(v,u)) = spherical(1);
-      azimuths.at<double>(cv::Point(v,u)) = spherical(2);
+      azimuths.at<double>(cv::Point(v,u)) = spherical(1);
+      altitudes.at<double>(cv::Point(v,u)) = spherical(2);
       intensities.at<double>(cv::Point(v,u)) = pt.intensity;
       reflectivities.at<double>(cv::Point(v,u)) = pt.reflectivity;
     }
