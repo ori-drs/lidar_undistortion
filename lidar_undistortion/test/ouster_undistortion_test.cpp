@@ -1,14 +1,42 @@
 #include "lidar_undistortion/ouster_undistorter.hpp"
-#include <pcl/io/pcd_io.h>
+#include "lidar_undistortion/ouster_image_converter.hpp"
+#include <gtest/gtest.h>
+#include <random>
 
 
 using namespace lidar_undistortion;
-using OusterCloud = pcl::PointCloud<ouster_ros::OS1::PointOS1>;
+using OusterPoint = ouster_ros::OS1::PointOS1;
+using OusterCloud = pcl::PointCloud<OusterPoint>;
 
 void fillWithDistortedPointcloud(OusterCloud& pc);
 void fillWithCorrectedPointCloud(OusterCloud& pc);
 
-int main(int argc, char** argv){
+TEST(OusterImageConverter, cartesianToSpherical){
+  OusterImageConverter oic(1024, 64);
+  std::random_device rd;
+  std::mt19937_64 gen(rd());
+
+  // randomly generate points in within a cube of 100 x 100 x 100 meters
+  std::uniform_real_distribution<> disr(0, 100);
+
+  for(int i = 0; i < 100; i++){
+    double x = disr(gen);
+    double y = disr(gen);
+    double z = disr(gen);
+
+    Eigen::Vector3d cartesian;
+    Eigen::Vector3d spherical;
+    Eigen::Vector3d cartesian_out;
+    cartesian << x, y, z;
+    oic.cartesianToSpherical(cartesian, spherical);
+    oic.sphericalToCartesian(spherical, cartesian_out);
+    EXPECT_NEAR(cartesian(0), cartesian_out(0), 1e-5);
+    EXPECT_NEAR(cartesian(1), cartesian_out(1), 1e-5);
+    EXPECT_NEAR(cartesian(2), cartesian_out(2), 1e-5);
+  }
+}
+
+TEST(OusterUndistorter, testCloud){
   OusterUndistorter lu(15e9);
 
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
@@ -38,18 +66,14 @@ int main(int argc, char** argv){
   pcl::copyPointCloud(oc_input, *oc_output);
 
   OusterCloud oc_expected;
+  OusterImageConverter oic(1024, 64);
 
   fillWithCorrectedPointCloud(oc_expected);
 
   // finally process the cloud
-  if(!lu.processCloud(oc_output, 1565309877706900736)){
-    // if the processing fails, we report failure and quit
-    std::cout << "TEST FAILED!" << std::endl;
-    return -1;
-  }
+  ASSERT_TRUE(lu.processCloud(oc_output, 1565309877706900736));
 
   size_t counter = 0;
-  double error_sum = 0;
   double before_after_error = 0;
 
   // compute the error as sum of absolute errors between the 3 coordinates
@@ -61,21 +85,22 @@ int main(int argc, char** argv){
                          std::abs(point_input.y - point_expected.y) +
                          std::abs(point_input.z - point_expected.z);
 
-    error_sum = std::abs(point.x - point_expected.x) + std::abs(point.y - point_expected.y) +std::abs(point.z - point_expected.z);
+    EXPECT_NEAR(point.x, point_expected.x, 1e-5);
+    EXPECT_NEAR(point.y, point_expected.y, 1e-5);
+    EXPECT_NEAR(point.z, point_expected.z, 1e-5);
+    Eigen::Vector3d cartesian;
+    Eigen::Vector3d spherical;
+    Eigen::Vector3d cartesian_out;
+    cartesian << point_input.x, point_input.y, point_input.z;
+    oic.cartesianToSpherical(cartesian, spherical);
+    oic.sphericalToCartesian(spherical, cartesian_out);
 
+    // if the processing fails, we report failure and quit
+    EXPECT_TRUE(cartesian.isApprox(cartesian_out, 1e-9))
+      << "TEST FAILED! Cartesian to Spherical failed" << std::endl
+      << cartesian.transpose() << std::endl
+      << spherical.transpose() << std::endl
+      << cartesian_out.transpose() << std::endl;
   }
 
-  // if the sum of all coordinates errors is
-  // more thand 5 mm larger from what we expect, we report failure
-  if(error_sum < 5e-3){
-    std::cout << "TEST PASSED!" << std::endl;
-    std::cout << "ERROR is only " << error_sum
-              << " while before undistortion it was "
-              << before_after_error << "." << std::endl;
-    return 0;
-  } else {
-    std::cout << "Error sum is " << error_sum << " > " << "5e-3" << std::endl;
-    std::cout << "TEST FAILED!" << std::endl;
-    return -1;
-  }
 }

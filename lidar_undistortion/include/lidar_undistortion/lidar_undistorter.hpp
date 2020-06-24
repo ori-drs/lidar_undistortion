@@ -39,9 +39,7 @@ public:
   }
 
 
-  virtual ~LidarUndistorter() {
-
-  }
+  virtual ~LidarUndistorter() = default;
 
   virtual void addPose(uint64_t nsec, Eigen::Isometry3d& pose);
 
@@ -92,6 +90,8 @@ protected:
   cv::Mat altitudes_;
   cv::Mat azimuths_;
   cv::Mat ranges_viz_;
+  cv::Mat intensities_;
+  cv::Mat reflectivities_;
 };
 
 

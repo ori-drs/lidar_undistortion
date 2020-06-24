@@ -9,30 +9,45 @@ public:
   using OusterPoint = ouster_ros::OS1::PointOS1;
   using OusterCloud = pcl::PointCloud<OusterPoint>;
 
-  OusterImageConverter(int w, int h) : W(w), H(h), pixel_offset_(ouster::OS1::get_px_offset(W)) {
+  OusterImageConverter(int w, int h) :
+    W(w), H(h), pixel_offset_(ouster::OS1::get_px_offset(W))
+  {
 
   }
 
   void convert(const OusterCloud& pc,
                cv::Mat& ranges,
                cv::Mat& altitudes,
-               cv::Mat& azimuths) override;
+               cv::Mat& azimuths,
+               cv::Mat& intensities,
+               cv::Mat& reflectivities) override;
 
-  void rangeImageToMono(const cv::Mat& range_in,
-                        cv::Mat& range_out,
-                        const double max_range = 30.0) const
+  void cartesianToSpherical(const Eigen::Vector3d& cartesian,
+                            Eigen::Vector3d& spherical) const override
   {
-    cv::MatConstIterator_<double> img_it;
-    cv::MatIterator_<uchar> out_it;
-    cv::MatConstIterator_<double> end;
-    for(img_it = range_in.begin<double>(),
-        end = range_in.end<double>(),
-        out_it = range_out.begin<uchar>();
-        img_it != end; ++img_it, ++out_it)
-    {
-      // cap at 30 m and convert into char
-      (*out_it) = static_cast<uchar>(255.0 * std::min(*img_it, max_range) / max_range);
-    }
+    // convert cartesian into ISO convention
+    LidarImageConverter::cartesianToSpherical(cartesian, spherical);
+    // convert from ISO to Ouster convention
+    // theta ouster is azimuth
+    // phi ouster is altitude
+    double theta_ouster = 2*M_PI - spherical(2);
+    double phi_ouster = M_PI_4 - spherical(1);
+    spherical(1) = theta_ouster;
+    spherical(2) = phi_ouster;
+  }
+
+  void sphericalToCartesian(const Eigen::Vector3d &spherical,
+                            Eigen::Vector3d &cartesian) const override
+  {
+    // convert from Ouster to ISO convention
+    // theta_iso is is altitude
+    // phi_iso is azimuth
+    double theta_iso = M_PI_4 - spherical(2);
+    double phi_iso = 2*M_PI - spherical(1);
+    Eigen::Vector3d spherical_iso;
+    spherical_iso << spherical(0), theta_iso, phi_iso;
+    // convert from ISO to cartesian
+    LidarImageConverter::sphericalToCartesian(spherical_iso, cartesian);
   }
 
 private:

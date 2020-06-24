@@ -90,8 +90,8 @@ void OusterUndistorterROS::reprocessCloudBuffer(){
         corrected_pointcloud_pub_.publish(out_msg);
         DEBUG_PRINTLN("Processed. Cloud size is: " << cloud_history_.size());
 
-        cvt_->convert(*it->second, ranges_, altitudes_, azimuths_);
-        cvt_->rangeImageToMono(ranges_, ranges_viz_);
+        cvt_->convert(*it->second, ranges_, altitudes_, azimuths_, intensities_, reflectivities_);
+        cvt_->floatImageToMono(ranges_, ranges_viz_);
 
         range_img_msg_ = cv_bridge::CvImage(std_msgs::Header(), "mono8", ranges_viz_).toImageMsg();
 
