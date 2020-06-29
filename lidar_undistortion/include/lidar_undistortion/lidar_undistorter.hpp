@@ -32,6 +32,8 @@ public:
     ranges_.create(rings_,beams_, CV_64FC1);
     altitudes_.create(rings_,beams_, CV_64FC1);
     azimuths_.create(rings_,beams_, CV_64FC1);
+    intensities_.create(rings_,beams_, CV_64FC1);
+    reflectivities_.create(rings_,beams_, CV_64FC1);
     ranges_viz_.create(rings_, beams_, CV_8UC1);
   }
 
