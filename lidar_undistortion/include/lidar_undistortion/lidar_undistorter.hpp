@@ -99,31 +99,8 @@ protected:
 
 template <class PointT>
 inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Ptr &pointcloud,
-                                      const uint64_t timestamp) {
-  //std::cerr << "Inside processCloud " << pointcloud.use_count() << std::endl;
-
-  size_t t = 0;
-    for (auto &point : pointcloud->points) {
-      point.intensity = static_cast<double>(times_lut_[t++])*1e-9;
-    }
-
-  bool cond = (timestamp < 1582744450967418000) && (timestamp > 1582744448967418000);
-
-  if(cond){
-    t = 0;
-    for(auto it =times_lut_.begin();
-        it!=times_lut_.end();
-        it = it + 384){
-      std::cerr << "times_lut_[" << t << "] = " << *it <<std::endl;
-                   t = t + 384;
-    }
-
-
-    std::cerr << "++++++++++++++++++++++++++++++++ SAVING" << std::endl;
-    pcl::io::savePCDFile("/home/mcamurri/zurich_orig_" + std::to_string(timestamp) + ".pcd",
-                         *pointcloud);
-  }
-
+                                      const uint64_t timestamp)
+{
   // Assert that the pointcloud is not empty
   if (pointcloud->empty()){
     DEBUG_PRINTLN("Point cloud empty!");
@@ -211,8 +188,6 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
       last_transform_update_t = times_lut_[point_counter];
       uint64_t point_t = timestamp + times_lut_[point_counter];
 
-
-
       Eigen::Isometry3d T_F_S_correct;
       if(!odometry_history_.getInterpolatedPose(point_t, T_F_S_correct)){
         DEBUG_PRINTLN("Couldn't get interpolated point pose for time " << point_t
@@ -240,10 +215,6 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
     // it back into the lidar scan frame
     point = pcl::transformPoint(point, T_S_original__S_corrected.cast<float>());
     point_counter++;
-  }
-  if(cond){
-    pcl::io::savePCDFile("/home/mcamurri/zurich_corr_" + std::to_string(timestamp) + ".pcd",
-                         *pointcloud);
   }
   return true;
 }
