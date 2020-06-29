@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <param name="use_sim_time" value="true" />
+    <include file="$(find rooster_description)/launch/load.launch">
+      <arg name="simulation" value="true" />
+    </include>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+
+    <node name="lidar_undistortion" pkg="lidar_undistortion" type="ouster_undistortion_node" output="screen">
+        <remap from="pointcloud" to="/os1_cloud_node/points" />
+        <param name="pose_topic" value="/vilens/pose" />
+        <param name="base_frame_id" value="base" />
+        <param name="odom_frame_id" value="odom" />
+        <param name="lidar_frame_id" value="os1_lidar" />
+    </node>
+    <!--node name="undistortion_rviz" pkg="rviz" type="rviz" args="-d $(find lidar_undistortion)/config/ouster_undistortion.rviz" output="log" /-->
+    
+</launch>
