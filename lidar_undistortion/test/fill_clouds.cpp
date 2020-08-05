@@ -1,7 +1,7 @@
-#include <ouster_ros/point_os1.h>
+#include <ouster_ros/point.h>
 #include <pcl/point_cloud.h>
 
-using OusterPoint = ouster_ros::OS1::PointOS1;
+using OusterPoint = ouster_ros::Point;
 using OusterCloud = pcl::PointCloud<OusterPoint>;
 
 void fillWithDistortedPointcloud(OusterCloud& pc) {

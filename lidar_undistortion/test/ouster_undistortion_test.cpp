@@ -5,7 +5,7 @@
 
 
 using namespace lidar_undistortion;
-using OusterPoint = ouster_ros::OS1::PointOS1;
+using OusterPoint = ouster_ros::Point;
 using OusterCloud = pcl::PointCloud<OusterPoint>;
 
 void fillWithDistortedPointcloud(OusterCloud& pc);
