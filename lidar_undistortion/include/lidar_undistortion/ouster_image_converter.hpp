@@ -1,16 +1,18 @@
 #pragma once
 #include "lidar_undistortion/lidar_image_converter.hpp"
-#include <ouster_ros/point_os1.h>
-#include <ouster/os1_util.h>
+#include <ouster_ros/point.h>
+#include <ouster/types.h>
 
 namespace lidar_undistortion {
-class OusterImageConverter : public LidarImageConverter<ouster_ros::OS1::PointOS1> {
+class OusterImageConverter : public LidarImageConverter<ouster_ros::Point> {
 public:
-  using OusterPoint = ouster_ros::OS1::PointOS1;
+  using OusterPoint = ouster_ros::Point;
   using OusterCloud = pcl::PointCloud<OusterPoint>;
 
   OusterImageConverter(int w, int h) :
-    W(w), H(h), pixel_offset_(ouster::OS1::get_px_offset(W))
+    // WARNING: getting the default values for a 1024 mode lidar with fw < 1.14
+    // this should be retrieved from the device using the parse_metadata
+    W(w), H(h), pixel_offset_(ouster::sensor::default_data_format(ouster::sensor::lidar_mode::MODE_1024x10).pixel_shift_by_row)
   {
 
   }

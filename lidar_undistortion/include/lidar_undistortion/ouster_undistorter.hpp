@@ -1,17 +1,17 @@
 #pragma once
 #include <Eigen/Dense>
-#include <ouster_ros/point_os1.h>
+#include <ouster_ros/point.h>
 #include "lidar_undistortion/lidar_undistorter.hpp"
 #include "lidar_undistortion/ouster_image_converter.hpp"
 
 namespace lidar_undistortion {
 
-class OusterUndistorter : public LidarUndistorter<ouster_ros::OS1::PointOS1> {
+class OusterUndistorter : public LidarUndistorter<ouster_ros::Point> {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 public:
-  using OusterPoint = ouster_ros::OS1::PointOS1;
+  using OusterPoint = ouster_ros::Point;
   using OusterCloud = pcl::PointCloud<OusterPoint>;
 
 public:
