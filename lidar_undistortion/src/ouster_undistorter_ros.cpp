@@ -1,7 +1,10 @@
 #include "lidar_undistortion/ouster_undistorter_ros.hpp"
 #include <tf2_eigen/tf2_eigen.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <chrono>
 
+typedef std::chrono::high_resolution_clock clock_;
+typedef std::chrono::duration<double, std::ratio<1> > second_;
 
 using namespace lidar_undistortion;
 
@@ -53,9 +56,13 @@ void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2& po
   // Convert the pointcloud to PCL
   OusterCloud::Ptr pointcloud = boost::make_shared<OusterCloud>();
   pcl::fromROSMsg(pointcloud_msg, *pointcloud);
+
+  // std::chrono::time_point<clock_> beg_ = clock_::now();
   if(!processCloud(pointcloud, pointcloud_msg.header.stamp.toNSec())){
     return;
   };
+  // std::cout << "Time for reprocessCloudBuffer: " << std::chrono::duration_cast<second_> (clock_::now() - beg_).count() << std::endl;
+
   // Create the corrected pointcloud ROS msg
   sensor_msgs::PointCloud2 pointcloud_corrected_msg;
   pcl::toROSMsg(*pointcloud, pointcloud_corrected_msg);
@@ -80,10 +87,14 @@ void OusterUndistorterROS::poseCallback(const geometry_msgs::PoseWithCovarianceS
 void OusterUndistorterROS::reprocessCloudBuffer(){
   // if there are point clouds in the buffer, we process them
   if(!cloud_history_.empty() && !odometry_history_.empty()){
-    for(auto it = cloud_history_.lower_bound(odometry_history_.startTime()); it != cloud_history_.end(); ){
+    for(auto it = cloud_history_.begin(); it != cloud_history_.end(); ){
       DEBUG_PRINTLN("Processing cloud " << it->first);
       if(!processCloud(it->second, it->first)){
-        ++it;
+        if (it->first < odometry_history_.startTime()) {
+          it = cloud_history_.erase(it);
+        } else {
+          ++it;
+        }
       } else {
         sensor_msgs::PointCloud2 out_msg;
         pcl::toROSMsg(*it->second, out_msg);

@@ -32,6 +32,10 @@ public:
     buffer_size_ = buffer_size;
   }
 
+  virtual uint64_t getBufferSize() {
+    return buffer_size_;
+  }
+
   virtual bool empty() {
     return pose_history_.empty();
   }
