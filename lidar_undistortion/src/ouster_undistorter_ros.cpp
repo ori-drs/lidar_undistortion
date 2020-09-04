@@ -64,6 +64,8 @@ void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2& po
   //       PointCloud2 msgs. We therefore copy this field directly from the
   //       losing timestamp accuracy.
   pointcloud_corrected_msg.header = pointcloud_msg.header;
+  pointcloud_corrected_msg.header.frame_id = lidar_frame_id_;
+
   // Publish the corrected pointcloud
   corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
 }
@@ -105,4 +107,3 @@ void OusterUndistorterROS::reprocessCloudBuffer(){
     }
   }
 }
-

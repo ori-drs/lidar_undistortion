@@ -96,6 +96,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
   //       PointCloud2 msgs. We therefore copy this field directly from the
   //       losing timestamp accuracy.
   pointcloud_corrected_msg.header = scan_msg->header;
+  pointcloud_corrected_msg.header.frame_id = lidar_frame_id_;
 
   // publish the accumulated cloud message
   corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
