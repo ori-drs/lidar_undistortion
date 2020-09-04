@@ -95,7 +95,8 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
   // NOTE: The header timestamp type in PCL pointclouds is narrower than in
   //       PointCloud2 msgs. We therefore copy this field directly from the
   //       losing timestamp accuracy.
-  pointcloud_corrected_msg.header = scan_msg->header;
+  pointcloud_corrected_msg.header          = scan_msg->header;
+  pointcloud_corrected_msg.header.stamp    = ros::Time().fromNSec(t_start);
   pointcloud_corrected_msg.header.frame_id = lidar_frame_id_;
 
   // publish the accumulated cloud message
