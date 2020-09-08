@@ -21,6 +21,7 @@ namespace lidar_undistortion {
 class VelodyneUndistorterROS : public LidarUndistorter<velodyne::PointXYZIRT> {
 public:
   using VelodyneCloud = pcl::PointCloud<velodyne::PointXYZIRT>;
+  using VelodyneContainer = velodyne::VelodyneContainer<velodyne::PointXYZIRT>;
 public:
   VelodyneUndistorterROS(ros::NodeHandle& nh,
                          ros::NodeHandle& private_nh);
@@ -35,7 +36,7 @@ private:
   VelodyneUndistorterConfig config_;
   velodyne::RawData data_;
   boost::optional<velodyne_pointcloud::Calibration> calibration_;
-  velodyne::VelodyneContainer container_;              ///< input packet point cloud
+  VelodyneContainer container_;              ///< input packet point cloud
   VelodyneCloud pointcloud_;
 
   std::string fixed_frame_id_ = "odom";

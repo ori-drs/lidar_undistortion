@@ -7,6 +7,7 @@
 #include <pcl/point_cloud.h>
 #include "lidar_undistortion/velodyne_rawdata.hpp"
 
+template <class PointT>
 class VelodyneScanConverter {
 public:
   VelodyneScanConverter(ros::NodeHandle& nh){
@@ -22,8 +23,6 @@ public:
     data_.setup(cfg);
   }
 
-
-  template <class PointT>
   void scanToPointCloud(const velodyne_msgs::VelodyneScan& scan_msg,
                         std::vector<int32_t>& times_lut_,
                         pcl::PointCloud<PointT>& cloud) {
@@ -51,6 +50,6 @@ public:
     cloud = pc;
   }
 private:
-  velodyne::VelodyneContainer container_;              ///< input packet point cloud
+  velodyne::VelodyneContainer<PointT> container_;              ///< input packet point cloud
   velodyne::RawData data_;
 };

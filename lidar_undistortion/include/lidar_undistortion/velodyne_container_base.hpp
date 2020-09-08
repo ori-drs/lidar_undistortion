@@ -69,9 +69,10 @@ struct VelodyneContainerConfig {
   }
 };
 
+template<class PointT>
 class VelodyneContainerBase {
 public:
-  using VelodyneCloud = pcl::PointCloud<velodyne::PointXYZIRT>;
+  using VelodyneCloud = pcl::PointCloud<PointT>;
 public:
   VelodyneContainerBase() = default;
   VelodyneContainerBase(const VelodyneContainerConfig& cfg) : config_(cfg) {
@@ -97,7 +98,7 @@ public:
 
   }
 
-  virtual VelodyneCloud::Ptr getCloud() = 0;
+  virtual typename VelodyneCloud::Ptr getCloud() = 0;
 
 
   virtual bool pointInRange(float range) const {

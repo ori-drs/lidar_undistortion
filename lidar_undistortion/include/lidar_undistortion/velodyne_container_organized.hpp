@@ -42,7 +42,7 @@
 
 namespace velodyne {
 
-class VelodyneContainerOrganized : public velodyne::VelodyneContainerBase {
+class VelodyneContainerOrganized : public velodyne::VelodyneContainerBase<velodyne::PointXYZIRT> {
 public:
   using VelodynePoint = velodyne::PointXYZIRT;
   using VelodyneCloud = pcl::PointCloud<VelodynePoint>;
