@@ -75,10 +75,10 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
   // process each packet provided by the driver
 
   int64_t time_start = scan_msg->packets.front().stamp.toNSec();
-  int64_t time_end =  scan_msg->packets.back().stamp.toNSec();
+  int64_t time_end =  scan_msg->header.stamp.toNSec();// scan_msg->packets.back().stamp.toNSec();
   for (size_t next = 0; next < scan_msg->packets.size(); ++next) {
     // append all timings to the lut
-    int32_t v = scan_msg->packets[next].stamp.toNSec() - time_start;
+    int32_t v =   time_start - scan_msg->packets[next].stamp.toNSec();
     std::vector<int32_t> t(data_.scansPerPacket(), v);
     times_lut_.insert(times_lut_.end(), t.begin(), t.end());
 
@@ -86,7 +86,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
     data_.unpack(scan_msg->packets[next], container_, scan_msg->packets[next].stamp.toNSec());
   }
 
-  if(!processCloud(pc, time_start)){
+  if(!processCloud(pc, time_end)){
     return;
   }
 

@@ -77,6 +77,7 @@ if(${velodyne_pointcloud_FOUND})
   add_library(velodyne_undistortion src/velodyne_container.cpp
                                     src/velodyne_container_organized.cpp
                                     src/velodyne_image_converter.cpp
+                                    src/velodyne_scan_converter.cpp
                                     src/velodyne_rawdata.cpp)
 
   target_link_libraries(velodyne_undistortion lidar_undistortion
@@ -98,6 +99,8 @@ if(${velodyne_pointcloud_FOUND})
   
 endif()
 
+
+add_executable(test_ouster_img_converter test/ouster_image_converter_test.cpp)
 
 catkin_add_gtest(test_pose_buffer test/pose_buffer_test.cpp)
 target_link_libraries(test_pose_buffer gtest_main lidar_undistortion)
