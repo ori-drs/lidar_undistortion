@@ -3,10 +3,10 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <velodyne_pointcloud/rawdata.h>
-#include "lidar_undistortion/velodyne_point.hpp"
-#include "lidar_undistortion/velodyne_container.hpp"
-#include "lidar_undistortion/lidar_undistorter.hpp"
-#include "lidar_undistortion/velodyne_rawdata.hpp"
+#include <lidar_undistortion/velodyne_point.hpp>
+#include <lidar_undistortion/velodyne_container.hpp>
+#include <lidar_undistortion/lidar_undistorter.hpp>
+#include <lidar_undistortion/velodyne_rawdata.hpp>
 
 namespace lidar_undistortion {
 
@@ -24,7 +24,7 @@ public:
   using VelodyneContainer = velodyne::VelodyneContainer<velodyne::PointXYZIRT>;
 public:
   VelodyneUndistorterROS(ros::NodeHandle& nh,
-                         ros::NodeHandle& private_nh);
+                         std::string velodyne_calib_file);
   ~VelodyneUndistorterROS() override {
   }
 

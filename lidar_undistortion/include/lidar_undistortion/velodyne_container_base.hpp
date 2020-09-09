@@ -31,13 +31,9 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <tf/transform_listener.h>
-#include <velodyne_msgs/VelodyneScan.h>
-#include <sensor_msgs/point_cloud2_iterator.h>
 #include <Eigen/Dense>
 #include <string>
 #include <algorithm>
-#include <cstdarg>
 #include "lidar_undistortion/velodyne_point.hpp"
 #include <pcl/point_cloud.h>
 

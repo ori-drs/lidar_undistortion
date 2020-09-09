@@ -1,4 +1,4 @@
-#include "lidar_undistortion/velodyne_image_converter.hpp"
+#include "lidar_undistortion_ros/velodyne_image_converter.hpp"
 #include <ros/publisher.h>
 #include <ros/subscriber.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -15,7 +15,7 @@ public:
   using VelodyneCloud = VelodyneImageConverter::VelodyneCloud;
 public:
   VelodyneImageConverterNode() = delete;
-  VelodyneImageConverterNode(ros::NodeHandle& nh) : nh_(nh), img_transp_(nh_), img_cvt_(1824,16)
+  VelodyneImageConverterNode(ros::NodeHandle& nh) : nh_(nh), img_transp_(nh_), img_cvt_(1824,16), scan_cvt_(nh_)
   {
     cloud_sub_ = nh_.subscribe("/velodyne_packets",10, &VelodyneImageConverterNode::velodyneCloudCallback, this);
     img_pub_ = img_transp_.advertise("velodyne_image", 1);
@@ -29,8 +29,9 @@ public:
 
   void velodyneCloudCallback(const velodyne_msgs::VelodyneScanConstPtr& msg)
   {
+    std::vector<int32_t> times_lut;
     // TODO some conversion from msg to cloud_in_
-    img_cvt_.scanToPointCloud(*msg, cloud_in_);
+    scan_cvt_.scanToPointCloud(*msg, times_lut, cloud_in_);
     img_cvt_.convert(cloud_in_, range_in_, altitude_in_, azimuth_in_, intensity_in_, reflectivity_in_);
     cv::Mat range_mono(range_in_.rows, range_in_.cols, CV_8UC1);
     img_cvt_.floatImageToMono(range_in_, range_mono);
@@ -42,6 +43,7 @@ private:
   image_transport::ImageTransport img_transp_;
   image_transport::Publisher img_pub_;
   VelodyneImageConverter img_cvt_;
+  VelodyneScanConverter<velodyne::PointXYZIRT> scan_cvt_;
   ros::Subscriber cloud_sub_;
   VelodyneCloud cloud_in_;
   cv::Mat range_in_;

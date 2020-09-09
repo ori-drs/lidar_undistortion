@@ -1,19 +1,25 @@
 #pragma once
 
-#include "lidar_undistortion/velodyne_point.hpp"
-#include "lidar_undistortion/velodyne_container.hpp"
+#include <lidar_undistortion/velodyne_point.hpp>
+#include <lidar_undistortion/velodyne_container.hpp>
+#include <lidar_undistortion/velodyne_rawdata.hpp>
 
 #include <velodyne_msgs/VelodyneScan.h>
 #include <pcl/point_cloud.h>
-#include "lidar_undistortion/velodyne_rawdata.hpp"
+#include <ros/node_handle.h>
 
 template <class PointT>
 class VelodyneScanConverter {
 public:
   VelodyneScanConverter(ros::NodeHandle& nh){
     velodyne::RawDataConfig cfg;
+    std::string velodyne_calib_file;
 
-    cfg.calibrationFile = data_.getCalibrationFilename(nh);
+    if(!nh.getParam("velodyne_calibration_file", velodyne_calib_file)){
+      ROS_FATAL_STREAM("Could not get calib file");
+    }
+
+    cfg.calibrationFile = velodyne_calib_file;
     cfg.max_range = 100;
     cfg.min_range = 0;
     cfg.model = "VLP16";
@@ -44,10 +50,15 @@ public:
       std::vector<int32_t> t(data_.scansPerPacket(), v);
       times_lut_.insert(times_lut_.end(), t.begin(), t.end());
 
+
+
       // unpack the raw data and append to cloud
-      data_.unpack(scan_msg.packets[next], container_, scan_msg.packets[next].stamp.toNSec());
+      data_.unpack(reinterpret_cast<const velodyne::raw_packet_t*>(&scan_msg.packets[next].data[0]),
+                   scan_msg.packets[next].stamp.toNSec(),
+                   container_,
+                   scan_msg.header.stamp.toNSec());
     }
-    cloud = pc;
+    cloud = *pc;
   }
 private:
   velodyne::VelodyneContainer<PointT> container_;              ///< input packet point cloud

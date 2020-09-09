@@ -44,14 +44,11 @@
 #include <errno.h>
 #include <stdint.h>
 #include <string>
-#include <boost/format.hpp>
 #include <math.h>
 #include <vector>
 
-#include <ros/ros.h>
-#include <velodyne_msgs/VelodyneScan.h>
-#include <velodyne_pointcloud/calibration.h>
 #include "lidar_undistortion/velodyne_container_base.hpp"
+#include "lidar_undistortion/velodyne_calibration.hpp"
 
 namespace velodyne {
 
@@ -157,7 +154,7 @@ public:
    *  @param private_nh private node handle for ROS parameters
    *  @returns an optional calibration
    */
-  std::string getCalibrationFilename(ros::NodeHandle private_nh);
+  //std::string getCalibrationFilename(ros::NodeHandle private_nh);
 
   int numLasers() {
     return calibration_.num_lasers;
@@ -179,7 +176,8 @@ public:
   int setup(const RawDataConfig& config);
 
   template <class PointT>
-  void unpack(const velodyne_msgs::VelodynePacket& pkt,
+  void unpack(const raw_packet_t* raw,
+              const uint64_t& pkt_time,
               velodyne::VelodyneContainerBase<PointT>& data,
               const uint64_t& scan_start_time);
 
@@ -195,7 +193,7 @@ private:
   /**
    * Calibration file
    */
-  velodyne_pointcloud::Calibration calibration_;
+  velodyne_undistortion::Calibration calibration_;
   float sin_rot_table_[ROTATION_MAX_UNITS];
   float cos_rot_table_[ROTATION_MAX_UNITS];
 
@@ -214,7 +212,8 @@ private:
 
   /** add private function to handle the VLP16 **/
   template <class PointT>
-  void unpack_vlp16(const velodyne_msgs::VelodynePacket& pkt,
+  void unpack_vlp16(const raw_packet_t* raw,
+                    const uint64_t& pkt_time,
                     velodyne::VelodyneContainerBase<PointT>& data,
                     const uint64_t scan_start_time);
 };
@@ -225,22 +224,21 @@ private:
    *  @param pc shared pointer to point cloud (points are appended)
    */
 template <class PointT>
-void RawData::unpack(const velodyne_msgs::VelodynePacket &pkt,
+void RawData::unpack(const raw_packet_t* raw,
+                     const uint64_t& pkt_time,
                      velodyne::VelodyneContainerBase<PointT>& data,
                      const uint64_t& scan_start_time)
 {
-  using velodyne_pointcloud::LaserCorrection;
-  ROS_DEBUG_STREAM("Received packet, time: " << pkt.stamp.toNSec());
+  using velodyne_undistortion::LaserCorrection;
+  //ROS_DEBUG_STREAM("Received packet, time: " << pkt_time);
 
   /** special parsing for the VLP16 **/
   if (calibration_.num_lasers == 16) {
-    unpack_vlp16(pkt, data, scan_start_time);
+    unpack_vlp16(raw, pkt_time, data, scan_start_time);
     return;
   }
 
-  int64_t time_diff_start_to_this_packet = (pkt.stamp.toNSec() - scan_start_time);
-
-  const raw_packet_t *raw = (const raw_packet_t *) &pkt.data[0];
+  int64_t time_diff_start_to_this_packet = static_cast<int64_t>(pkt_time - scan_start_time);
 
   for (int i = 0; i < BLOCKS_PER_PACKET; i++) {
 
@@ -394,7 +392,8 @@ void RawData::unpack(const velodyne_msgs::VelodynePacket &pkt,
    *  @param pc shared pointer to point cloud (points are appended)
    */
 template <class PointT>
-void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt,
+void RawData::unpack_vlp16(const raw_packet_t* raw,
+                           const uint64_t& pkt_time,
                            velodyne::VelodyneContainerBase<PointT>& data,
                            const uint64_t scan_start_time)
 {
@@ -407,9 +406,7 @@ void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt,
   float x, y, z;
   float intensity;
 
-  int64_t time_diff_start_to_this_packet = (pkt.stamp.toNSec() - scan_start_time);
-
-  const raw_packet_t *raw = (const raw_packet_t *) &pkt.data[0];
+  int64_t time_diff_start_to_this_packet = (pkt_time - scan_start_time);
 
   for (int block = 0; block < BLOCKS_PER_PACKET; block++) {
     //std::cerr << "Block: " << block << std::endl;
@@ -418,9 +415,9 @@ void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt,
     if (UPPER_BANK != raw->blocks[block].header) {
       // Do not flood the log with messages, only issue at most one
       // of these warnings per minute.
-      ROS_WARN_STREAM_THROTTLE(60, "skipping invalid VLP-16 packet: block "
+      std::cerr << "skipping invalid VLP-16 packet: block "
                                << block << " header value is "
-                               << raw->blocks[block].header);
+                               << raw->blocks[block].header;
       return;                         // bad packet: skip the rest
     }
 
@@ -432,7 +429,7 @@ void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt,
       // some packets contain an angle overflow where azimuth_diff < 0
       if(raw_azimuth_diff < 0)//raw->blocks[block+1].rotation - raw->blocks[block].rotation < 0)
       {
-        ROS_WARN_STREAM_THROTTLE(60, "Packet containing angle overflow, first angle: " << raw->blocks[block].rotation << " second angle: " << raw->blocks[block+1].rotation);
+        std::cerr << "Packet containing angle overflow, first angle: " << raw->blocks[block].rotation << " second angle: " << raw->blocks[block+1].rotation;
         // if last_azimuth_diff was not zero, we can assume that the velodyne's speed did not change very much and use the same difference
         if(last_azimuth_diff > 0){
           azimuth_diff = last_azimuth_diff;
@@ -452,7 +449,7 @@ void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt,
       //std::cerr << "Firing: " << firing << std::endl;
       for (int dsr=0; dsr < VLP16_SCANS_PER_FIRING; dsr++, k+=RAW_SCAN_SIZE){
         //std::cerr << "DSR: " << dsr << std::endl;
-        velodyne_pointcloud::LaserCorrection &corrections = calibration_.laser_corrections[dsr];
+        velodyne_undistortion::LaserCorrection &corrections = calibration_.laser_corrections[dsr];
 
         /** Position Calculation */
         union two_bytes tmp;
@@ -574,8 +571,6 @@ void RawData::unpack_vlp16(const velodyne_msgs::VelodynePacket &pkt,
                 + static_cast<uint64_t>(time_diff_start_to_this_packet);
           //std::cerr << "[" << u++ << "]" << " data.addPoint("<<x_coord<<", "<<y_coord<<", " << z_coord << ", " << corrections.laser_ring << ", " << azimuth_corrected << ", " << distance << ", "<< intensity << ", " << time << ")" << std::endl;
           data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, azimuth_corrected, distance, intensity, time);
-        } else {
-          ROS_WARN_STREAM("NOT ANGLE");
         }
       }
       data.newLine();

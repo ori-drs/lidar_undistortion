@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include "lidar_undistortion/ouster_undistorter_ros.hpp"
+#include "lidar_undistortion_ros/ouster_undistorter_ros.hpp"
 
 int main(int argc, char **argv) {
   // Register with ROS master

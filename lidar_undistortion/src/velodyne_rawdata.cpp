@@ -30,15 +30,13 @@
 #include <fstream>
 #include <math.h>
 
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <angles/angles.h>
-
 #include "lidar_undistortion/velodyne_rawdata.hpp"
 
 using namespace velodyne;
 
-
+constexpr double from_degrees(double degrees){
+  return degrees * M_PI / 180.0;
+}
 
 ////////////////////////////////////////////////////////////////////////
 //
@@ -161,7 +159,7 @@ bool RawData::buildTimings(){
   }
   else{
     timing_offsets.clear();
-    ROS_WARN("Timings not supported for model %s", config_.model.c_str());
+    std::cerr << "Timings not supported for model " << config_.model.c_str() << std::endl;
   }
 
   if (timing_offsets.size()){
@@ -175,46 +173,46 @@ bool RawData::buildTimings(){
     return true;
   }
   else{
-    ROS_WARN("NO TIMING OFFSETS CALCULATED. ARE YOU USING A SUPPORTED VELODYNE SENSOR?");
+    std::cerr << "NO TIMING OFFSETS CALCULATED. ARE YOU USING A SUPPORTED VELODYNE SENSOR?" << std::endl;
   }
   return false;
 }
 
 /** Set up for on-line operation. */
-std::string RawData::getCalibrationFilename(ros::NodeHandle private_nh) {
-
-  std::string calibrationFile = "";
-  // get path to angles.config file for this device
-  if (!private_nh.getParam("calibration", calibrationFile)) {
-    ROS_ERROR_STREAM("No calibration angles specified! Using test values!");
-
-    // have to use something: grab unit test version as a default
-    std::string pkgPath = ros::package::getPath("velodyne_pointcloud");
-    calibrationFile = pkgPath + "/params/64e_utexas.yaml";
-  }
-
-  return calibrationFile;
-}
+//std::string RawData::getCalibrationFilename(ros::NodeHandle private_nh) {
+//
+//  std::string calibrationFile = "";
+//  // get path to angles.config file for this device
+//  if (!private_nh.getParam("calibration", calibrationFile)) {
+//    ROS_ERROR_STREAM("No calibration angles specified! Using test values!");
+//
+//    // have to use something: grab unit test version as a default
+//    std::string pkgPath = ros::package::getPath("velodyne_pointcloud");
+//    calibrationFile = pkgPath + "/params/64e_utexas.yaml";
+//  }
+//
+//  return calibrationFile;
+//}
 
 /** Set up for offline operation */
 int RawData::setup(const RawDataConfig& config) {
   config_ = config;
-  ROS_INFO_STREAM("data ranges to publish: ["
+  std::cout << "data ranges to publish: ["
                   << config_.min_range << ", "
-                  << config_.max_range << "]");
+                  << config_.max_range << "]" << std::endl;
 
-  ROS_INFO_STREAM("correction angles: " << config_.calibrationFile);
+  std::cout << "correction angles: " << config_.calibrationFile << std::endl;
 
   calibration_.read(config_.calibrationFile);
   if (!calibration_.initialized) {
-    ROS_ERROR_STREAM("Unable to open calibration file: " << config_.calibrationFile);
+    std::cerr << "Unable to open calibration file: " << config_.calibrationFile <<std::endl;
     return -1;
   }
   setParameters();
-  ROS_INFO_STREAM("Number of lasers: " << calibration_.num_lasers << ".");
+  std::cout << "Number of lasers: " << calibration_.num_lasers << "." << std::endl;
   // Set up cached values for sin and cos of all the possible headings
   for (uint16_t rot_index = 0; rot_index < ROTATION_MAX_UNITS; ++rot_index) {
-    float rotation = angles::from_degrees(ROTATION_RESOLUTION * rot_index);
+    float rotation = from_degrees(ROTATION_RESOLUTION * rot_index);
     cos_rot_table_[rot_index] = cosf(rotation);
     sin_rot_table_[rot_index] = sinf(rotation);
   }

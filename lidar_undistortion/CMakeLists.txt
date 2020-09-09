@@ -5,109 +5,80 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(catkin REQUIRED COMPONENTS std_msgs
-                                        cv_bridge
-                                        message_generation
-                                        image_transport)
+find_package(catkin REQUIRED COMPONENTS pcl_conversions)
 
 find_package(Eigen3)
 find_package(OpenCV REQUIRED COMPONENTS core)
 find_package(PCL REQUIRED COMPONENTS common io)
 
-list(APPEND LIBRARIES_TO_BUILD "lidar_undistortion")
-list(APPEND CATKIN_DEP_TO_ADD "message_runtime")
+list(APPEND LIBRARIES_TO_BUILD ${PROJECT_NAME})
 set(EXECUTABLES_TO_BUILD "")
 
-find_package(ouster_ros QUIET)
-if(${ouster_ros_FOUND})
+find_package(ouster_client REQUIRED)
+if(${ouster_client_FOUND})
   list(APPEND LIBRARIES_TO_BUILD "ouster_undistortion")
-  list(APPEND CATKIN_DEP_TO_ADD ouster_ros)
+  list(APPEND CATKIN_DEP_TO_ADD ouster_client)
 else()
-  message(WARNING "package ouster_ros not found. Not building ouster_undistortion.")
+  message(WARNING "package ouster_client not found. Not building ouster_undistortion.")
 endif()
 
-find_package(velodyne_pointcloud QUIET)
-if(${velodyne_pointcloud_FOUND})
-  message(STATUS "Package velodyne_pointcloud found. Building velodyne_undistorter.")
-  list(APPEND LIBRARIES_TO_BUILD "velodyne_undistortion")
-else()
-  message(WARNING "package velodyne_pointcloud not found. Not building velodyne_undistortion.")
-endif()
 
-add_message_files(FILES RangeImage.msg)
-generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(INCLUDE_DIRS include
-               LIBRARIES ${LIBRARIES_TO_BUILD}
-               CATKIN_DEPENDS ${CATKIN_DEP_TO_ADD})
+               LIBRARIES ${LIBRARIES_TO_BUILD} velodyne_undistortion
+               CATKIN_DEPENDS ${CATKIN_DEP_TO_ADD}
+               DEPENDS PCL OpenCV)
 
 
 
 include_directories(include ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 
 
-add_library(lidar_undistortion src/pose_buffer.cpp)
+add_library(${PROJECT_NAME} src/pose_buffer.cpp)
 
-if(${ouster_ros_FOUND})
+if(${ouster_client_FOUND})
   message(STATUS "Package ouster_ros found. Building ouster_undistorter.")
-  include_directories(${ouster_ros_INCLUDE_DIRS})
+  include_directories(${ouster_client_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
   add_library(ouster_undistortion src/ouster_undistorter.cpp
                                   src/ouster_image_converter.cpp)
-  target_link_libraries(ouster_undistortion lidar_undistortion
+  target_link_libraries(ouster_undistortion ${PROJECT_NAME}
                                             ${catkin_LIBRARIES}
-                                            ${ouster_ros_LIBRARIES}
+                                            ${ouster_client_LIBRARIES}
                                             ${OpenCV_LIBRARIES})
 
-  add_executable(ouster_undistortion_node src/ouster_undistortion_node.cpp
-                                          src/ouster_undistorter_ros.cpp)
 
-  target_link_libraries(ouster_undistortion_node ouster_undistortion
-                                                 ${catkin_LIBRARIES})
-
-  add_dependencies(ouster_undistortion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-
-
-  add_executable(ouster_image_converter_node src/ouster_image_converter_node.cpp)
-  target_link_libraries(ouster_image_converter_node ouster_undistortion ${catkin_LIBRARIES})
 endif()
 
-if(${velodyne_pointcloud_FOUND})
-  include_directories(${velodyne_pointcloud_INCLUDE_DIRS})
-  add_library(velodyne_undistortion src/velodyne_container.cpp
-                                    src/velodyne_container_organized.cpp
-                                    src/velodyne_image_converter.cpp
-                                    src/velodyne_scan_converter.cpp
-                                    src/velodyne_rawdata.cpp)
+add_library(velodyne_undistortion src/velodyne_container.cpp
+                                  src/velodyne_container_organized.cpp
+                                  src/velodyne_rawdata.cpp
+                                  src/velodyne_calibration.cpp)
 
-  target_link_libraries(velodyne_undistortion lidar_undistortion
-                                              ${catkin_LIBRARIES}
-                                              ${velodyne_pointcloud_LIBRARIES}
-                                              ${OpenCV_LIBRARIES}
-                                              ${PCL_LIBRARIES})
+target_link_libraries(velodyne_undistortion ${catkin_LIBRARIES}
+                                            ${velodyne_pointcloud_LIBRARIES}
+                                            ${OpenCV_LIBRARIES}
+                                            ${PCL_LIBRARIES}
+                                            yaml-cpp)
 
-  add_executable(velodyne_undistortion_node src/velodyne_undistortion_node.cpp
-                                            src/velodyne_undistorter_ros.cpp)
 
-  target_link_libraries(velodyne_undistortion_node velodyne_undistortion
-                                                   ${catkin_LIBRARIES})
-
-  add_executable(velodyne_image_converter_node src/velodyne_image_converter_node.cpp)
-  target_link_libraries(velodyne_image_converter_node velodyne_undistortion
-                                                      ${velodyne_pointcloud_LIBRARIES}
-                                                      ${catkin_LIBRARIES})
-  
-endif()
 
 
 add_executable(test_ouster_img_converter test/ouster_image_converter_test.cpp)
 
-catkin_add_gtest(test_pose_buffer test/pose_buffer_test.cpp)
-target_link_libraries(test_pose_buffer gtest_main lidar_undistortion)
+if(CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(test_pose_buffer test/pose_buffer_test.cpp)
+  target_link_libraries(test_pose_buffer gtest_main ${PROJECT_NAME})
 
-catkin_add_gtest(test_ouster_undistortion test/fill_clouds.cpp
+  catkin_add_gtest(test_ouster_undistortion test/fill_clouds.cpp
                                           test/ouster_undistortion_test.cpp)
 
-target_link_libraries(test_ouster_undistortion gtest_main ouster_undistortion)
+  target_link_libraries(test_ouster_undistortion gtest_main ouster_undistortion)
+endif()
 
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
 
+install(TARGETS ${LIBRARIES_TO_BUILD}
+        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})

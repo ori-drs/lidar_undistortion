@@ -1,5 +1,5 @@
 #include "lidar_undistortion/ouster_image_converter.hpp"
-#include <lidar_undistortion/RangeImage.h>
+#include <lidar_undistortion_msgs/RangeImage.h>
 #include <ros/publisher.h>
 #include <ros/subscriber.h>
 #include <sensor_msgs/PointCloud2.h>
@@ -23,7 +23,7 @@ public:
     reflectivity_img_pub_ = img_transp_.advertise("ouster_reflectivity_image",1);
     azimuth_img_pub_ = img_transp_.advertise("ouster_azimuth_image",1);
     altitude_img_pub_ = img_transp_.advertise("ouster_altitude_image",1);
-    range_data_pub_ = nh_.advertise<lidar_undistortion::RangeImage>("ouster_range_data",1);
+    range_data_pub_ = nh_.advertise<lidar_undistortion_msgs::RangeImage>("ouster_range_data",1);
 
 
     range_in_.create(64, 1024, CV_64FC1);
@@ -106,7 +106,7 @@ private:
 
   ros::Publisher range_data_pub_;
   OusterImageConverter img_cvt_;
-  RangeImage range_msg_;
+  lidar_undistortion_msgs::RangeImage range_msg_;
 
   OusterCloud cloud_in_;
   ros::Subscriber cloud_sub_;

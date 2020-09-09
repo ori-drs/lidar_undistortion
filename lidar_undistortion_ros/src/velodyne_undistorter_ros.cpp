@@ -1,5 +1,5 @@
-#include "lidar_undistortion/velodyne_undistorter_ros.hpp"
-#include "lidar_undistortion/velodyne_container.hpp"
+#include "lidar_undistortion_ros/velodyne_undistorter_ros.hpp"
+#include <lidar_undistortion/velodyne_container.hpp>
 #include <pcl_conversions/pcl_conversions.h>
 #include <yaml-cpp/node/detail/node.h>
 #include <tf2_eigen/tf2_eigen.h>
@@ -8,14 +8,14 @@ using namespace lidar_undistortion;
 using namespace velodyne_pointcloud;
 
 VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh,
-                                               ros::NodeHandle& private_nh)
+                                               std::string velodyne_calib_file)
   : fixed_frame_id_("odom"),
     lidar_frame_id_("velodyne"),
     tf_listener_(tf_buffer_)
 {
   velodyne::RawDataConfig cfg;
 
-  cfg.calibrationFile = data_.getCalibrationFilename(private_nh);
+  cfg.calibrationFile = velodyne_calib_file;
   cfg.max_range = 30;
   cfg.min_range = 0;
   cfg.model = "VLP16";
@@ -30,17 +30,16 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh,
   scan_sub_ = nh.subscribe("/velodyne_packets", 10, &VelodyneUndistorterROS::scanCallback, this);
 
   // Advertise the corrected pointcloud topic
-  corrected_pointcloud_pub_ = private_nh.advertise<sensor_msgs::PointCloud2>(
-        "pointcloud_corrected", 100, false);
+  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>("pointcloud_corrected", 100, false);
 
-  private_nh.param("pose_topic", pose_topic_, pose_topic_);
+  nh.param("pose_topic", pose_topic_, pose_topic_);
 
   pose_sub_ = nh.subscribe(pose_topic_, 100, &VelodyneUndistorterROS::poseCallback, this);
 
   // Read the odom and lidar frame names from ROS params
-  private_nh.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_);
-  private_nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_);
-  private_nh.param("base_frame_id", base_frame_id_, base_frame_id_);
+  nh.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_);
+  nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_);
+  nh.param("base_frame_id", base_frame_id_, base_frame_id_);
 
 
   // retrieve the transform from base to lidar frame
@@ -83,7 +82,11 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
     times_lut_.insert(times_lut_.end(), t.begin(), t.end());
 
     // unpack the raw data and append to cloud
-    data_.unpack(scan_msg->packets[next], container_, scan_msg->packets[next].stamp.toNSec());
+
+    data_.unpack(reinterpret_cast<const velodyne::raw_packet_t*>(&scan_msg->packets[next].data[0]),
+                                                            scan_msg->packets[next].stamp.toNSec(),
+                                                            container_,
+                                                            scan_msg->header.stamp.toNSec());
   }
 
   if(!processCloud(pc, time_end)){
