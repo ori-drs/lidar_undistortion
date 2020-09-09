@@ -5,12 +5,13 @@
 #include <lidar_undistortion/velodyne_point.hpp>
 #include "lidar_undistortion_ros/velodyne_scan_converter.hpp"
 #include <velodyne_msgs/VelodyneScan.h>
+#include <lidar_undistortion/ouster_point.hpp>
 
 namespace lidar_undistortion {
-class VelodyneImageConverter : public LidarImageConverter<velodyne::PointXYZIRT>
+class VelodyneImageConverter : public LidarImageConverter<PointOuster>
 {
 public:
-  using VelodyneCloud = pcl::PointCloud<velodyne::PointXYZIRT>;
+  using VelodyneCloud = pcl::PointCloud<PointOuster>;
 
   VelodyneImageConverter() = default;
 

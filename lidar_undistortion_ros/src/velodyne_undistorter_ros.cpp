@@ -7,24 +7,10 @@
 using namespace lidar_undistortion;
 using namespace velodyne_pointcloud;
 
-VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh,
-                                               std::string velodyne_calib_file)
-  : fixed_frame_id_("odom"),
-    lidar_frame_id_("velodyne"),
-    tf_listener_(tf_buffer_)
+VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh)
+  : tf_listener_(tf_buffer_),
+    velodyne_cvt_(nh)
 {
-  velodyne::RawDataConfig cfg;
-
-  cfg.calibrationFile = velodyne_calib_file;
-  cfg.max_range = 30;
-  cfg.min_range = 0;
-  cfg.model = "VLP16";
-  cfg.view_direction = 0;
-  cfg.view_width = 2*M_PI;
-
-  data_.setup(cfg);
-
-  rings_ = static_cast<uint8_t>(data_.numLasers());
 
   // set full 360 FoV and nominal range
   scan_sub_ = nh.subscribe("/velodyne_packets", 10, &VelodyneUndistorterROS::scanCallback, this);
@@ -32,14 +18,26 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh,
   // Advertise the corrected pointcloud topic
   corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>("pointcloud_corrected", 100, false);
 
-  nh.param("pose_topic", pose_topic_, pose_topic_);
+  if(republish_original_cloud_){
+    original_pointcloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>("pointcloud_original", 100, false);
+  }
+
+  if(!nh.param("pose_topic", pose_topic_, pose_topic_)){
+        ROS_WARN("pose_topic not specified");
+  }
 
   pose_sub_ = nh.subscribe(pose_topic_, 100, &VelodyneUndistorterROS::poseCallback, this);
 
   // Read the odom and lidar frame names from ROS params
-  nh.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_);
-  nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_);
-  nh.param("base_frame_id", base_frame_id_, base_frame_id_);
+  if(!nh.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_)){
+    ROS_WARN("odom_frame_id not specified");
+  }
+  if(!nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)){
+    ROS_WARN("lidar_frame_id not specified");
+  }
+  if(!nh.param("base_frame_id", base_frame_id_, base_frame_id_)){
+    ROS_WARN("base_frame_id not specified");
+  }
 
 
   // retrieve the transform from base to lidar frame
@@ -62,34 +60,27 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh,
 void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::ConstPtr &scan_msg){
   // // Create the corrected pointcloud ROS msg
   sensor_msgs::PointCloud2 pointcloud_corrected_msg;
-  //
-  // beams_ = scan_msg.packets.size();
-  times_lut_.clear();
-  auto pc = container_.getCloud();
-  //
-  // // clear input point cloud to handle this packet
-  pc->points.clear();
-  pc->width = 0;
-  pc->height = 1;
-  // process each packet provided by the driver
+  VelodyneCloud::Ptr pc = boost::make_shared<VelodyneCloud>();
 
-  int64_t time_start = scan_msg->packets.front().stamp.toNSec();
-  int64_t time_end =  scan_msg->header.stamp.toNSec();// scan_msg->packets.back().stamp.toNSec();
-  for (size_t next = 0; next < scan_msg->packets.size(); ++next) {
-    // append all timings to the lut
-    int32_t v =   time_start - scan_msg->packets[next].stamp.toNSec();
-    std::vector<int32_t> t(data_.scansPerPacket(), v);
-    times_lut_.insert(times_lut_.end(), t.begin(), t.end());
+  velodyne_cvt_.scanToPointCloud(*scan_msg, *pc);
+  ros::Time time_start = scan_msg->packets.front().stamp;
 
-    // unpack the raw data and append to cloud
+  if(republish_original_cloud_){
+    sensor_msgs::PointCloud2 pointcloud_original_msg;
+    pcl::toROSMsg(*pc, pointcloud_original_msg);
+    // Copy the pointcloud header correctly
+    // NOTE: The header timestamp type in PCL pointclouds is narrower than in
+    //       PointCloud2 msgs. We therefore copy this field directly from the
+    //       losing timestamp accuracy.
+    pointcloud_original_msg.header          = scan_msg->header;
+    pointcloud_original_msg.header.stamp    = time_start;
+    pointcloud_original_msg.header.frame_id = lidar_frame_id_;
 
-    data_.unpack(reinterpret_cast<const velodyne::raw_packet_t*>(&scan_msg->packets[next].data[0]),
-                                                            scan_msg->packets[next].stamp.toNSec(),
-                                                            container_,
-                                                            scan_msg->header.stamp.toNSec());
+    // publish the accumulated cloud message
+    original_pointcloud_pub_.publish(pointcloud_original_msg);
   }
 
-  if(!processCloud(pc, time_end)){
+  if(!processCloud(pc, time_start.toNSec())){
     return;
   }
 
@@ -99,7 +90,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
   //       PointCloud2 msgs. We therefore copy this field directly from the
   //       losing timestamp accuracy.
   pointcloud_corrected_msg.header          = scan_msg->header;
-  pointcloud_corrected_msg.header.stamp    = ros::Time().fromNSec(time_start);
+  pointcloud_corrected_msg.header.stamp    = time_start;
   pointcloud_corrected_msg.header.frame_id = lidar_frame_id_;
 
   // publish the accumulated cloud message

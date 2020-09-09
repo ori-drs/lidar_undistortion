@@ -8,6 +8,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/core.hpp>
 #include <velodyne_msgs/VelodyneScan.h>
+#include <lidar_undistortion/ouster_point.hpp>
 
 using namespace lidar_undistortion;
 class VelodyneImageConverterNode {
@@ -29,9 +30,8 @@ public:
 
   void velodyneCloudCallback(const velodyne_msgs::VelodyneScanConstPtr& msg)
   {
-    std::vector<int32_t> times_lut;
     // TODO some conversion from msg to cloud_in_
-    scan_cvt_.scanToPointCloud(*msg, times_lut, cloud_in_);
+    scan_cvt_.scanToPointCloud(*msg, cloud_in_);
     img_cvt_.convert(cloud_in_, range_in_, altitude_in_, azimuth_in_, intensity_in_, reflectivity_in_);
     cv::Mat range_mono(range_in_.rows, range_in_.cols, CV_8UC1);
     img_cvt_.floatImageToMono(range_in_, range_mono);
@@ -43,7 +43,7 @@ private:
   image_transport::ImageTransport img_transp_;
   image_transport::Publisher img_pub_;
   VelodyneImageConverter img_cvt_;
-  VelodyneScanConverter<velodyne::PointXYZIRT> scan_cvt_;
+  VelodyneScanConverter<PointOuster> scan_cvt_;
   ros::Subscriber cloud_sub_;
   VelodyneCloud cloud_in_;
   cv::Mat range_in_;

@@ -88,7 +88,9 @@ public:
                         const uint16_t azimuth,
                         const float distance,
                         const float intensity,
-                        const uint64_t time) = 0;
+                        const uint64_t time,
+                        const uint16_t noise,
+                        const uint16_t reflectivity) = 0;
 
   virtual void newLine() {
 

@@ -21,7 +21,9 @@ void VelodyneContainerOrganized::addPoint(float x,
                                           uint16_t azimuth,
                                           float distance,
                                           float intensity,
-                                          uint64_t time)
+                                          uint64_t time,
+                                          const uint16_t noise,
+                                          const uint16_t reflectivity)
 {
   pt.x = x;
   pt.y = y;

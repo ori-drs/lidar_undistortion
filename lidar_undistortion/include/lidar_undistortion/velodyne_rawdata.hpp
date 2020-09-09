@@ -379,7 +379,7 @@ void RawData::unpack(const raw_packet_t* raw,
         if (timing_offsets.size()){
           time = timing_offsets[i][j] + time_diff_start_to_this_packet;
         }
-        data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, raw->blocks[i].rotation, distance, intensity, time);
+        data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, raw->blocks[i].rotation, distance, intensity, time_diff_start_to_this_packet, 0, 0);
       }
     }
     data.newLine();
@@ -429,7 +429,7 @@ void RawData::unpack_vlp16(const raw_packet_t* raw,
       // some packets contain an angle overflow where azimuth_diff < 0
       if(raw_azimuth_diff < 0)//raw->blocks[block+1].rotation - raw->blocks[block].rotation < 0)
       {
-        std::cerr << "Packet containing angle overflow, first angle: " << raw->blocks[block].rotation << " second angle: " << raw->blocks[block+1].rotation;
+        //std::cerr << "Packet containing angle overflow, first angle: " << raw->blocks[block].rotation << " second angle: " << raw->blocks[block+1].rotation;
         // if last_azimuth_diff was not zero, we can assume that the velodyne's speed did not change very much and use the same difference
         if(last_azimuth_diff > 0){
           azimuth_diff = last_azimuth_diff;
@@ -570,7 +570,7 @@ void RawData::unpack_vlp16(const raw_packet_t* raw,
             time = static_cast<uint64_t>(timing_offsets[block][firing * 16 + dsr]*1e9)
                 + static_cast<uint64_t>(time_diff_start_to_this_packet);
           //std::cerr << "[" << u++ << "]" << " data.addPoint("<<x_coord<<", "<<y_coord<<", " << z_coord << ", " << corrections.laser_ring << ", " << azimuth_corrected << ", " << distance << ", "<< intensity << ", " << time << ")" << std::endl;
-          data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, azimuth_corrected, distance, intensity, time);
+          data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, azimuth_corrected, distance, intensity, time_diff_start_to_this_packet, 0, 0);
         }
       }
       data.newLine();

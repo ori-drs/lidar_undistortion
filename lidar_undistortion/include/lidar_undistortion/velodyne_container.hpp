@@ -77,7 +77,7 @@ public:
                 uint16_t azimuth,
                 float distance,
                 float intensity,
-                uint64_t time) override;
+                uint64_t time, const uint16_t noise, const uint16_t reflectivity) override;
 
   bool pointInRange(float distance) const override {
     return distance > 0;
@@ -98,18 +98,20 @@ void VelodyneContainer<PointT>::addPoint(float x,
                                          float z,
                                          uint16_t ring,
                                          uint16_t /*azimuth*/,
-                                         float /*distance*/,
+                                         float distance,
                                          float intensity,
-                                         uint64_t time)
+                                         uint64_t time,
+                                         const uint16_t noise,
+                                         const uint16_t reflectivity)
 {
-  // convert polar coordinates to Euclidean XYZ
   PointT point;
   point.ring = ring;
   point.x = x;
   point.y = y;
   point.z = z;
   point.intensity = intensity;
-  //point.time = time;
+  point.t = time;
+  point.range = static_cast<uint32_t>(distance*1e3); // range is in mm
 
   // append this point to the cloud
   pc->points.push_back(point);
