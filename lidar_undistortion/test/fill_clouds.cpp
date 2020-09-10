@@ -1,6 +1,8 @@
 #include "lidar_undistortion/ouster_point.hpp"
 #include <pcl/point_cloud.h>
 
+using namespace lidar_undistortion;
+
 using OusterPoint = PointOuster;
 using OusterCloud = pcl::PointCloud<OusterPoint>;
 
