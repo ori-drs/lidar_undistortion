@@ -1,4 +1,4 @@
-#include "lidar_undistortion/velodyne_image_converter.hpp"
+#include "lidar_undistortion_ros/velodyne_image_converter.hpp"
 
 using namespace lidar_undistortion;
 

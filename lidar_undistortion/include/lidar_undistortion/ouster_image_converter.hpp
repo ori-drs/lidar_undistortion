@@ -1,12 +1,12 @@
 #pragma once
 #include "lidar_undistortion/lidar_image_converter.hpp"
-#include <ouster_ros/point_os1.h>
+#include "lidar_undistortion/ouster_point.hpp"
 #include <ouster/os1_util.h>
 
 namespace lidar_undistortion {
-class OusterImageConverter : public LidarImageConverter<ouster_ros::OS1::PointOS1> {
+class OusterImageConverter : public LidarImageConverter<PointOuster> {
 public:
-  using OusterPoint = ouster_ros::OS1::PointOS1;
+  using OusterPoint = PointOuster;
   using OusterCloud = pcl::PointCloud<OusterPoint>;
 
   OusterImageConverter(int w, int h) :

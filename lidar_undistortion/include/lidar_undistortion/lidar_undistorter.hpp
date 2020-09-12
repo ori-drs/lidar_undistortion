@@ -79,6 +79,12 @@ public:
     }
   }
 
+  void setReprocessClouds(const bool reprocess_clouds) {
+    reprocess_clouds_ = reprocess_clouds;
+  }
+
+  bool getReprocessClouds() { return reprocess_clouds_; }
+
 protected:
   Eigen::Isometry3d base_to_lidar_ = Eigen::Isometry3d::Identity();
   CloudHistory cloud_history_;
@@ -94,6 +100,7 @@ protected:
   cv::Mat ranges_viz_;
   cv::Mat intensities_;
   cv::Mat reflectivities_;
+  bool reprocess_clouds_ = true;
 };
 
 
@@ -231,6 +238,11 @@ inline void LidarUndistorter<PointT>::addPose(uint64_t nsec, Eigen::Isometry3d &
 
 template <class PointT>
 inline void LidarUndistorter<PointT>::reprocessCloudBuffer(){
+  if (!reprocess_clouds_) {
+    if (!cloud_history_.empty()) { cloud_history_.clear(); }
+    return;
+  }
+
   // if there are point clouds in the buffer, we process them
   if(!cloud_history_.empty() && !odometry_history_.empty()){
     for(auto it = cloud_history_.lower_bound(odometry_history_.startTime()); it != cloud_history_.end(); ){

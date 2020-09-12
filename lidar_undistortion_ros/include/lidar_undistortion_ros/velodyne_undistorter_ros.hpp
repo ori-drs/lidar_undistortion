@@ -3,10 +3,12 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <velodyne_pointcloud/rawdata.h>
-#include "lidar_undistortion/velodyne_point.hpp"
-#include "lidar_undistortion/velodyne_container.hpp"
-#include "lidar_undistortion/lidar_undistorter.hpp"
-#include "lidar_undistortion/velodyne_rawdata.hpp"
+#include <lidar_undistortion/velodyne_point.hpp>
+#include <lidar_undistortion/velodyne_container.hpp>
+#include <lidar_undistortion/lidar_undistorter.hpp>
+#include <lidar_undistortion/velodyne_rawdata.hpp>
+#include <lidar_undistortion/ouster_point.hpp>
+#include "lidar_undistortion_ros/velodyne_scan_converter.hpp"
 
 namespace lidar_undistortion {
 
@@ -18,12 +20,15 @@ namespace lidar_undistortion {
   uint16_t num_lasers = 16;       ///< number of lasers
 };
 
-class VelodyneUndistorterROS : public LidarUndistorter<velodyne::PointXYZIRT> {
+class VelodyneUndistorterROS : public LidarUndistorter<PointOuster> {
 public:
-  using VelodyneCloud = pcl::PointCloud<velodyne::PointXYZIRT>;
+  using PointLidar = PointOuster;
+  using VelodyneCloud = pcl::PointCloud<PointLidar>;
+  using VelodyneContainer = velodyne::VelodyneContainer<PointLidar>;
+  using ScanConverter = VelodyneScanConverter<PointLidar>;
+
 public:
-  VelodyneUndistorterROS(ros::NodeHandle& nh,
-                         ros::NodeHandle& private_nh);
+  VelodyneUndistorterROS(ros::NodeHandle& nh);
   ~VelodyneUndistorterROS() override {
   }
 
@@ -32,11 +37,9 @@ public:
   void reprocessCloudBuffer() override;
 private:
   ros::Subscriber scan_sub_;
-  VelodyneUndistorterConfig config_;
-  velodyne::RawData data_;
-  boost::optional<velodyne_pointcloud::Calibration> calibration_;
-  velodyne::VelodyneContainer container_;              ///< input packet point cloud
+  ScanConverter velodyne_cvt_;
   VelodyneCloud pointcloud_;
+  bool republish_original_cloud_ = true;
 
   std::string fixed_frame_id_ = "odom";
   std::string base_frame_id_ = "base";
@@ -48,6 +51,7 @@ private:
   ros::Subscriber pose_sub_;
 
   ros::Publisher corrected_pointcloud_pub_;
+  ros::Publisher original_pointcloud_pub_;
 
   tf2_ros::Buffer tf_buffer_;
   tf2_ros::TransformListener tf_listener_;

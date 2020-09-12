@@ -42,7 +42,7 @@
 
 namespace velodyne {
 
-class VelodyneContainerOrganized : public velodyne::VelodyneContainerBase {
+class VelodyneContainerOrganized : public velodyne::VelodyneContainerBase<velodyne::PointXYZIRT> {
 public:
   using VelodynePoint = velodyne::PointXYZIRT;
   using VelodyneCloud = pcl::PointCloud<VelodynePoint>;
@@ -77,7 +77,7 @@ public:
                 uint16_t azimuth,
                 float distance,
                 float intensity,
-                uint64_t time) override;
+                uint64_t time, const uint16_t noise, const uint16_t reflectivity) override;
 
   virtual bool pointInRange(float distance) {
     return distance > 0;

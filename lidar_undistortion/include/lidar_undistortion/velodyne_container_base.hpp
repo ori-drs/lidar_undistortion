@@ -31,13 +31,9 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <tf/transform_listener.h>
-#include <velodyne_msgs/VelodyneScan.h>
-#include <sensor_msgs/point_cloud2_iterator.h>
 #include <Eigen/Dense>
 #include <string>
 #include <algorithm>
-#include <cstdarg>
 #include "lidar_undistortion/velodyne_point.hpp"
 #include <pcl/point_cloud.h>
 
@@ -69,9 +65,10 @@ struct VelodyneContainerConfig {
   }
 };
 
+template<class PointT>
 class VelodyneContainerBase {
 public:
-  using VelodyneCloud = pcl::PointCloud<velodyne::PointXYZIRT>;
+  using VelodyneCloud = pcl::PointCloud<PointT>;
 public:
   VelodyneContainerBase() = default;
   VelodyneContainerBase(const VelodyneContainerConfig& cfg) : config_(cfg) {
@@ -91,13 +88,15 @@ public:
                         const uint16_t azimuth,
                         const float distance,
                         const float intensity,
-                        const uint64_t time) = 0;
+                        const uint64_t time,
+                        const uint16_t noise,
+                        const uint16_t reflectivity) = 0;
 
   virtual void newLine() {
 
   }
 
-  virtual VelodyneCloud::Ptr getCloud() = 0;
+  virtual typename VelodyneCloud::Ptr getCloud() = 0;
 
 
   virtual bool pointInRange(float range) const {
