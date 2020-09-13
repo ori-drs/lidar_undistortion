@@ -14,6 +14,21 @@ namespace lidar_undistortion {
 template <class PointT>
 class VelodyneScanConverter {
 public:
+  VelodyneScanConverter() {
+    // Setup with a default constructor for VLP16.
+    ROS_WARN_STREAM("Setting up with default values for VLP-16 LIDAR");
+
+    velodyne::RawDataConfig cfg;
+    cfg.calibrationFile = ros::package::getPath("velodyne_pointcloud") + "/params/VLP16db.yaml";
+    cfg.max_range = 100;
+    cfg.min_range = 0;
+    cfg.model = "VLP16";
+    cfg.view_direction = 0;
+    cfg.view_width = 2*M_PI;
+
+    data_.setup(cfg);
+  }
+
   VelodyneScanConverter(const velodyne::RawDataConfig& cfg) {
     data_.setup(cfg);
   }
@@ -28,7 +43,7 @@ public:
     }
 
     if(!nh.getParam("velodyne_calibration_file", velodyne_calibration_file)){
-      ROS_WARN_STREAM("Could not get calib file. Usind default");
+      ROS_WARN_STREAM("Could not get calib file. Using default");
       // have to use something: grab unit test version as a default
       std::string pkgPath = ros::package::getPath("velodyne_pointcloud");
       velodyne_calibration_file = pkgPath + "/params/VLP16db.yaml";
