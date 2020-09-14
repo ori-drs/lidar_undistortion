@@ -1,11 +1,12 @@
 #include "lidar_undistortion/ouster_undistorter.hpp"
 #include "lidar_undistortion/ouster_image_converter.hpp"
+#include "lidar_undistortion/ouster_point.hpp"
 #include <gtest/gtest.h>
 #include <random>
 
 
 using namespace lidar_undistortion;
-using OusterPoint = ouster_ros::Point;
+using OusterPoint = PointOuster;
 using OusterCloud = pcl::PointCloud<OusterPoint>;
 
 void fillWithDistortedPointcloud(OusterCloud& pc);

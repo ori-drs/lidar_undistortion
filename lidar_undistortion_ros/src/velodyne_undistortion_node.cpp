@@ -1,16 +1,16 @@
 #include <ros/ros.h>
-#include "lidar_undistortion/velodyne_undistorter_ros.hpp"
+#include <ros/package.h>
+#include "lidar_undistortion_ros/velodyne_undistorter_ros.hpp"
 
 int main(int argc, char **argv) {
   // Register with ROS master
   ros::init(argc, argv, "velodyne_undistortion");
 
   // Create node handles
-  ros::NodeHandle nh;
-  ros::NodeHandle nh_private("~");
+  ros::NodeHandle nh("~");
 
   // Launch the lidar undistorter
-  lidar_undistortion::VelodyneUndistorterROS lidar_undistorter(nh, nh_private);
+  lidar_undistortion::VelodyneUndistorterROS lidar_undistorter(nh);
 
   // Spin
   ros::spin();

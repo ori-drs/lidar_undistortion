@@ -34,21 +34,21 @@
 
 #include "lidar_undistortion/velodyne_container_base.hpp"
 #include "lidar_undistortion/velodyne_point.hpp"
-#include <sensor_msgs/point_cloud2_iterator.h>
+#include <boost/make_shared.hpp>
 #include <string>
-#include <pcl/point_cloud.h>
 
 
 namespace velodyne {
 
-class VelodyneContainer : public VelodyneContainerBase {
-public:
-  using VelodyneCloud = pcl::PointCloud<velodyne::PointXYZIRT>;
+template <class PointT>
+class VelodyneContainer : public VelodyneContainerBase<PointT> {
+
+  using VelodyneCloud = typename VelodyneContainerBase<PointT>::VelodyneCloud;
 
 public:
   VelodyneContainer(const VelodyneContainerConfig& cfg) :
     pc(boost::make_shared<VelodyneCloud>()),
-    VelodyneContainerBase(cfg)
+    VelodyneContainerBase<PointT>(cfg)
   {
 
   }
@@ -77,19 +77,45 @@ public:
                 uint16_t azimuth,
                 float distance,
                 float intensity,
-                uint64_t time) override;
+                uint64_t time, const uint16_t noise, const uint16_t reflectivity) override;
 
   bool pointInRange(float distance) const override {
     return distance > 0;
   }
 
-  VelodyneCloud::Ptr getCloud() {
+  typename VelodyneCloud::Ptr getCloud() {
     return pc;
   }
 
 private:
-  VelodyneCloud::Ptr pc;
+  typename VelodyneCloud::Ptr pc;
 
 };
+
+template <class PointT>
+void VelodyneContainer<PointT>::addPoint(float x,
+                                         float y,
+                                         float z,
+                                         uint16_t ring,
+                                         uint16_t /*azimuth*/,
+                                         float distance,
+                                         float intensity,
+                                         uint64_t time,
+                                         const uint16_t noise,
+                                         const uint16_t reflectivity)
+{
+  PointT point;
+  point.ring = ring;
+  point.x = x;
+  point.y = y;
+  point.z = z;
+  point.intensity = intensity;
+  point.t = time;
+  point.range = static_cast<uint32_t>(distance*1e3); // range is in mm
+
+  // append this point to the cloud
+  pc->points.push_back(point);
+  ++pc->width;
+}
 } /* namespace velodyne */
 

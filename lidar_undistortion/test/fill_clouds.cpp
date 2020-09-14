@@ -1,7 +1,9 @@
-#include <ouster_ros/point.h>
+#include "lidar_undistortion/ouster_point.hpp"
 #include <pcl/point_cloud.h>
 
-using OusterPoint = ouster_ros::Point;
+using namespace lidar_undistortion;
+
+using OusterPoint = PointOuster;
 using OusterCloud = pcl::PointCloud<OusterPoint>;
 
 void fillWithDistortedPointcloud(OusterCloud& pc) {

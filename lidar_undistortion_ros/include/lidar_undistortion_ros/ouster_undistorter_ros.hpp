@@ -1,10 +1,10 @@
 #pragma once
-#include "lidar_undistortion/ouster_undistorter.hpp"
+#include <lidar_undistortion/ouster_undistorter.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2_ros/transform_listener.h>
-#include <lidar_undistortion/RangeImage.h>
+#include <lidar_undistortion_msgs/RangeImage.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
 
