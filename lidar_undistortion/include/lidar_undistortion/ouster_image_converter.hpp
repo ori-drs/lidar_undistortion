@@ -15,7 +15,21 @@ public:
     // this should be retrieved from the device using the parse_metadata
     W(w), H(h), pixel_offset_(ouster::sensor::default_data_format(ouster::sensor::lidar_mode::MODE_1024x10).pixel_shift_by_row)
   {
+    // NOTE: due to a possible bug in the new generation function
+    // of ouster::sensor::default_data_format() the values are inverted, so we
+    // reverse the vector to compensate for this.
+    // For more info, compare line 71 of os1_util.cpp from the old driver code
+    // and line 51 of types.cpp from the new driver code
+    std::reverse(pixel_offset_.begin(), pixel_offset_.end());
 
+    // print list of offests for debug purposes:
+    /*
+    std::cout << "Pixel offsets:" << std::endl;
+
+    for(auto& it : pixel_offset_){
+      std::cout << it << std::endl;
+    }
+    */
   }
 
   void convert(const OusterCloud& pc,
