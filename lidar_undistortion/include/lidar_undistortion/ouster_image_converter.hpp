@@ -12,6 +12,11 @@ public:
   OusterImageConverter(int w, int h) :
     W(w), H(h), pixel_offset_(ouster::OS1::get_px_offset(W))
   {
+    std::cout << "Pixel offsets:" << std::endl;
+
+    for(auto& it : pixel_offset_){
+      std::cout << it << std::endl;
+    }
 
   }
 
