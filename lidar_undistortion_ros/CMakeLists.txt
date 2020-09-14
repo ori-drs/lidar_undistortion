@@ -144,7 +144,6 @@ if(${velodyne_pointcloud_FOUND})
   target_link_libraries(velodyne_image_converter_node velodyne_undistortion_ros
                                                       ${velodyne_pointcloud_LIBRARIES}
                                                       ${catkin_LIBRARIES})
-  
 endif()
 
 add_library(${PROJECT_NAME} src/ouster_undistorter_ros.cpp)
