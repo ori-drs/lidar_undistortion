@@ -3,6 +3,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <chrono>
 
+
 typedef std::chrono::high_resolution_clock clock_;
 typedef std::chrono::duration<double, std::ratio<1> > second_;
 
@@ -33,6 +34,9 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle nh,
   nh_private.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_);
   nh_private.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_);
   nh_private.param("base_frame_id", base_frame_id_, base_frame_id_);
+
+
+  cvt_ = std::make_unique<OusterImageConverter>(1024, 64);
 
 
   // retrieve the transform from base to lidar frame

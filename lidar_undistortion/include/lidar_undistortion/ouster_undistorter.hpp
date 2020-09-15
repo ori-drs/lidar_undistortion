@@ -21,12 +21,11 @@ public:
   OusterUndistorter(uint64_t pose_buffer_length) :
     LidarUndistorter(pose_buffer_length)
   {
-    cvt_ = std::make_unique<OusterImageConverter>(1024, 64);
+
   }
 
   bool processCloud(const OusterCloud::Ptr& pointcloud,
                     const uint64_t timestamp) override;
-protected:
-  std::unique_ptr<OusterImageConverter> cvt_;
+
 };
 }
