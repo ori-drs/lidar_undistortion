@@ -64,8 +64,6 @@ target_link_libraries(velodyne_undistortion ${catkin_LIBRARIES}
 
 
 
-add_executable(test_ouster_img_converter test/ouster_image_converter_test.cpp)
-target_link_libraries(test_ouster_img_converter ouster_undistortion ${Boost_LIBRARIES} ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${ouster_client_LIBRARIES})
 
 if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(test_pose_buffer test/pose_buffer_test.cpp)
@@ -75,6 +73,15 @@ if(CATKIN_ENABLE_TESTING)
                                           test/ouster_undistortion_test.cpp)
 
   target_link_libraries(test_ouster_undistortion gtest_main ouster_undistortion)
+
+  catkin_add_gtest(test_ouster_img_converter test/ouster_image_converter_test.cpp)
+  target_link_libraries(test_ouster_img_converter gtest_main
+                                                  ouster_undistortion
+                                                  ${Boost_LIBRARIES}
+                                                  ${OpenCV_LIBRARIES}
+                                                  ${PCL_LIBRARIES}
+                                                  ${ouster_client_LIBRARIES})
+
 endif()
 
 install(DIRECTORY include/${PROJECT_NAME}/
