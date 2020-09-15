@@ -37,13 +37,17 @@ TEST(OusterImageConverter, converRangeMono){
   auto cloud_path_complete = boost::filesystem::canonical(cloud_path, drs_testing_data_path);
   EXPECT_TRUE(cloud_path_complete.is_complete());
 
+  EXPECT_TRUE(boost::filesystem::is_regular_file(cloud_path_complete));
+
   std::string range_file = "lidar_undistortion/ranges.pgm";
   boost::filesystem::path range_path(range_file);
   auto range_path_complete = boost::filesystem::canonical(range_path, drs_testing_data_path);
   EXPECT_TRUE(range_path_complete.is_complete());
+  EXPECT_TRUE(boost::filesystem::is_regular_file(range_path_complete));
 
   pcl::PointCloud<PointOuster> in_cloud;
 
+  std::cerr << "Attempt to read " << cloud_path_complete.string() << std::endl;
   EXPECT_NE(loadPCDFile(cloud_path_complete.string(), in_cloud), -1);
 
   OusterImageConverter oic(1024, 64);
@@ -61,6 +65,7 @@ TEST(OusterImageConverter, converRangeMono){
 
   oic.floatImageToMono(ranges, ranges_mono);
 
+  std::cerr << "Attempt to read " << range_path_complete.string() << std::endl;
   cv::Mat read_range_mono = cv::imread(range_path_complete.string(), cv::ImreadModes::IMREAD_GRAYSCALE);
 
   cv::Mat diff =  ranges_mono - read_range_mono;
