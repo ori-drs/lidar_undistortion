@@ -59,10 +59,16 @@ public:
   virtual void addPose(uint64_t nsec, const Eigen::Isometry3d& pose);
 
   virtual uint64_t startTime(){
+    if(pose_history_.empty()){
+      return 0;
+    }
     return pose_history_.begin()->first;
   }
 
   virtual uint64_t endTime(){
+    if(pose_history_.empty()){
+      return 0;
+    }
     return pose_history_.rbegin()->first;
   }
 

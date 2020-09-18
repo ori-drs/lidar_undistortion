@@ -8,8 +8,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(catkin REQUIRED COMPONENTS pcl_conversions)
 
 find_package(Eigen3)
-find_package(OpenCV REQUIRED COMPONENTS core)
+find_package(OpenCV REQUIRED COMPONENTS core imgcodecs)
 find_package(PCL REQUIRED COMPONENTS common io)
+find_package(Boost REQUIRED COMPONENTS system)
 
 list(APPEND LIBRARIES_TO_BUILD ${PROJECT_NAME})
 set(EXECUTABLES_TO_BUILD "")
@@ -63,7 +64,6 @@ target_link_libraries(velodyne_undistortion ${catkin_LIBRARIES}
 
 
 
-add_executable(test_ouster_img_converter test/ouster_image_converter_test.cpp)
 
 if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(test_pose_buffer test/pose_buffer_test.cpp)
@@ -73,6 +73,15 @@ if(CATKIN_ENABLE_TESTING)
                                           test/ouster_undistortion_test.cpp)
 
   target_link_libraries(test_ouster_undistortion gtest_main ouster_undistortion)
+
+  catkin_add_gtest(test_ouster_img_converter test/ouster_image_converter_test.cpp)
+  target_link_libraries(test_ouster_img_converter gtest_main
+                                                  ouster_undistortion
+                                                  ${Boost_LIBRARIES}
+                                                  ${OpenCV_LIBRARIES}
+                                                  ${PCL_LIBRARIES}
+                                                  ${ouster_client_LIBRARIES})
+
 endif()
 
 install(DIRECTORY include/${PROJECT_NAME}/

@@ -2,7 +2,7 @@
 #include "lidar_undistortion/ouster_image_converter.hpp"
 #include "lidar_undistortion/ouster_point.hpp"
 #include <gtest/gtest.h>
-#include <random>
+
 
 
 using namespace lidar_undistortion;
@@ -12,30 +12,7 @@ using OusterCloud = pcl::PointCloud<OusterPoint>;
 void fillWithDistortedPointcloud(OusterCloud& pc);
 void fillWithCorrectedPointCloud(OusterCloud& pc);
 
-TEST(OusterImageConverter, cartesianToSpherical){
-  OusterImageConverter oic(1024, 64);
-  std::random_device rd;
-  std::mt19937_64 gen(rd());
 
-  // randomly generate points in within a cube of 100 x 100 x 100 meters
-  std::uniform_real_distribution<> disr(0, 100);
-
-  for(int i = 0; i < 100; i++){
-    double x = disr(gen);
-    double y = disr(gen);
-    double z = disr(gen);
-
-    Eigen::Vector3d cartesian;
-    Eigen::Vector3d spherical;
-    Eigen::Vector3d cartesian_out;
-    cartesian << x, y, z;
-    oic.cartesianToSpherical(cartesian, spherical);
-    oic.sphericalToCartesian(spherical, cartesian_out);
-    EXPECT_NEAR(cartesian(0), cartesian_out(0), 1e-5);
-    EXPECT_NEAR(cartesian(1), cartesian_out(1), 1e-5);
-    EXPECT_NEAR(cartesian(2), cartesian_out(2), 1e-5);
-  }
-}
 
 TEST(OusterUndistorter, testCloud){
   OusterUndistorter lu(15e9);

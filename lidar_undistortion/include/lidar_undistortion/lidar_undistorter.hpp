@@ -125,6 +125,10 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
 
   if(!odometry_history_.canInterpolate(t_start)){
     DEBUG_PRINTLN("Can't interpolate time t_start! " << t_start);
+    DEBUG_PRINTLN("Odometry history size : " << odometry_history_.size());
+    DEBUG_PRINTLN("Odometry history start: " << odometry_history_.startTime());
+    DEBUG_PRINTLN("Odometry history end  : " << odometry_history_.endTime());
+
     if(cloud_history_.find(t_start) == cloud_history_.end()){
       cloud_history_[t_start] = pointcloud;
       DEBUG_PRINTLN("Adding cloud to cloud history."
