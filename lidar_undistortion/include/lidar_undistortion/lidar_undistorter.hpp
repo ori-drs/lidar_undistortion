@@ -141,6 +141,12 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
   uint64_t t_start = start_timestamp + (*minmax_time.first );
   uint64_t t_end =   start_timestamp + (*minmax_time.second);
 
+  if(desired_timestamp < t_start || desired_timestamp > t_end){
+    ERROR_PRINTLN("[LidarUndistorter] ERROR: the desired timestamp "
+                  << "is outside the valid timestamp bounds for the point cloud");
+    return false;
+  }
+
   Eigen::Isometry3d T_S_F_original = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d T_S_F_end = Eigen::Isometry3d::Identity();
 
@@ -160,8 +166,8 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
   // Get the frame that the cloud should be expressed in
   if(!odometry_history_.getInterpolatedPose(desired_timestamp, T_S_F_original))
   {
-    DEBUG_PRINTLN("Couldn't get interpolated timestamp pose for time " << start_timestamp
-                    << "\n Starting time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.startTime()))
+    DEBUG_PRINTLN("Couldn't get interpolated timestamp pose for time " << desired_timestamp
+                    << "\n Starting time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.startTime()))                    
                     << "\n End time          : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.endTime()))
                     << "\n Pose history size : " << odometry_history_.size()
                     << "\n Cloud history size: " << cloud_history_.size());

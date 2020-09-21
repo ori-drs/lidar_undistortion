@@ -6,3 +6,5 @@
 #define DEBUG_PRINTLN(x) void (0)
 #endif
 
+#define ERROR_PRINTLN(x) std::cerr << "ERROR: " << x << std::endl
+
