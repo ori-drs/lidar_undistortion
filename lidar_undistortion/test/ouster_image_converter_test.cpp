@@ -6,6 +6,7 @@
 #include <gtest/gtest.h>
 #include <pwd.h> // to get home directory
 #include <random>
+#include <pcl/range_image/range_image_spherical.h>
 
 using namespace pcl::io;
 using namespace lidar_undistortion;
@@ -22,6 +23,34 @@ void getDrsTestingDataPath(std::string &path) {
   } else {
       path = std::string(drs_data_env);
   }
+}
+
+TEST(OusterImageConverter, convertRangeSpherical){
+  std::string drs_testing_data;
+  getDrsTestingDataPath(drs_testing_data);
+  boost::filesystem::path drs_testing_data_path(drs_testing_data);
+
+  EXPECT_TRUE(boost::filesystem::is_directory(drs_testing_data_path));
+  EXPECT_TRUE(drs_testing_data_path.is_complete());
+
+  std::string cloud_file = "lidar_undistortion/new_college.pcd";
+  boost::filesystem::path cloud_path(cloud_file);
+  auto cloud_path_complete = boost::filesystem::canonical(cloud_path, drs_testing_data_path);
+  EXPECT_TRUE(cloud_path_complete.is_complete());
+
+  EXPECT_TRUE(boost::filesystem::is_regular_file(cloud_path_complete));
+  EXPECT_NE(loadPCDFile(cloud_path_complete.string(), in_cloud), -1);
+
+  pcl::RangeImageSpherical spherical;
+
+  spherical.createFromPointCloud(in_cloud);
+
+
+  float* ranges = spherical.getRangesArray();
+
+
+
+
 }
 
 TEST(OusterImageConverter, converRangeMono){
@@ -50,7 +79,7 @@ TEST(OusterImageConverter, converRangeMono){
   std::cerr << "Attempt to read " << cloud_path_complete.string() << std::endl;
   EXPECT_NE(loadPCDFile(cloud_path_complete.string(), in_cloud), -1);
 
-  OusterImageConverter oic(1024, 64);
+  OusterImageConverter oic;
 
   cv::Mat ranges(64, 1024, CV_64FC1);
   cv::Mat altitudes(64, 1024, CV_64FC1);
