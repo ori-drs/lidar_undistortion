@@ -56,12 +56,32 @@ public:
    * not the data it points to! In case of failure (because of missing
    * transforms in the buffer), the ownership of \p pointcloud is shared
    * internally within a buffer of clouds for future processing.
-   * @param[in] timestamp starting time of the scan, in nanoseconds from the
-   * Epoch
+   * @param[in] start_timestamp absolute starting time of the scan,
+   * in nanoseconds from the Epoch
+   * @param[in] desired_timestamp absolute time (from the Epoch) at which we
+   * we want to express the point cloud. This time has to be between the start
+   * and the end of the scan (this is not checked at the moment though
    * @return \c true if the cloud is successfully dewarped, \c false otherwise.
+   * @sa processCloud(const typename PointCloud::Ptr& pointcloud,
+                            const uint64_t start_timestamp)
    */
   virtual bool processCloud(const typename PointCloud::Ptr& pointcloud,
-                            const uint64_t timestamp);
+                            const uint64_t start_timestamp,
+                            const uint64_t desired_timestamp);
+
+  /**
+   * @brief processCloud overload of processCloud(const typename PointCloud::Ptr& pointcloud,
+                            const uint64_t start_timestamp,
+                            const uint64_t desired_timestamp) where the desired
+                            timestamp coincides with the start timestamp
+   * @param pointcloud
+   * @param start_timestamp
+   * @return
+   */
+  virtual bool processCloud(const typename PointCloud::Ptr& pointcloud,
+                            const uint64_t start_timestamp) {
+    return processCloud(pointcloud, start_timestamp, start_timestamp);
+  }
 
   virtual void reprocessCloudBuffer();
 
@@ -106,7 +126,8 @@ protected:
 
 template <class PointT>
 inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Ptr &pointcloud,
-                                      const uint64_t timestamp)
+                                                   const uint64_t start_timestamp,
+                                                   const uint64_t desired_timestamp)
 {
   // Assert that the pointcloud is not empty
   if (pointcloud->empty()){
@@ -117,8 +138,8 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
   // t_start should be the same as timestamp
   const auto minmax_time = std::minmax_element(begin(times_lut_), end(times_lut_));
   DEBUG_PRINTLN("minmax times : " << (*minmax_time.first ) << " " << (*minmax_time.second));
-  uint64_t t_start = timestamp + (*minmax_time.first );
-  uint64_t t_end =   timestamp + (*minmax_time.second);
+  uint64_t t_start = start_timestamp + (*minmax_time.first );
+  uint64_t t_end =   start_timestamp + (*minmax_time.second);
 
   Eigen::Isometry3d T_S_F_original = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d T_S_F_end = Eigen::Isometry3d::Identity();
@@ -137,17 +158,17 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
     return false;
   }
   // Get the frame that the cloud should be expressed in
-  if(!odometry_history_.getInterpolatedPose(timestamp, T_S_F_original))
+  if(!odometry_history_.getInterpolatedPose(desired_timestamp, T_S_F_original))
   {
-    DEBUG_PRINTLN("Couldn't get interpolated timestamp pose for time " << timestamp
+    DEBUG_PRINTLN("Couldn't get interpolated timestamp pose for time " << start_timestamp
                     << "\n Starting time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.startTime()))
                     << "\n End time          : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.endTime()))
                     << "\n Pose history size : " << odometry_history_.size()
                     << "\n Cloud history size: " << cloud_history_.size());
 
     // if the cloud is not in the cloud buffer, we add it
-    if(cloud_history_.find(timestamp) == cloud_history_.end()){
-      cloud_history_[timestamp] = pointcloud;
+    if(cloud_history_.find(desired_timestamp) == cloud_history_.end()){
+      cloud_history_[desired_timestamp] = pointcloud;
       DEBUG_PRINTLN("Adding cloud to cloud history."
                 << "\n Cloud history size: " << cloud_history_.size());
     }
@@ -155,7 +176,7 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
   } else {
     // add the just computed interpolated pose to the buffer of poses
     // in case we need it later
-    odometry_history_.addPose(timestamp, T_S_F_original);
+    odometry_history_.addPose(desired_timestamp, T_S_F_original);
     DEBUG_PRINTLN("Adding interpolated pose to pose history"
                   << "\n Pose history size: " << odometry_history_.size());
   }
@@ -169,8 +190,8 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
                     << "\n Cloud history size: " << cloud_history_.size());
 
     // if the cloud is not in the cloud buffer, we add it
-    if(cloud_history_.find(timestamp) == cloud_history_.end()){
-      cloud_history_[timestamp] = pointcloud;
+    if(cloud_history_.find(desired_timestamp) == cloud_history_.end()){
+      cloud_history_[desired_timestamp] = pointcloud;
       DEBUG_PRINTLN("Adding cloud to cloud history."
                       << "\n Cloud history size: " << cloud_history_.size());
     }
@@ -197,7 +218,7 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
     // If so, lookup the new corresponding transform
     if (times_lut_[point_counter] != last_transform_update_t) {
       last_transform_update_t = times_lut_[point_counter];
-      uint64_t point_t = timestamp + times_lut_[point_counter];
+      uint64_t point_t = start_timestamp + times_lut_[point_counter];
 
       Eigen::Isometry3d T_F_S_correct;
       if(!odometry_history_.getInterpolatedPose(point_t, T_F_S_correct)){
@@ -205,8 +226,8 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
                         << "\n Starting time: " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.startTime()))
                         << "\n End time     : " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.endTime())));
         // if the cloud is not in the cloud buffer, we add it
-        if(cloud_history_.find(timestamp) == cloud_history_.end()){
-          cloud_history_[timestamp] = pointcloud;
+        if(cloud_history_.find(desired_timestamp) == cloud_history_.end()){
+          cloud_history_[desired_timestamp] = pointcloud;
           DEBUG_PRINTLN("Adding cloud to cloud history."
                           << "\n Cloud history size: " << cloud_history_.size());
         }
