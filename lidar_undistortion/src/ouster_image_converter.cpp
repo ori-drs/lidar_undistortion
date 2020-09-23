@@ -14,6 +14,12 @@ void OusterImageConverter::convert(const OusterCloud& pc,
     for (int v = 0; v < cfg_.W; v++) {
       const size_t vv = (v + cfg_.pixel_offsets_[u]) % cfg_.W;
       const size_t index = vv * cfg_.H + u;
+      DEBUG_PRINTLN("u     : " << u                     );
+      DEBUG_PRINTLN("v     : " << v                     );
+      DEBUG_PRINTLN("vv    : " << vv                    );
+      DEBUG_PRINTLN("index : " << index                 );
+      DEBUG_PRINTLN("offset: " << cfg_.pixel_offsets_[u]);
+
       const auto& pt = pc[index];      
       Eigen::Vector3d cartesian;
       Eigen::Vector3d spherical;

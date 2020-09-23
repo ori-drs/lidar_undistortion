@@ -7,7 +7,7 @@ project(lidar_undistortion_ros)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp image_transport cv_bridge tf2_ros lidar_undistortion lidar_undistortion_msgs)
+find_package(catkin REQUIRED COMPONENTS roscpp image_transport cv_bridge tf2_ros lidar_undistortion lidar_undistortion_msgs ouster_ros)
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
@@ -27,7 +27,6 @@ if(${velodyne_pointcloud_FOUND})
 else()
   message(WARNING "package velodyne_pointcloud not found. Not building velodyne_undistortion.")
 endif()
-
 
 ## To declare and build messages, services or actions from within this
 ## package, follow these steps:

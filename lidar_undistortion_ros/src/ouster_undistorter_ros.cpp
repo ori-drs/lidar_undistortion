@@ -1,13 +1,18 @@
 #include "lidar_undistortion_ros/ouster_undistorter_ros.hpp"
+#include <lidar_undistortion/ouster_metadata_utils.hpp>
 #include <tf2_eigen/tf2_eigen.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <chrono>
+#include <ouster_ros/OSConfigSrv.h>
+#include <ros/package.h>
 
 
 typedef std::chrono::high_resolution_clock clock_;
 typedef std::chrono::duration<double, std::ratio<1> > second_;
 
 using namespace lidar_undistortion;
+using namespace boost::filesystem;
+using namespace ouster::sensor;
 
 OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle nh,
                                          ros::NodeHandle nh_private)
@@ -31,13 +36,49 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle nh,
   pose_sub_ = nh.subscribe(pose_topic_, 100, &OusterUndistorterROS::poseCallback, this);
 
   // Read the odom and lidar frame names from ROS params
-  nh_private.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_);
-  nh_private.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_);
-  nh_private.param("base_frame_id", base_frame_id_, base_frame_id_);
+  if(!nh_private.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_)){
+    ROS_WARN_STREAM("Could not read param \"odom_frame_id\". "
+                    << "Setting to default: " << fixed_frame_id_);
+  }
+  if(!nh_private.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)){
+    ROS_WARN_STREAM("Could not read param \"lidar_frame_id\". "
+                    << "Setting to default: " << lidar_frame_id_);
+  }
+  if(!nh_private.param("base_frame_id", base_frame_id_, base_frame_id_)){
+    ROS_WARN_STREAM("Could not read param \"base_frame_id\". "
+                    << "Setting to default: " << base_frame_id_);
+  }
 
+  // 1. try to get the info from the active client from the driver
+  ouster_ros::OSConfigSrv cfg_srv{};
 
-  cvt_ = std::make_unique<OusterImageConverter>(1024, 64);
+  sensor_info info;
 
+  auto client = nh.serviceClient<ouster_ros::OSConfigSrv>("os_config");
+  if (client.call(cfg_srv)) {
+    info  = parse_metadata(cfg_srv.response.metadata);
+  } else {
+    ROS_WARN_STREAM("Could not get the ROS client to get sensor info. "
+                    << "Attempting to read file name from param server.");
+    std::string json_cfg_file;
+    // 2. if server unavailable, load the file from parameter server and parse it
+    if(nh_private.getParam("config_file", json_cfg_file) &&
+       is_regular_file(path(json_cfg_file)))
+    {
+      std::string metadata_string = read_metadata(json_cfg_file);
+      std::cerr << metadata_string << std::endl;
+      info  = parse_metadata(metadata_string);
+    } else {
+      // 3. if file is not available, fill in with default values from OS1-64 Gen1
+      ROS_WARN_STREAM("Could not read param \"config_file\" from param server. "
+                      << "Setting to default values for OS1-64 Gen1");
+    }
+  }
+  // fill in all the values that hasn't been filled in by previous attempts
+  populate_metadata_defaults(info, MODE_1024x10);
+
+  OusterConfig os_cfg(info);
+  cvt_ = std::make_unique<OusterImageConverter>(os_cfg);
 
   // retrieve the transform from base to lidar frame
   while(nh.ok()){
