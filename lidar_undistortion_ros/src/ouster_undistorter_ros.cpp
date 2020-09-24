@@ -62,7 +62,7 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle nh,
                     << "Attempting to read file name from param server.");
     std::string json_cfg_file;
     // 2. if server unavailable, load the file from parameter server and parse it
-    if(nh_private.getParam("config_file", json_cfg_file) &&
+    if(nh_private.getParam("ouster_config_file", json_cfg_file) &&
        is_regular_file(path(json_cfg_file)))
     {
       std::string metadata_string = read_metadata(json_cfg_file);
