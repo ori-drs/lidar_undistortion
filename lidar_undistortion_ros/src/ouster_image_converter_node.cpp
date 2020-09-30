@@ -17,7 +17,7 @@ public:
   OusterImageConverterNode() = delete;
   OusterImageConverterNode(ros::NodeHandle& nh) : nh_(nh), img_transp_(nh_)
   {
-    cloud_sub_ = nh_.subscribe("/os1_cloud_node/points",10, &OusterImageConverterNode::ousterCloudCallback, this);
+    cloud_sub_ = nh_.subscribe("/os_cloud_node/points",10, &OusterImageConverterNode::ousterCloudCallback, this);
     range_img_pub_ = img_transp_.advertise("ouster_range_image", 1);
     intensity_img_pub_ = img_transp_.advertise("ouster_intensity_image",1);
     reflectivity_img_pub_ = img_transp_.advertise("ouster_reflectivity_image",1);
