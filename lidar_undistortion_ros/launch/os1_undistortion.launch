@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
     <arg name="rviz" default="true" />
-    <arg name="pose_topic" default="/penguin/piksi_node/enu_pose_fix" />
+    <arg name="pose_topic" default="/penguin/rovio/pose_with_covariance_stamped" />
     <arg name="load_ouster_model" default="false" />
+    <arg name="simulation" default="false" />
 
     <node name="lidar_undistortion" pkg="lidar_undistortion_ros" type="ouster_undistortion_node" output="screen">
         <remap from="pointcloud" to="/penguin/os1_cloud_node/points" />
@@ -16,7 +17,7 @@
 
     <include if="$(arg load_ouster_model)" file="$(find rooster_description)/launch/view_urdf.launch">
       <arg name="rviz" value="false" />
-      <arg name="simulation" value="false" />
+      <arg name="simulation" value="$(arg simulation)" />
     </include>
     
 </launch>
