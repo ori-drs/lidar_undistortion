@@ -8,8 +8,15 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/core.hpp>
+#include <ouster_ros/OSConfigSrv.h>
+#include <iostream>
+#include <ouster/types.h>
+#include <lidar_undistortion/ouster_metadata_utils.hpp>
 
 using namespace lidar_undistortion;
+using namespace ouster::sensor;
+using namespace boost::filesystem;
+
 class OusterImageConverterNode {
 public:
   using OusterCloud = OusterImageConverter::OusterCloud;
@@ -25,18 +32,46 @@ public:
     altitude_img_pub_ = img_transp_.advertise("ouster_altitude_image",1);
     range_data_pub_ = nh_.advertise<lidar_undistortion_msgs::RangeImage>("ouster_range_data",1);
 
+    // 1. try to get the info from the active client from the driver
+    ouster_ros::OSConfigSrv cfg_srv{};
 
+    sensor_info info;
+
+    auto client = nh_.serviceClient<ouster_ros::OSConfigSrv>("os_config");
+    if (client.call(cfg_srv)) {
+      info  = parse_metadata(cfg_srv.response.metadata);
+    } else {
+      ROS_WARN_STREAM("Could not get the ROS client to get sensor info. "
+                      << "Attempting to read file name from param server.");
+      std::string json_cfg_file;
+      // 2. if server unavailable, load the file from parameter server and parse it
+      if(nh_.getParam("ouster_config_file", json_cfg_file) &&
+         is_regular_file(path(json_cfg_file)))
+      {
+        std::string metadata_string = read_metadata(json_cfg_file);
+        std::cerr << metadata_string << std::endl;
+        info  = parse_metadata(metadata_string);
+      } else {
+        // 3. if file is not available, fill in with default values from OS1-64 Gen1
+        ROS_WARN_STREAM("Could not read param \"ouster_config_file\" from param server. "
+                        << "Setting to default values for OS1-64 Gen1");
+      }
+    }
+    // fill in all the values that hasn't been filled in by previous attempts
+    populate_metadata_defaults(info, MODE_1024x10);
+
+    OusterConfig os_cfg(info);
 
     // @todo read this from the device
-    img_cvt_ = std::make_unique<OusterImageConverter>();
-    range_in_.create(64, 1024, CV_64FC1);
-    azimuth_in_.create(64, 1024, CV_64FC1);
-    altitude_in_.create(64, 1024, CV_64FC1);
-    intensity_in_.create(64, 1024, CV_64FC1);
-    reflectivity_in_.create(64, 1024, CV_64FC1);
+    img_cvt_ = std::make_unique<OusterImageConverter>(os_cfg);
+    range_in_.create(os_cfg.H, os_cfg.W, CV_64FC1);
+    azimuth_in_.create(os_cfg.H, os_cfg.W, CV_64FC1);
+    altitude_in_.create(os_cfg.H, os_cfg.W, CV_64FC1);
+    intensity_in_.create(os_cfg.H, os_cfg.W, CV_64FC1);
+    reflectivity_in_.create(os_cfg.H, os_cfg.W, CV_64FC1);
 
-    range_msg_.height = 64;
-    range_msg_.width = 1024;
+    range_msg_.height = os_cfg.H;
+    range_msg_.width = os_cfg.W;
     range_msg_.ranges.resize(range_msg_.height * range_msg_.width);
     range_msg_.azimuths.resize(range_msg_.height * range_msg_.width);
     range_msg_.altitude.resize(range_msg_.height * range_msg_.width);
@@ -125,7 +160,7 @@ private:
 
 int main(int argc, char** argv){
   ros::init(argc, argv, "ouster_image_converter");
-  ros::NodeHandle nh;
+  ros::NodeHandle nh("~");
   OusterImageConverterNode node(nh);
   return 0;
 }

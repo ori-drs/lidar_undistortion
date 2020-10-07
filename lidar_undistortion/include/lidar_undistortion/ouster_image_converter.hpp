@@ -48,13 +48,6 @@ public:
    */
   OusterConfig() {
     pixel_offsets_ = os::default_data_format(os::lidar_mode::MODE_1024x10).pixel_shift_by_row;
-    // NOTE: due to a possible bug in the new generation function
-    // of ouster::sensor::default_data_format() the values are inverted, so we
-    // reverse the vector to compensate for this.
-    // For more info, compare line 71 of os1_util.cpp from the old driver code
-    // and line 51 of types.cpp from the new driver code
-    //std::reverse(pixel_offsets_.begin(), pixel_offsets_.end());
-    // default gen1 sensor wants the empty string
     lidar_to_beam_offset_mm = getLidarToBeamOffsetMilliMeter(OusterSeries::OS1_GEN1);
     H = 64;
     W = 1024;
