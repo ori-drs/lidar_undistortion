@@ -67,7 +67,7 @@ target_link_libraries(velodyne_undistortion ${catkin_LIBRARIES}
                                             yaml-cpp)
 
 
-
+list(APPEND LIBRARIES_TO_BUILD "velodyne_undistortion")
 
 
 if(CATKIN_ENABLE_TESTING)
