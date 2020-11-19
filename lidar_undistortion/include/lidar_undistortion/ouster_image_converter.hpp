@@ -69,6 +69,8 @@ public:
     }
   }
 
+  virtual ~OusterConfig() = default;
+
 public:
   std::vector<int> pixel_offsets_ = os::default_data_format(os::lidar_mode::MODE_1024x10).pixel_shift_by_row;
   double lidar_to_beam_offset_mm = getLidarToBeamOffsetMilliMeter(OusterSeries::OS1_GEN2);
@@ -93,6 +95,10 @@ public:
     DEBUG_PRINTLN( "W     : " << cfg_.W              );
     DEBUG_PRINTLN( "OusterImageConverter constructor");
     DEBUG_PRINTLN( cfg_.pixel_offsets_[0]            );
+  }
+
+  ~OusterImageConverter() override {
+
   }
 
   void convert(const OusterCloud& pc,
