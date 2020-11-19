@@ -27,8 +27,6 @@ else()
   message(WARNING "package ouster_client not found. Not building ouster_undistortion.")
 endif()
 
-
-
 catkin_package(INCLUDE_DIRS include
                LIBRARIES ${LIBRARIES_TO_BUILD} velodyne_undistortion
                CATKIN_DEPENDS ${CATKIN_DEP_TO_ADD}
@@ -42,7 +40,7 @@ include_directories(include ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} src/pose_buffer.cpp)
 
 if(${ouster_client_FOUND})
-  message(STATUS "Package ouster_ros found. Building ouster_undistorter.")
+  message(STATUS "Package ouster_client found. Building ouster_undistorter.")
   include_directories(${ouster_client_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
   add_library(ouster_undistortion src/ouster_undistorter.cpp
                                   src/ouster_image_converter.cpp
