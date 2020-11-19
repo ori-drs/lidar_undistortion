@@ -37,6 +37,8 @@ constexpr double getLidarToBeamOffsetMilliMeter(OusterSeries series) {
     return 15.806;
   case OusterSeries::OS2_GEN2:
     return 13.762;
+  default:
+    return 12.163;
   }
 }
 
