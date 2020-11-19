@@ -44,7 +44,8 @@ if(${ouster_client_FOUND})
   include_directories(${ouster_client_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
   add_library(ouster_undistortion src/ouster_undistorter.cpp
                                   src/ouster_image_converter.cpp
-                                  src/ouster_metadata_utils.cpp)
+                                  src/ouster_metadata_utils.cpp
+                                  src/ouster_config.cpp)
   target_link_libraries(ouster_undistortion ${PROJECT_NAME}
                                             ${catkin_LIBRARIES}
                                             ${ouster_client_LIBRARIES}

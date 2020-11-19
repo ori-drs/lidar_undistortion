@@ -2,84 +2,9 @@
 #include "lidar_undistortion/lidar_image_converter.hpp"
 #include "lidar_undistortion/ouster_point.hpp"
 #include "lidar_undistortion/print_macros.hpp"
-#include <ouster/types.h>
-
-
-
-// this is a forward declaration, the implementation is
-// in ouster/types.cpp (i.e., libouster_client.so)
-namespace ouster {
-namespace sensor {
-static double default_lidar_origin_to_beam_origin(std::string prod_line);
-}
-}
-
-// namespace alias
-namespace os = ouster::sensor;
+#include "lidar_undistortion/ouster_config.hpp"
 
 namespace lidar_undistortion {
-
-enum class OusterSeries {
-  OS1_GEN1,
-  OS0_GEN2,
-  OS1_GEN2,
-  OS2_GEN2
-};
-
-// values taken from types.cpp in ouster_client
-constexpr double getLidarToBeamOffsetMilliMeter(OusterSeries series) {
-  switch(series){
-  case OusterSeries::OS1_GEN1:
-    return 12.163;
-  case OusterSeries::OS0_GEN2:
-    return 27.67;
-  case OusterSeries::OS1_GEN2:
-    return 15.806;
-  case OusterSeries::OS2_GEN2:
-    return 13.762;
-  default:
-    return 12.163;
-  }
-}
-
-class OusterConfig {
-
-public:
-  /**
-   * @brief OusterConfig Default constructor for Gen1 Ouster OS1-64
-   */
-  OusterConfig() {
-    pixel_offsets_ = os::default_data_format(os::lidar_mode::MODE_1024x10).pixel_shift_by_row;
-    lidar_to_beam_offset_mm = getLidarToBeamOffsetMilliMeter(OusterSeries::OS1_GEN1);
-    H = 64;
-    W = 1024;
-    DEBUG_PRINTLN("OusterConfig constructor called");
-    DEBUG_PRINTLN("Pixel offsets: ");
-    DEBUG_PRINTLN("lidar_to_beam_offset_mm : " << lidar_to_beam_offset_mm);
-    DEBUG_PRINTLN("H : " << H);
-    DEBUG_PRINTLN("W : " << W);
-  }
-  OusterConfig(const os::sensor_info& info)
-  {
-    if(info.mode != os::lidar_mode::MODE_UNSPEC){
-      pixel_offsets_ = info.format.pixel_shift_by_row;
-      lidar_to_beam_offset_mm = info.lidar_origin_to_beam_origin_mm;
-      H = info.format.pixels_per_column;
-      W = info.format.columns_per_frame;
-    } else {
-      ERROR_PRINTLN("Trying to set OusterConfig with unspecified lidar mode");
-    }
-  }
-
-  virtual ~OusterConfig() = default;
-
-public:
-  std::vector<int> pixel_offsets_ = os::default_data_format(os::lidar_mode::MODE_1024x10).pixel_shift_by_row;
-  double lidar_to_beam_offset_mm = getLidarToBeamOffsetMilliMeter(OusterSeries::OS1_GEN2);
-  size_t H = 64;
-  size_t W = 1024;
-
-};
 
 class OusterImageConverter : public LidarImageConverter<PointOuster> {
 public:
