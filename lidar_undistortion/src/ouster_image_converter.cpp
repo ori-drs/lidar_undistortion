@@ -10,10 +10,16 @@ void OusterImageConverter::convert(const OusterCloud& pc,
                                    cv::Mat& reflectivities)
 {
 
-  for (int u = 0; u < H; u++) {
-    for (int v = 0; v < W; v++) {
-      const size_t vv = (v + pixel_offset_[u]) % W;
-      const size_t index = vv * H + u;
+  for (int u = 0; u < cfg_.H; u++) {
+    for (int v = 0; v < cfg_.W; v++) {
+      const size_t vv = (v + cfg_.W - cfg_.pixel_offsets_[u]) % cfg_.W;
+      const size_t index = vv * cfg_.H + u;
+      DEBUG_PRINTLN("u     : " << u                     );
+      DEBUG_PRINTLN("v     : " << v                     );
+      DEBUG_PRINTLN("vv    : " << vv                    );
+      DEBUG_PRINTLN("index : " << index                 );
+      DEBUG_PRINTLN("offset: " << cfg_.pixel_offsets_[u]);
+
       const auto& pt = pc[index];      
       Eigen::Vector3d cartesian;
       Eigen::Vector3d spherical;

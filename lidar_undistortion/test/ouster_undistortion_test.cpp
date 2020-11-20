@@ -44,7 +44,7 @@ TEST(OusterUndistorter, testCloud){
   pcl::copyPointCloud(oc_input, *oc_output);
 
   OusterCloud oc_expected;
-  OusterImageConverter oic(1024, 64);
+  OusterImageConverter oic;
 
   fillWithCorrectedPointCloud(oc_expected);
 

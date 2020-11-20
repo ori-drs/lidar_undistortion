@@ -8,7 +8,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 find_package(catkin REQUIRED COMPONENTS pcl_conversions)
 
 find_package(Eigen3)
+
 find_package(OpenCV REQUIRED COMPONENTS core imgcodecs)
+# comment above and uncomment below to enable unit test debugging with gui
+# find_package(OpenCV REQUIRED COMPONENTS core imgcodecs highgui)
+
 find_package(PCL REQUIRED COMPONENTS common io)
 find_package(Boost REQUIRED COMPONENTS system)
 
@@ -23,8 +27,6 @@ else()
   message(WARNING "package ouster_client not found. Not building ouster_undistortion.")
 endif()
 
-
-
 catkin_package(INCLUDE_DIRS include
                LIBRARIES ${LIBRARIES_TO_BUILD} velodyne_undistortion
                CATKIN_DEPENDS ${CATKIN_DEP_TO_ADD}
@@ -38,10 +40,12 @@ include_directories(include ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} src/pose_buffer.cpp)
 
 if(${ouster_client_FOUND})
-  message(STATUS "Package ouster_ros found. Building ouster_undistorter.")
+  message(STATUS "Package ouster_client found. Building ouster_undistorter.")
   include_directories(${ouster_client_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
   add_library(ouster_undistortion src/ouster_undistorter.cpp
-                                  src/ouster_image_converter.cpp)
+                                  src/ouster_image_converter.cpp
+                                  src/ouster_metadata_utils.cpp
+                                  src/ouster_config.cpp)
   target_link_libraries(ouster_undistortion ${PROJECT_NAME}
                                             ${catkin_LIBRARIES}
                                             ${ouster_client_LIBRARIES}
@@ -62,7 +66,7 @@ target_link_libraries(velodyne_undistortion ${catkin_LIBRARIES}
                                             yaml-cpp)
 
 
-
+list(APPEND LIBRARIES_TO_BUILD "velodyne_undistortion")
 
 
 if(CATKIN_ENABLE_TESTING)

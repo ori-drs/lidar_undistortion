@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <node name="lidar_undistortion" pkg="lidar_undistortion_ros" type="ouster_undistortion_node" output="screen">
+        <remap from="pointcloud" to="/os_cloud_node/points" />
+        <param name="pose_topic" value="/vilens/pose" />
+        <param name="base_frame_id" value="base" />
+        <param name="odom_frame_id" value="odom" />
+        <param name="lidar_frame_id" value="os_lidar" />
+        <param name="ouster_config_file" value="$(find lidar_undistortion)/config/os0_128_gen2_fw_114b12_sn992015000018_.json" />
+    </node>
+    <node name="undistortion_rviz" pkg="rviz" type="rviz" args="-d $(find lidar_undistortion_ros)/config/ouster_undistortion.rviz" output="log" />
+    
+</launch>

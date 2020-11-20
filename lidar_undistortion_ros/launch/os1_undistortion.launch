@@ -11,6 +11,7 @@
         <param name="base_frame_id" value="imu" />
         <param name="odom_frame_id" value="odom" />
         <param name="lidar_frame_id" value="os1_lidar" />
+        <param name="ouster_config_file" value="$(find lidar_undistortion)/config/os1_64_gen1_fw_114_sn_991924000158.json" />
     </node>
     
     <node if="$(arg rviz)" name="undistortion_rviz" pkg="rviz" type="rviz" args="-d $(find lidar_undistortion_ros)/config/ouster_undistortion.rviz" output="log" />

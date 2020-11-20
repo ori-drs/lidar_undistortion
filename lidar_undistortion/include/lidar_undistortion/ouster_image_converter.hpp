@@ -1,35 +1,31 @@
 #pragma once
 #include "lidar_undistortion/lidar_image_converter.hpp"
 #include "lidar_undistortion/ouster_point.hpp"
-#include <ouster/types.h>
-
+#include "lidar_undistortion/print_macros.hpp"
+#include "lidar_undistortion/ouster_config.hpp"
 
 namespace lidar_undistortion {
+
 class OusterImageConverter : public LidarImageConverter<PointOuster> {
 public:
   using OusterPoint = PointOuster;
   using OusterCloud = pcl::PointCloud<OusterPoint>;
 
-  OusterImageConverter(int w, int h) :
-    // WARNING: getting the default values for a 1024 mode lidar with fw < 1.14
-    // this should be retrieved from the device using the parse_metadata
-    W(w), H(h), pixel_offset_(ouster::sensor::default_data_format(ouster::sensor::lidar_mode::MODE_1024x10).pixel_shift_by_row)
+  OusterImageConverter(const OusterConfig& cfg) :
+    cfg_(cfg)
   {
-    // NOTE: due to a possible bug in the new generation function
-    // of ouster::sensor::default_data_format() the values are inverted, so we
-    // reverse the vector to compensate for this.
-    // For more info, compare line 71 of os1_util.cpp from the old driver code
-    // and line 51 of types.cpp from the new driver code
-    std::reverse(pixel_offset_.begin(), pixel_offset_.end());
+  }
 
-    // print list of offests for debug purposes:
-    /*
-    std::cout << "Pixel offsets:" << std::endl;
+  // default constructor for OS1-64 Gen1 sensor
+  OusterImageConverter() : OusterImageConverter(OusterConfig()) {
+    DEBUG_PRINTLN( "H     : " << cfg_.H              );
+    DEBUG_PRINTLN( "W     : " << cfg_.W              );
+    DEBUG_PRINTLN( "OusterImageConverter constructor");
+    DEBUG_PRINTLN( cfg_.pixel_offsets_[0]            );
+  }
 
-    for(auto& it : pixel_offset_){
-      std::cout << it << std::endl;
-    }
-    */
+  ~OusterImageConverter() override {
+
   }
 
   void convert(const OusterCloud& pc,
@@ -68,9 +64,7 @@ public:
   }
 
 private:
-  int W;
-  int H;
-  std::vector<int> pixel_offset_;
+  OusterConfig cfg_;
 };
 
 }

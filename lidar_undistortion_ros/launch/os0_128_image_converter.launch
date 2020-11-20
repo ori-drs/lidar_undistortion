@@ -1,0 +1,8 @@
+<?xml version="1.0" ?>
+<launch>
+
+<node name="ouster_image_converter" pkg="lidar_undistortion_ros" type="ouster_image_converter_node">
+  <param name="ouster_config_file" value="$(find lidar_undistortion)/config/os0_128_gen2_fw_114b12_sn_992015000018.json" />
+</node>
+
+</launch>

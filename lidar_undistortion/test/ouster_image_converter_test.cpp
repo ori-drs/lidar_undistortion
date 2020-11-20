@@ -6,6 +6,8 @@
 #include <gtest/gtest.h>
 #include <pwd.h> // to get home directory
 #include <random>
+#include <pcl/range_image/range_image_spherical.h>
+#include <boost/filesystem/operations.hpp>
 
 using namespace pcl::io;
 using namespace lidar_undistortion;
@@ -22,6 +24,49 @@ void getDrsTestingDataPath(std::string &path) {
   } else {
       path = std::string(drs_data_env);
   }
+}
+
+TEST(OusterImageConverter, DISABLED_convertRangeSpherical){
+
+  std::string drs_testing_data;
+  getDrsTestingDataPath(drs_testing_data);
+  boost::filesystem::path drs_testing_data_path(drs_testing_data);
+
+  EXPECT_TRUE(boost::filesystem::is_directory(drs_testing_data_path));
+  EXPECT_TRUE(drs_testing_data_path.is_complete());
+
+  std::string cloud_file = "lidar_undistortion/new_college.pcd";
+  boost::filesystem::path cloud_path(cloud_file);
+  auto cloud_path_complete = boost::filesystem::canonical(cloud_path, drs_testing_data_path);
+  EXPECT_TRUE(boost::filesystem::is_regular_file(cloud_path_complete));
+
+  pcl::PointCloud<PointOuster> in_cloud;
+  EXPECT_NE(loadPCDFile(cloud_path_complete.string(), in_cloud), -1);
+
+  EXPECT_TRUE(boost::filesystem::is_regular_file(cloud_path_complete));
+  EXPECT_NE(loadPCDFile(cloud_path_complete.string(), in_cloud), -1);
+
+  // We now want to create a range image from the above point cloud, with a 1deg angular resolution
+   float angularResolution = (float) (  1.0f * (M_PI/180.0f));  //   1.0 degree in radians
+   float maxAngleWidth     = (float) (360.0f * (M_PI/180.0f));  // 360.0 degree in radians
+   float maxAngleHeight    = (float) (180.0f * (M_PI/180.0f));  // 180.0 degree in radians
+   Eigen::Affine3f sensorPose = (Eigen::Affine3f)Eigen::Translation3f(0.0f, 0.0f, 0.0f);
+   pcl::RangeImage::CoordinateFrame coordinate_frame = pcl::RangeImage::CAMERA_FRAME;
+   float noiseLevel=0.00;
+   float minRange = 0.0f;
+   int borderSize = 1;
+
+  pcl::RangeImageSpherical spherical;
+
+  spherical.createFromPointCloud(in_cloud, angularResolution, maxAngleWidth, maxAngleHeight,
+                                 sensorPose, coordinate_frame, noiseLevel, minRange, borderSize);
+
+
+  float* ranges = spherical.getRangesArray();
+
+
+
+
 }
 
 TEST(OusterImageConverter, converRangeMono){
@@ -50,7 +95,7 @@ TEST(OusterImageConverter, converRangeMono){
   std::cerr << "Attempt to read " << cloud_path_complete.string() << std::endl;
   EXPECT_NE(loadPCDFile(cloud_path_complete.string(), in_cloud), -1);
 
-  OusterImageConverter oic(1024, 64);
+  OusterImageConverter oic;
 
   cv::Mat ranges(64, 1024, CV_64FC1);
   cv::Mat altitudes(64, 1024, CV_64FC1);
@@ -90,7 +135,7 @@ TEST(OusterImageConverter, converRangeMono){
 }
 
 TEST(OusterImageConverter, cartesianToSpherical){
-  OusterImageConverter oic(1024, 64);
+  OusterImageConverter oic;
   std::random_device rd;
   std::mt19937_64 gen(rd());
 

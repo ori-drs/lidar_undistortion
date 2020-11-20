@@ -14,6 +14,8 @@ template<class PointT>
 class LidarImageConverter {
 public:
 
+  virtual ~LidarImageConverter() = default;
+
   virtual void convert(const pcl::PointCloud<PointT>& pc,
                        cv::Mat& ranges,
                        cv::Mat& altitudes,

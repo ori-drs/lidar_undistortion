@@ -7,7 +7,7 @@ project(lidar_undistortion_ros)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp image_transport cv_bridge tf2_ros lidar_undistortion lidar_undistortion_msgs)
+find_package(catkin REQUIRED COMPONENTS roscpp image_transport cv_bridge tf2_ros lidar_undistortion lidar_undistortion_msgs ouster_ros)
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
@@ -19,14 +19,18 @@ list(APPEND LIBRARIES_TO_BUILD ${PROJECT_NAME})
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
-find_package(velodyne_pointcloud)
+find_package(velodyne_pointcloud QUIET)
 
 if(${velodyne_pointcloud_FOUND})
   message(STATUS "Package velodyne_pointcloud found. Building velodyne_undistorter.")
-  list(APPEND LIBRARIES_TO_BUILD "velodyne_undistortion")
+  # this list should match what is being created below
+  list(APPEND VELODYNE_TARGETS "velodyne_undistortion_ros")
+  list(APPEND VELODYNE_TARGETS "velodyne_undistortion_node")
+  list(APPEND VELODYNE_TARGETS "velodyne_image_converter_node")
 else()
   message(WARNING "package velodyne_pointcloud not found. Not building velodyne_undistortion.")
 endif()
+
 
 
 ## To declare and build messages, services or actions from within this
@@ -195,18 +199,15 @@ install(TARGETS ouster_undistortion_node ouster_image_converter_node
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
- install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} ${VELODYNE_TARGETS}
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
- )
+   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        FILES_MATCHING PATTERN "*.hpp")
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
