@@ -9,4 +9,4 @@
 #endif
 
 #define ERROR_PRINTLN(x) std::cerr << "ERROR: " << x << std::endl
-
+#define INFO_PRINTLN(x) std::cout << "INFO: " << x << std::endl
