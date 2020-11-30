@@ -21,27 +21,26 @@ void populate_metadata_defaults(sensor::sensor_info& info,
 
     ouster::util::version v = ouster::util::version_of_string(info.fw_rev);
     if (v == ouster::util::invalid_version)
-        ERROR_PRINTLN("Unknown sensor firmware version; output may not be reliable");
+        INFO_PRINTLN("Unknown sensor firmware version; output may not be reliable");
     else if (v < sensor::min_version)
         ERROR_PRINTLN("Firmware < " << to_string(sensor::min_version).c_str() << " not supported; output may not be reliable");
 
     if (!info.mode) {
-        ERROR_PRINTLN(
-            "Lidar mode not found in metadata; output may not be reliable");
+        ERROR_PRINTLN("Lidar mode not found in metadata; output may not be reliable");
         info.mode = specified_lidar_mode;
     }
 
     if (!info.prod_line.size()) info.prod_line = "UNKNOWN";
 
     if (info.beam_azimuth_angles.empty() || info.beam_altitude_angles.empty()) {
-        ERROR_PRINTLN("Beam angles not found in metadata; using design values");
+        INFO_PRINTLN("Beam angles not found in metadata; using design values");
         info.beam_azimuth_angles = sensor::gen1_azimuth_angles;
         info.beam_altitude_angles = sensor::gen1_altitude_angles;
     }
 
     if (info.imu_to_sensor_transform.empty() ||
         info.lidar_to_sensor_transform.empty()) {
-        ERROR_PRINTLN("Frame transforms not found in metadata; using design values");
+        INFO_PRINTLN("Frame transforms not found in metadata; using design values");
         info.imu_to_sensor_transform = sensor::imu_to_sensor_transform;
         info.lidar_to_sensor_transform = sensor::lidar_to_sensor_transform;
     }
@@ -50,7 +49,7 @@ void populate_metadata_defaults(sensor::sensor_info& info,
 // try to read metadata file
 std::string read_metadata(const std::string& meta_file) {
     if (meta_file.size()) {
-        ERROR_PRINTLN("Reading metadata from " << meta_file.c_str());
+        INFO_PRINTLN("Reading metadata from " << meta_file.c_str());
     } else {
         ERROR_PRINTLN("No metadata file specified");
         return "";
