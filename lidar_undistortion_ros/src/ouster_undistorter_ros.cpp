@@ -83,6 +83,8 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle nh,
   rings_ = os_cfg.H;
   cvt_ = std::make_unique<OusterImageConverter>(os_cfg);
 
+  setRingsAndBeams(rings_, beams_);
+
   ranges_.create(rings_,beams_, CV_64FC1);
   altitudes_.create(rings_,beams_, CV_64FC1);
   azimuths_.create(rings_,beams_, CV_64FC1);
