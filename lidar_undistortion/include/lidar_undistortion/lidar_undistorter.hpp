@@ -29,12 +29,7 @@ public:
   LidarUndistorter(uint64_t pose_buffer_length) : odometry_history_(pose_buffer_length),
   times_lut_(beams_*rings_, 0) {
 
-    ranges_.create(rings_,beams_, CV_64FC1);
-    altitudes_.create(rings_,beams_, CV_64FC1);
-    azimuths_.create(rings_,beams_, CV_64FC1);
-    intensities_.create(rings_,beams_, CV_64FC1);
-    reflectivities_.create(rings_,beams_, CV_64FC1);
-    ranges_viz_.create(rings_, beams_, CV_8UC1);
+
   }
 
   LidarUndistorter() : LidarUndistorter(1e9) {
@@ -114,12 +109,7 @@ protected:
   // container that returns the time offset from the start of the scan given
   // the beam number
   std::vector<int32_t> times_lut_;
-  cv::Mat ranges_;
-  cv::Mat altitudes_;
-  cv::Mat azimuths_;
-  cv::Mat ranges_viz_;
-  cv::Mat intensities_;
-  cv::Mat reflectivities_;
+
   bool reprocess_clouds_ = true;
 };
 

@@ -78,7 +78,17 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle nh,
   populate_metadata_defaults(info, MODE_1024x10);
 
   OusterConfig os_cfg(info);
+
+  beams_ = os_cfg.W;
+  rings_ = os_cfg.H;
   cvt_ = std::make_unique<OusterImageConverter>(os_cfg);
+
+  ranges_.create(rings_,beams_, CV_64FC1);
+  altitudes_.create(rings_,beams_, CV_64FC1);
+  azimuths_.create(rings_,beams_, CV_64FC1);
+  intensities_.create(rings_,beams_, CV_64FC1);
+  reflectivities_.create(rings_,beams_, CV_64FC1);
+  ranges_viz_.create(rings_, beams_, CV_8UC1);
 
   // retrieve the transform from base to lidar frame
   while(nh.ok()){
