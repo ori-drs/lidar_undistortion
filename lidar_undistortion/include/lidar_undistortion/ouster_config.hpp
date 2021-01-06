@@ -1,6 +1,6 @@
 #pragma once
 #include "lidar_undistortion/print_macros.hpp"
-#include <ouster/types.h>
+#include "lidar_undistortion/ouster_metadata_utils.hpp"
 
 // namespace alias
 namespace os = ouster::sensor;
