@@ -27,5 +27,8 @@ public:
   bool processCloud(const OusterCloud::Ptr& pointcloud,
                     const uint64_t timestamp) override;
 
+  bool processCloud(const OusterCloud::Ptr& pointcloud,
+                    const uint64_t timestamp,
+                    const uint64_t desired_timestamp) override;
 };
 }
