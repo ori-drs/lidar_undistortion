@@ -49,13 +49,16 @@ target_link_libraries(velodyne_undistortion ${catkin_LIBRARIES}
                                             yaml-cpp)
 
 if(CATKIN_ENABLE_TESTING)
+
+  find_package(jsoncpp REQUIRED)
+
   catkin_add_gtest(test_pose_buffer test/pose_buffer_test.cpp)
   target_link_libraries(test_pose_buffer gtest_main ${PROJECT_NAME})
 
   catkin_add_gtest(test_ouster_undistortion test/fill_clouds.cpp
                                           test/ouster_undistortion_test.cpp)
 
-  target_link_libraries(test_ouster_undistortion gtest_main ouster_undistortion)
+  target_link_libraries(test_ouster_undistortion gtest_main ouster_undistortion ${Boost_LIBRARIES} jsoncpp_lib)
 
   catkin_add_gtest(test_ouster_img_converter test/ouster_image_converter_test.cpp)
   target_link_libraries(test_ouster_img_converter gtest_main
