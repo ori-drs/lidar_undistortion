@@ -32,7 +32,6 @@ namespace YAML {
 } /* YAML */
 #endif // HAVE_NEW_YAMLCPP
 
-#include <ros/ros.h>
 #include "lidar_undistortion/velodyne_calibration.hpp"
 
 namespace velodyne_undistortion
@@ -190,7 +189,7 @@ namespace velodyne_undistortion
         calibration.laser_corrections[next_index].laser_ring = ring;
         next_angle = min_seen;
         if (calibration.ros_info) {
-          ROS_INFO("laser_ring[%2u] = %2u, angle = %+.6f",
+          printf("laser_ring[%2u] = %2u, angle = %+.6f\n",
                    next_index, ring, next_angle);
         }
       }

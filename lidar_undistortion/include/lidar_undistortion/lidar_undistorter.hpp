@@ -29,12 +29,7 @@ public:
   LidarUndistorter(uint64_t pose_buffer_length) : odometry_history_(pose_buffer_length),
   times_lut_(beams_*rings_, 0) {
 
-    ranges_.create(rings_,beams_, CV_64FC1);
-    altitudes_.create(rings_,beams_, CV_64FC1);
-    azimuths_.create(rings_,beams_, CV_64FC1);
-    intensities_.create(rings_,beams_, CV_64FC1);
-    reflectivities_.create(rings_,beams_, CV_64FC1);
-    ranges_viz_.create(rings_, beams_, CV_8UC1);
+
   }
 
   LidarUndistorter() : LidarUndistorter(1e9) {
@@ -114,12 +109,7 @@ protected:
   // container that returns the time offset from the start of the scan given
   // the beam number
   std::vector<int32_t> times_lut_;
-  cv::Mat ranges_;
-  cv::Mat altitudes_;
-  cv::Mat azimuths_;
-  cv::Mat ranges_viz_;
-  cv::Mat intensities_;
-  cv::Mat reflectivities_;
+
   bool reprocess_clouds_ = true;
 };
 
@@ -137,6 +127,9 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
   // Get the start and end times of the pointcloud
   // t_start should be the same as timestamp
   const auto minmax_time = std::minmax_element(begin(times_lut_), end(times_lut_));
+  DEBUG_PRINTLN("ring_ size is " << unsigned(rings_) << " beam_ size is  "
+                                 << beams_ << " time look up table size is "
+                                 << times_lut_.size());
   DEBUG_PRINTLN("minmax times : " << (*minmax_time.first ) << " " << (*minmax_time.second));
   uint64_t t_start = start_timestamp + (*minmax_time.first );
   uint64_t t_end =   start_timestamp + (*minmax_time.second);
@@ -217,7 +210,7 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
   // each point's timestamp
   uint32_t last_transform_update_t = 0;
 
-  Eigen::Isometry3d T_S_original__S_corrected = Eigen::Isometry3d::Identity();
+  Eigen::Isometry3d T_S_original_S_corrected = Eigen::Isometry3d::Identity();
   size_t point_counter = 0;
   for (auto &point : pointcloud->points) {
     // Check if the current point's timestamp differs from the previous one
@@ -245,13 +238,13 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
         DEBUG_PRINTLN("Adding interpolated pose to pose history"
                         << "\n Pose history size: " << odometry_history_.size());
       }
-      T_S_original__S_corrected = T_S_F_original.inverse() * T_F_S_correct;
+      T_S_original_S_corrected = T_S_F_original.inverse() * T_F_S_correct;
     }
 
     // Correct the point's distortion, by transforming it into the fixed
     // frame based on the LiDAR sensor's current true pose, and then transform
     // it back into the lidar scan frame
-    point = pcl::transformPoint(point, T_S_original__S_corrected.cast<float>());
+    point = pcl::transformPoint(point, T_S_original_S_corrected.cast<float>());
     point_counter++;
   }
   return true;

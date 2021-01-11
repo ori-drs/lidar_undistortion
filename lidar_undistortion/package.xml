@@ -2,7 +2,7 @@
 <package format="2">
   <name>lidar_undistortion</name>
   <version>1.0.0</version>
-  <description>Undistort pointclouds using an odometry TF input</description>
+  <description>Undistort pointclouds using an odometry input</description>
 
   <maintainer email="victorr@ethz.ch">Victor Reijgwart</maintainer>
   <maintainer email="mcamurri@robots.ox.ac.uk">Marco Camurri</maintainer>
@@ -13,7 +13,5 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>ouster_client</depend>
-  <depend>pcl_conversions</depend>
   <test_depend>rosunit</test_depend>
 </package>

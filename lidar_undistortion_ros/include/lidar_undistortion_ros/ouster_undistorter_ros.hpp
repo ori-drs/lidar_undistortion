@@ -48,5 +48,11 @@ private:
 
 protected:
   std::unique_ptr<OusterImageConverter> cvt_;
+  cv::Mat ranges_;
+  cv::Mat altitudes_;
+  cv::Mat azimuths_;
+  cv::Mat ranges_viz_;
+  cv::Mat intensities_;
+  cv::Mat reflectivities_;
 };
 }

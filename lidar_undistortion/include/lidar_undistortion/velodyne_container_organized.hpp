@@ -34,10 +34,8 @@
 
 #include "lidar_undistortion/velodyne_container_base.hpp"
 #include "lidar_undistortion/velodyne_point.hpp"
-#include <sensor_msgs/point_cloud2_iterator.h>
 #include <string>
 #include <pcl/point_cloud.h>
-#include <pcl_conversions/pcl_conversions.h>
 
 
 namespace velodyne {
