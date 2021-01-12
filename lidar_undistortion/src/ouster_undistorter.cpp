@@ -19,8 +19,8 @@ bool OusterUndistorter::processCloud(const OusterCloud::Ptr &pointcloud,
   // this has redundancy because we copy the same value multiple times
   // but it is more generic because it does not assume the same timing occurs
   // from a column of the scanner
-  for (auto it = pointcloud->points.begin(); it != pointcloud->points.end();
-       ++it) {
+  for (auto it = pointcloud->points.begin(); it != pointcloud->points.end(); ++it)
+  {
     times_lut_[timing_counter++] = it->t;
   }
   return LidarUndistorter::processCloud(pointcloud, timestamp,

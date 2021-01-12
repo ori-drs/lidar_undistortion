@@ -27,7 +27,7 @@ void getDrsTestingDataPath(std::string& path) {
   }
 }
 
-TEST(OusterUndistorter, test_os_64){
+TEST(OusterUndistorter, testOS64){
   OusterUndistorter lu(15e9);
 
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
@@ -96,7 +96,7 @@ TEST(OusterUndistorter, test_os_64){
 }
 
 
-TEST(OusterUndistorter, test_os_128){
+TEST(OusterUndistorter, testOS128){
   OusterUndistorter lu(15e9);
   lu.setRingsAndBeams(128,1024);
 
