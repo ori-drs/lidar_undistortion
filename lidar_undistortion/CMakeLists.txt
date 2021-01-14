@@ -76,7 +76,10 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(test_ouster_undistortion test/fill_clouds.cpp
                                           test/ouster_undistortion_test.cpp)
 
-  target_link_libraries(test_ouster_undistortion gtest_main ouster_undistortion)
+  target_link_libraries(test_ouster_undistortion gtest_main
+                                                 ouster_undistortion
+                                                 ${Boost_LIBRARIES}
+                                                 ${PCL_LIBRARIES})
 
   catkin_add_gtest(test_ouster_img_converter test/ouster_image_converter_test.cpp)
   target_link_libraries(test_ouster_img_converter gtest_main
