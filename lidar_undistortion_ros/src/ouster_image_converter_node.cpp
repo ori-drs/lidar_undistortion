@@ -10,7 +10,6 @@
 #include <opencv2/core.hpp>
 #include <ouster_ros/OSConfigSrv.h>
 #include <iostream>
-#include <ouster/types.h>
 #include <lidar_undistortion/ouster_metadata_utils.hpp>
 
 using namespace lidar_undistortion;

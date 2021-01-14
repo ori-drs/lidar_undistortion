@@ -7,11 +7,11 @@ namespace lidar_undistortion {
 
 struct EIGEN_ALIGN16 PointOuster {
     PCL_ADD_POINT4D;
-    float intensity;
+    PCL_ADD_INTENSITY;
     uint32_t t;
     uint16_t reflectivity;
     uint8_t ring;
-    uint16_t noise;
+    uint16_t ambient;
     uint32_t range;
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -27,7 +27,7 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(lidar_undistortion::PointOuster,
     (uint32_t, t, t)
     (uint16_t, reflectivity, reflectivity)
     (uint8_t, ring, ring)
-    (uint16_t, noise, noise)
+    (uint16_t, ambient, ambient)
     (uint32_t, range, range)
 )
 // clang-format on

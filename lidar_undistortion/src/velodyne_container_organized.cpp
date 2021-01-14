@@ -1,4 +1,5 @@
 #include "lidar_undistortion/velodyne_container_organized.hpp"
+#include <boost/make_shared.hpp>
 
 using namespace velodyne;
 
