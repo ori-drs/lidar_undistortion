@@ -14,7 +14,7 @@ find_package(OpenCV REQUIRED COMPONENTS core imgcodecs)
 # find_package(OpenCV REQUIRED COMPONENTS core imgcodecs highgui)
 
 find_package(PCL REQUIRED COMPONENTS common io)
-find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system filesystem)
 
 catkin_package(INCLUDE_DIRS include
                LIBRARIES ${PROJECT_NAME} ouster_undistortion velodyne_undistortion
@@ -58,7 +58,11 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(test_ouster_undistortion test/fill_clouds.cpp
                                           test/ouster_undistortion_test.cpp)
 
-  target_link_libraries(test_ouster_undistortion gtest_main ouster_undistortion ${Boost_LIBRARIES} jsoncpp_lib)
+  target_link_libraries(test_ouster_undistortion gtest_main
+                                                 ouster_undistortion
+                                                 ${Boost_LIBRARIES}
+                                                 ${PCL_LIBRARIES}
+                                                 jsoncpp_lib)
 
   catkin_add_gtest(test_ouster_img_converter test/ouster_image_converter_test.cpp)
   target_link_libraries(test_ouster_img_converter gtest_main
