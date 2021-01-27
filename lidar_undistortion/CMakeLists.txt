@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(lidar_undistortion)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -15,6 +15,8 @@ find_package(OpenCV REQUIRED COMPONENTS core imgcodecs)
 
 find_package(PCL REQUIRED COMPONENTS common io)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
+find_package(jsoncpp REQUIRED)
+get_target_property(jsoncpp_INCLUDE_DIRS jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
 
 catkin_package(INCLUDE_DIRS include
                LIBRARIES ${PROJECT_NAME} ouster_undistortion velodyne_undistortion
@@ -22,8 +24,13 @@ catkin_package(INCLUDE_DIRS include
                DEPENDS PCL OpenCV)
 
 
-
-include_directories(include ${EIGEN3_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
+include_directories(
+  include
+  ${EIGEN3_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+  ${jsoncpp_INCLUDE_DIRS}
+)
 
 
 add_library(${PROJECT_NAME} src/pose_buffer.cpp)
@@ -35,7 +42,8 @@ add_library(ouster_undistortion src/ouster_undistorter.cpp
 
 target_link_libraries(ouster_undistortion ${PROJECT_NAME}
                                           ${catkin_LIBRARIES}
-                                          ${OpenCV_LIBRARIES})
+                                          ${OpenCV_LIBRARIES}
+                                          jsoncpp_lib)
 
 add_library(velodyne_undistortion src/velodyne_container.cpp
                                   src/velodyne_container_organized.cpp
@@ -49,9 +57,6 @@ target_link_libraries(velodyne_undistortion ${catkin_LIBRARIES}
                                             yaml-cpp)
 
 if(CATKIN_ENABLE_TESTING)
-
-  find_package(jsoncpp REQUIRED)
-
   catkin_add_gtest(test_pose_buffer test/pose_buffer_test.cpp)
   target_link_libraries(test_pose_buffer gtest_main ${PROJECT_NAME})
 

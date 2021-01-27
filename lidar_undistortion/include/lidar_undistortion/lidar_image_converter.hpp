@@ -2,7 +2,7 @@
 #include <Eigen/Dense>
 #include <pcl/point_cloud.h>
 #include <pcl/range_image/range_image_spherical.h>
-#include <opencv/cxcore.hpp>
+#include <opencv2/core.hpp>
 
 namespace lidar_undistortion {
 
