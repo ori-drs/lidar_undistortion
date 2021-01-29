@@ -8,7 +8,7 @@
 
 
     <node name="lidar_undistortion" pkg="lidar_undistortion_ros" type="ouster_undistortion_node" output="screen">
-        <remap from="pointcloud" to="/os1_cloud_node/points" />
+        <param name="point_cloud_topic" value="/os1_cloud_node/points" />
         <param name="pose_topic" value="/vilens/pose" />
         <param name="base_frame_id" value="base" />
         <param name="odom_frame_id" value="odom" />

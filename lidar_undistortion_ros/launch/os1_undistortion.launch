@@ -6,7 +6,7 @@
     <arg name="simulation" default="false" />
 
     <node name="lidar_undistortion" pkg="lidar_undistortion_ros" type="ouster_undistortion_node" output="screen">
-        <remap from="pointcloud" to="/penguin/os1_cloud_node/points" />
+        <param name="point_cloud_topic" value="/penguin/os1_cloud_node/points" />
         <param name="pose_topic" value="$(arg pose_topic)" />
         <param name="base_frame_id" value="imu" />
         <param name="odom_frame_id" value="odom" />

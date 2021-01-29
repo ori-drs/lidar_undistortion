@@ -13,7 +13,7 @@ namespace lidar_undistortion {
 
 class OusterUndistorterROS : public OusterUndistorter {
 public:
- OusterUndistorterROS(ros::NodeHandle nh, ros::NodeHandle nh_private);
+ OusterUndistorterROS(ros::NodeHandle& nh);
 
  void pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg);
  void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
@@ -31,6 +31,7 @@ private:
  std::string fixed_frame_id_;
  std::string base_frame_id_ = "imu";
  std::string pose_topic_;
+ std::string point_cloud_topic_;
  // TF frame name of the lidar scan frame
  std::string lidar_frame_id_;
 
