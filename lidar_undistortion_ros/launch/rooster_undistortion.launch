@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
-    <param name="use_sim_time" value="true" />
-    <include file="$(find rooster_description)/launch/load.launch">
-      <arg name="simulation" value="true" />
-    </include>
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+  <!-- use rosbag play with the clock option  -->
+  <param name="use_sim_time" value="true" />
 
+  <!-- load the rooster in the parameter server -->
+  <include file="$(find rooster_description)/launch/load.launch">
+    <arg name="simulation" value="true" />
+  </include>
 
-    <node name="lidar_undistortion" pkg="lidar_undistortion_ros" type="ouster_undistortion_node" output="screen">
-        <param name="point_cloud_topic" value="/os1_cloud_node/points" />
-        <param name="pose_topic" value="/vilens/pose" />
-        <param name="base_frame_id" value="base" />
-        <param name="odom_frame_id" value="odom" />
-        <param name="lidar_frame_id" value="os1_lidar" />
-    </node>
-    <!--node name="undistortion_rviz" pkg="rviz" type="rviz" args="-d $(find lidar_undistortion_ros)/config/ouster_undistortion.rviz" output="log" /-->
-    
+  <!-- advertise the fixed TF from the robot model -->
+  <node name="rooster_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <!-- undistort the point clouds from Ouster (using the old driver conventions, before firmware 1.12) -->
+  <node name="lidar_undistortion" pkg="lidar_undistortion_ros" type="ouster_undistortion_node" output="screen">
+    <rosparam command="load" file="$(find lidar_undistortion_ros)/config/rooster_undistortion.yaml" />
+    <!-- load the old ouster config file istalled on Rooster for Newer College Dataset-->
+    <param name="ouster_config_file" value="$(find lidar_undistortion)/config/os1_64_gen1_fw_112_sn_991920100092.json" />
+  </node>
+
+  <!-- open up RViz -->
+  <node name="rooster_undistortion_rviz" pkg="rviz" type="rviz" args="-d $(find lidar_undistortion_ros)/config/ouster_undistortion.rviz" output="log" />   
 </launch>

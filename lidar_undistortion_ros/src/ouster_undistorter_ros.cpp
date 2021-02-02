@@ -16,30 +16,30 @@ using namespace ouster::sensor;
 
 OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle& nh)
   : fixed_frame_id_("odom"),
-    lidar_frame_id_("os1_lidar"),
+    lidar_frame_id_("os_lidar"),
     tf_listener_(tf_buffer_),
     OusterUndistorter(2e9),
     img_transp_(nh),
     corrected_range_pub_(img_transp_.advertise("corrected_range",1))
 {
 
-  nh.getParam("point_cloud_topic", point_cloud_topic_);
+  nh.getParam("point_cloud_input_topic", point_cloud_input_topic_);
+  nh.getParam("pose_topic", pose_topic_);
+  nh.getParam("point_cloud_output_topic", point_cloud_output_topic_);
 
   // Subscribe to the undistorted pointcloud topic
-  pointcloud_sub_ = nh.subscribe(point_cloud_topic_, 100,
+  pointcloud_sub_ = nh.subscribe(point_cloud_input_topic_, 100,
                                  &OusterUndistorterROS::pointcloudCallback, this);
 
   // Advertise the corrected pointcloud topic
   corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>(
-        "pointcloud_corrected", 100, false);
-
-  nh.param("pose_topic", pose_topic_, pose_topic_);
+        point_cloud_output_topic_, 100, false);
 
   pose_sub_ = nh.subscribe(pose_topic_, 100, &OusterUndistorterROS::poseCallback, this);
 
   // Read the odom and lidar frame names from ROS params
-  if(!nh.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_)){
-    ROS_WARN_STREAM("Could not read param \"odom_frame_id\". "
+  if(!nh.param("fixed_frame_id", fixed_frame_id_, fixed_frame_id_)){
+    ROS_WARN_STREAM("Could not read param \"fixed_frame_id\". "
                     << "Setting to default: " << fixed_frame_id_);
   }
   if(!nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)){

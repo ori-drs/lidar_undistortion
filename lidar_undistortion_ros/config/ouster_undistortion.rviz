@@ -13,7 +13,7 @@ Panels:
         - /LiDAR undistortion1/Raw pointcloud1
         - /LiDAR undistortion1/Corrected pointcloud1
       Splitter Ratio: 0.44140625
-    Tree Height: 576
+    Tree Height: 640
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -32,7 +32,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: Corrected pointcloud
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -63,21 +63,63 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        camera0:
+        base_footprint:
           Value: true
-        imu:
+        base_inertia:
           Value: true
-        imu_predict:
+        base_link:
           Value: true
-        odom:
+        camera_accel_frame:
           Value: true
-        os1_imu:
+        camera_accel_optical_frame:
           Value: true
-        os1_lidar:
+        camera_bottom_screw_frame:
           Value: true
-        os1_sensor:
+        camera_color_frame:
           Value: true
-        world:
+        camera_color_optical_frame:
+          Value: true
+        camera_depth_frame:
+          Value: true
+        camera_depth_optical_frame:
+          Value: true
+        camera_gyro_frame:
+          Value: true
+        camera_gyro_optical_frame:
+          Value: true
+        camera_infra1_frame:
+          Value: true
+        camera_infra1_optical_frame:
+          Value: true
+        camera_infra2_frame:
+          Value: true
+        camera_infra2_optical_frame:
+          Value: true
+        camera_link:
+          Value: true
+        front_left_wheel:
+          Value: true
+        front_right_wheel:
+          Value: true
+        os_sensor:
+          Value: true
+        rear_left_wheel:
+          Value: true
+        rear_right_wheel:
+          Value: true
+        rucs_0:
+          Value: true
+        rucs_1:
+          Value: true
+        rucs_2:
+          Value: true
+        rucs_3:
+          Value: true
+        rucs_4:
+          Value: true
+        rucs_5:
+          Value: true
+        sensor_module:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -85,18 +127,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          odom:
-            imu:
-              camera0:
-                {}
-              os1_sensor:
-                os1_imu:
-                  {}
-                os1_lidar:
-                  {}
-            imu_predict:
-              {}
+        {}
       Update Interval: 0
       Value: true
     - Class: rviz/Group
@@ -126,7 +157,7 @@ Visualization Manager:
           Size (Pixels): 1
           Size (m): 0.009999999776482582
           Style: Points
-          Topic: /penguin/os1_cloud_node/points
+          Topic: /os_cloud_node/points
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -156,7 +187,7 @@ Visualization Manager:
           Size (Pixels): 1
           Size (m): 0.009999999776482582
           Style: Points
-          Topic: /lidar_undistortion/pointcloud_corrected
+          Topic: /os_cloud_node/points_corrected
           Unreliable: false
           Use Fixed Frame: true
           Use rainbow: true
@@ -220,13 +251,13 @@ Visualization Manager:
     Saved: ~
 Window Geometry:
   Displays:
-    collapsed: true
+    collapsed: false
   Height: 1048
-  Hide Left Dock: true
+  Hide Left Dock: false
   Hide Right Dock: true
   Image:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd000000040000000000000202000002cbfc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c00610079007300000000ec000002cb000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000004cbfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d000004cb000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000078000000090fc0100000002fb0000000a0049006d0061006700650100000000000007800000005e00fffffffb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d0065010000000000000780000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000007800000030b00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730000000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd0000000400000000000002020000030bfc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c00610079007301000000ac0000030b000000c900fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f000004cbfc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000003d000004cb000000a400fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b20000000000000000000000020000078000000090fc0100000002fb0000000a0049006d0061006700650100000000000007800000005e00fffffffb0000000a00560069006500770073030000004e00000080000002e10000019700000003000007800000003efc0100000002fb0000000800540069006d0065010000000000000780000002eb00fffffffb0000000800540069006d00650100000000000004500000000000000000000005780000030b00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730000000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:

@@ -31,7 +31,8 @@ private:
  std::string fixed_frame_id_;
  std::string base_frame_id_ = "imu";
  std::string pose_topic_;
- std::string point_cloud_topic_;
+ std::string point_cloud_input_topic_ = "/os_cloud_node/points";
+ std::string point_cloud_output_topic_ = "/os_cloud_node/points_corrected";
  // TF frame name of the lidar scan frame
  std::string lidar_frame_id_;
 
