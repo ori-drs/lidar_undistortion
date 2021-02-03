@@ -5,9 +5,10 @@
   <arg name="simulation" default="false" />
 
   <include file="$(find lidar_undistortion_ros)/launch/os_undistortion.launch">
-    <arg name="ouster_config_file" value="$(find lidar_undistortion)/config/os0_128_gen2_fw_114b12_sn992015000018_.json" />
+    <arg name="ouster_config_file" default="$(find lidar_undistortion)/config/os1_64_gen1_fw_114_sn_991924000158.json" />
     <arg name="rviz" value="$(arg rviz)" />
     <arg name="load_ouster_model" default="$(arg load_ouster_model)" />
     <arg name="simulation" value="$(arg simulation)" />
   </include>
 </launch>
+

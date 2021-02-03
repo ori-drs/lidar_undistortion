@@ -6,11 +6,10 @@ int main(int argc, char **argv) {
   ros::init(argc, argv, "lidar_undistortion");
 
   // Create node handles
-  ros::NodeHandle nh;
-  ros::NodeHandle nh_private("~");
+  ros::NodeHandle nh("~");
 
   // Launch the lidar undistorter
-  lidar_undistortion::OusterUndistorterROS lidar_undistorter(nh, nh_private);
+  lidar_undistortion::OusterUndistorterROS lidar_undistorter(nh);
 
   // Spin
   ros::spin();

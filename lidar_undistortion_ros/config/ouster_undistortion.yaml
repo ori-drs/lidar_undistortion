@@ -1,0 +1,7 @@
+fixed_frame_id: "odom"
+base_frame_id: "imu"
+pose_topic: "/vilens/pose_propagated"
+point_cloud_input_topic : "/os_cloud_node/points"
+point_cloud_output_topic: "points_corrected"
+lidar_frame_id: "os_sensor"
+

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  <!-- launch RViz by default -->
+  <arg name="rviz" default="true" />
+  <!-- don't load the ouster model by default -->
+  <arg name="load_ouster_model" default="false" />
+
+  <!-- Config file for the undistortion node -->
+  <arg name="config" default="$(find lidar_undistortion_ros)/config/ouster_undistortion.yaml" />
+
+  <!-- the simulation is for the ouster model (publishes extra fixed TF) -->
+  <arg name="simulation" default="false" />
+
+  <!-- this is the config file produced by the Ouster driver. It is normally 
+       located in the $HOME/.ros/10.5.5.x.json of the PC running the ROS 
+       driver, where 10.5.5.x is the IP of the sensor. 
+       Using a local copy of the OS1-64 Gen1 by default.  -->
+  <arg name="ouster_config_file" default="$(find lidar_undistortion)/config/os1_64_gen1_fw_114_sn_991924000158.json" />
+
+  <!-- launch the main undistortion node, loading its default paramters from YAML -->
+  <node name="lidar_undistortion" pkg="lidar_undistortion_ros" type="ouster_undistortion_node" output="screen">
+    <rosparam command="load" file="$(arg config)" />
+    <param name="ouster_config_file" value="$(arg ouster_config_file)" />
+  </node>
+
+  <!-- Load the Ouster model into the parameter server, if desired -->
+  <include if="$(arg load_ouster_model)" file="$(find ouster_description)/launch/view_urdf.launch">
+    <arg name="rviz" value="false" />
+    <arg name="simulation" value="$(arg simulation)" />
+  </include>
+
+  <!-- launch RViz if desired -->
+  <node if="$(arg rviz)" name="ouster_undistortion_rviz" pkg="rviz" type="rviz" args="-d $(find lidar_undistortion_ros)/config/ouster_undistortion.rviz" output="log" />
+</launch>
+

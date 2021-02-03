@@ -1,0 +1,10 @@
+# these settings correspond to the old ouster driver (fw < 1.12)
+# used for the Newer College Dataset
+
+fixed_frame_id: "odom"
+base_frame_id: "base"
+pose_topic: "/vilens/pose"
+point_cloud_input_topic : "/os1_cloud_node/points"
+point_cloud_output_topic: "points_corrected"
+lidar_frame_id: "os1_lidar"
+

@@ -14,37 +14,39 @@ using namespace lidar_undistortion;
 using namespace boost::filesystem;
 using namespace ouster::sensor;
 
-OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle nh,
-                                         ros::NodeHandle nh_private)
+OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle& nh)
   : fixed_frame_id_("odom"),
-    lidar_frame_id_("os1_lidar"),
+    lidar_frame_id_("os_lidar"),
     tf_listener_(tf_buffer_),
     OusterUndistorter(2e9),
-    img_transp_(nh_private),
+    img_transp_(nh),
     corrected_range_pub_(img_transp_.advertise("corrected_range",1))
 {
+
+  nh.getParam("point_cloud_input_topic", point_cloud_input_topic_);
+  nh.getParam("pose_topic", pose_topic_);
+  nh.getParam("point_cloud_output_topic", point_cloud_output_topic_);
+
   // Subscribe to the undistorted pointcloud topic
-  pointcloud_sub_ = nh.subscribe("pointcloud", 100,
+  pointcloud_sub_ = nh.subscribe(point_cloud_input_topic_, 100,
                                  &OusterUndistorterROS::pointcloudCallback, this);
 
   // Advertise the corrected pointcloud topic
-  corrected_pointcloud_pub_ = nh_private.advertise<sensor_msgs::PointCloud2>(
-        "pointcloud_corrected", 100, false);
-
-  nh_private.param("pose_topic", pose_topic_, pose_topic_);
+  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>(
+        point_cloud_output_topic_, 100, false);
 
   pose_sub_ = nh.subscribe(pose_topic_, 100, &OusterUndistorterROS::poseCallback, this);
 
   // Read the odom and lidar frame names from ROS params
-  if(!nh_private.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_)){
-    ROS_WARN_STREAM("Could not read param \"odom_frame_id\". "
+  if(!nh.param("fixed_frame_id", fixed_frame_id_, fixed_frame_id_)){
+    ROS_WARN_STREAM("Could not read param \"fixed_frame_id\". "
                     << "Setting to default: " << fixed_frame_id_);
   }
-  if(!nh_private.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)){
+  if(!nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)){
     ROS_WARN_STREAM("Could not read param \"lidar_frame_id\". "
                     << "Setting to default: " << lidar_frame_id_);
   }
-  if(!nh_private.param("base_frame_id", base_frame_id_, base_frame_id_)){
+  if(!nh.param("base_frame_id", base_frame_id_, base_frame_id_)){
     ROS_WARN_STREAM("Could not read param \"base_frame_id\". "
                     << "Setting to default: " << base_frame_id_);
   }
@@ -62,7 +64,7 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle nh,
                     << "Attempting to read file name from param server.");
     std::string json_cfg_file;
     // 2. if server unavailable, load the file from parameter server and parse it
-    if(nh_private.getParam("ouster_config_file", json_cfg_file) &&
+    if(nh.getParam("ouster_config_file", json_cfg_file) &&
        is_regular_file(path(json_cfg_file)))
     {
       std::string metadata_string = read_metadata(json_cfg_file);
