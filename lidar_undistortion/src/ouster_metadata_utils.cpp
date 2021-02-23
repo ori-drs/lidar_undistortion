@@ -204,8 +204,8 @@ void populate_metadata_defaults(sensor::sensor_info& info,
 
 // try to read metadata file
 std::string read_metadata(const std::string& meta_file) {
-    if (meta_file.size()) {
-        INFO_PRINTLN("Reading metadata from " << meta_file.c_str());
+    if (!meta_file.empty()) {
+        INFO_PRINTLN("Reading metadata from " << meta_file);
     } else {
         ERROR_PRINTLN("No metadata file specified");
         return "";
@@ -218,11 +218,9 @@ std::string read_metadata(const std::string& meta_file) {
     ifs.close();
 
     if (!ifs)
-        ERROR_PRINTLN("Failed to read " << meta_file.c_str() << " check that the path is valid");
+        ERROR_PRINTLN("Failed to read " << meta_file << " check that the path is valid");
 
     return buf.str();
 }
-
-
 
 }

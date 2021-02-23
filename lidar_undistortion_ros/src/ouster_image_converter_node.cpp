@@ -48,7 +48,7 @@ public:
          is_regular_file(path(json_cfg_file)))
       {
         std::string metadata_string = read_metadata(json_cfg_file);
-        std::cerr << metadata_string << std::endl;
+        // std::cerr << metadata_string << std::endl;
         info  = parse_metadata(metadata_string);
       } else {
         // 3. if file is not available, fill in with default values from OS1-64 Gen1
