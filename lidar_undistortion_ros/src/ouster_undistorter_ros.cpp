@@ -56,7 +56,7 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle& nh)
 
   sensor_info info;
 
-  ros::ServiceClient client = nh_.serviceClient<ouster_ros::OSConfigSrv>("os_config");
+  ros::ServiceClient client = nh.serviceClient<ouster_ros::OSConfigSrv>("os_config");
   if (client.call(cfg_srv)) {
     info  = parse_metadata(cfg_srv.response.metadata);
   } else {
