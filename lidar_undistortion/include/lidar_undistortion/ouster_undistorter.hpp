@@ -24,6 +24,8 @@ public:
 
   }
 
+  virtual ~OusterUndistorter() = default;
+
   bool processCloud(const OusterCloud::Ptr& pointcloud,
                     const uint64_t timestamp) override;
 
