@@ -120,8 +120,9 @@ void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2& po
 
   // std::chrono::time_point<clock_> beg_ = clock_::now();
   if(!processCloud(pointcloud, pointcloud_msg.header.stamp.toNSec())){
+    ROS_DEBUG_STREAM("processCloud for ns=" << pointcloud_msg.header.stamp.toNSec() << " returned false, ignoring point cloud.");
     return;
-  };
+  }
   // std::cout << "Time for reprocessCloudBuffer: " << std::chrono::duration_cast<second_> (clock_::now() - beg_).count() << std::endl;
 
   // Create the corrected pointcloud ROS msg

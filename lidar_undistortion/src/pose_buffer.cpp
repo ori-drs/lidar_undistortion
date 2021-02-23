@@ -3,6 +3,7 @@
 #include <iostream>
 
 bool PoseBuffer::canInterpolate(uint64_t nsec){
+  DEBUG_PRINTLN("[canInterpolate] pose_history_ size=" << pose_history_.size());
   return !pose_history_.empty() &&
     nsec >= pose_history_.begin()->first &&
     nsec <= pose_history_.rbegin()->first &&
