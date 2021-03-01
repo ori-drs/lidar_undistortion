@@ -5,7 +5,7 @@ project(lidar_undistortion_ros)
 SET(CMAKE_CXX_STANDARD 14)
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS roscpp image_transport cv_bridge tf2_ros lidar_undistortion lidar_undistortion_msgs ouster_ros)
+find_package(catkin REQUIRED COMPONENTS roscpp image_transport cv_bridge tf2_ros lidar_undistortion lidar_undistortion_msgs ouster_ros velodyne_msgs)
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
@@ -14,20 +14,10 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
 
 list(APPEND LIBRARIES_TO_BUILD ${PROJECT_NAME})
 
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-find_package(velodyne_pointcloud QUIET)
 
-if(${velodyne_pointcloud_FOUND})
-  message(STATUS "Package velodyne_pointcloud found. Building velodyne_undistorter.")
-  # this list should match what is being created below
-  list(APPEND VELODYNE_TARGETS "velodyne_undistortion_ros")
-  list(APPEND VELODYNE_TARGETS "velodyne_undistortion_node")
-  list(APPEND VELODYNE_TARGETS "velodyne_image_converter_node")
-else()
-  message(WARNING "package velodyne_pointcloud not found. Not building velodyne_undistortion.")
-endif()
+list(APPEND VELODYNE_TARGETS "velodyne_undistortion_ros")
+list(APPEND VELODYNE_TARGETS "velodyne_undistortion_node")
+list(APPEND VELODYNE_TARGETS "velodyne_image_converter_node")
 
 
 ###################################
@@ -42,7 +32,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${LIBRARIES_TO_BUILD}
-  CATKIN_DEPENDS lidar_undistortion_msgs
+  CATKIN_DEPENDS roscpp ouster_ros lidar_undistortion_msgs velodyne_msgs
   DEPENDS EIGEN3)
 
 ###########
@@ -58,27 +48,25 @@ include_directories(
 
 ## Declare a C++ library
 
-if(${velodyne_pointcloud_FOUND})
-  include_directories(${velodyne_pointcloud_INCLUDE_DIRS})
-  add_library(velodyne_undistortion_ros src/velodyne_image_converter.cpp
-                                        src/velodyne_scan_converter.cpp
-                                        src/velodyne_undistorter_ros.cpp)
+include_directories(${velodyne_pointcloud_INCLUDE_DIRS})
+add_library(velodyne_undistortion_ros src/velodyne_image_converter.cpp
+                                      src/velodyne_scan_converter.cpp
+                                      src/velodyne_undistorter_ros.cpp)
  
-  target_link_libraries(velodyne_undistortion_ros ${catkin_LIBRARIES}
-                                                  ${velodyne_pointcloud_LIBRARIES}
-                                                  ${OpenCV_LIBRARIES}
-                                                  ${PCL_LIBRARIES})
+target_link_libraries(velodyne_undistortion_ros ${catkin_LIBRARIES}
+                                                ${velodyne_pointcloud_LIBRARIES}
+                                                ${OpenCV_LIBRARIES}
+                                                ${PCL_LIBRARIES})
 
-  add_executable(velodyne_undistortion_node src/velodyne_undistortion_node.cpp)
+add_executable(velodyne_undistortion_node src/velodyne_undistortion_node.cpp)
 
-  target_link_libraries(velodyne_undistortion_node velodyne_undistortion_ros
-                                                   ${catkin_LIBRARIES})
+target_link_libraries(velodyne_undistortion_node velodyne_undistortion_ros
+                                                 ${catkin_LIBRARIES})
 
-  add_executable(velodyne_image_converter_node src/velodyne_image_converter_node.cpp)
-  target_link_libraries(velodyne_image_converter_node velodyne_undistortion_ros
-                                                      ${velodyne_pointcloud_LIBRARIES}
-                                                      ${catkin_LIBRARIES})
-endif()
+add_executable(velodyne_image_converter_node src/velodyne_image_converter_node.cpp)
+target_link_libraries(velodyne_image_converter_node velodyne_undistortion_ros
+                                                    ${velodyne_pointcloud_LIBRARIES}
+                                                    ${catkin_LIBRARIES})
 
 add_library(${PROJECT_NAME} src/ouster_undistorter_ros.cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})

@@ -77,7 +77,7 @@ int RawData::scansPerPacket() const {
 /**
    * Build a timing table for each block/firing. Stores in timing_offsets vector
    */
-bool RawData::buildTimings(){
+bool RawData::buildTimings(bool print){
   // vlp16
   if (config_.model == "VLP16"){
     // timing table calculation, from velodyne user manual
@@ -162,20 +162,22 @@ bool RawData::buildTimings(){
     std::cerr << "Timings not supported for model " << config_.model.c_str() << std::endl;
   }
 
-  if (timing_offsets.size()){
-    // ROS_INFO("VELODYNE TIMING TABLE:");
+  if(timing_offsets.empty()){
+    std::cerr << "NO TIMING OFFSETS CALCULATED. ARE YOU USING A SUPPORTED VELODYNE SENSOR?" << std::endl;
+    return false;
+  }
+
+  if(print){
+    std::cout << "VELODYNE TIMING TABLE:" << std::endl;
     for (size_t x = 0; x < timing_offsets.size(); ++x){
       for (size_t y = 0; y < timing_offsets[x].size(); ++y){
         printf("%04.3f ", timing_offsets[x][y] * 1e6);
       }
       printf("\n");
     }
-    return true;
   }
-  else{
-    std::cerr << "NO TIMING OFFSETS CALCULATED. ARE YOU USING A SUPPORTED VELODYNE SENSOR?" << std::endl;
-  }
-  return false;
+
+  return true;
 }
 
 /** Set up for on-line operation. */
@@ -195,29 +197,42 @@ bool RawData::buildTimings(){
 //}
 
 /** Set up for offline operation */
-int RawData::setup(const RawDataConfig& config) {
+bool RawData::setup(const RawDataConfig& config, bool print) {
   config_ = config;
-  std::cout << "data ranges to publish: ["
-                  << config_.min_range << ", "
-                  << config_.max_range << "]" << std::endl;
+  if(print){
+    std::cout << "data ranges to publish: ["
+              << config_.min_range << ", "
+              << config_.max_range << "]" << std::endl;
 
-  std::cout << "correction angles: " << config_.calibrationFile << std::endl;
-
+    std::cout << "correction angles: " << config_.calibrationFile << std::endl;
+  }
+  // store ros info config
+  bool ros_info = calibration_.ros_info;
+  // if we don't print, we set temporarely the ros info to false
+  if(!print){
+    calibration_.ros_info = false;
+  }
   calibration_.read(config_.calibrationFile);
+  calibration_.ros_info = ros_info;
+
   if (!calibration_.initialized) {
     std::cerr << "Unable to open calibration file: " << config_.calibrationFile <<std::endl;
-    return -1;
+    return false;
   }
   setParameters();
-  std::cout << "Number of lasers: " << calibration_.num_lasers << "." << std::endl;
+
   // Set up cached values for sin and cos of all the possible headings
   for (uint16_t rot_index = 0; rot_index < ROTATION_MAX_UNITS; ++rot_index) {
     float rotation = from_degrees(ROTATION_RESOLUTION * rot_index);
     cos_rot_table_[rot_index] = cosf(rotation);
     sin_rot_table_[rot_index] = sinf(rotation);
   }
-  buildTimings();
-  return 0;
+  buildTimings(print);
+  if(print){
+    std::cout << "Correctly setup Velodyne calibration. " << std::endl;
+    std::cout << "Number of lasers: " << calibration_.num_lasers << "." << std::endl;
+  }
+  return true;
 }
 
 

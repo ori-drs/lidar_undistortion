@@ -170,10 +170,10 @@ public:
    * @param max_range_ cutoff for maximum range
    * @param min_range_ cutoff for minimum range
    * @param model
-   * @returns 0 if successful;
-   *           errno value for failure
+   * @returns true if successful, false otherwise
+   *
    */
-  int setup(const RawDataConfig& config);
+  bool setup(const RawDataConfig& config, bool print = true);
 
   template <class PointT>
   void unpack(const raw_packet_t* raw,
@@ -182,6 +182,10 @@ public:
               const uint64_t& scan_start_time);
 
   int scansPerPacket() const;
+
+  RawDataConfig config() {
+    return config_;
+  }
 
 private:
   /** configuration parameters */
@@ -206,7 +210,7 @@ private:
    * 
    *  NOTE: Does not support all sensors yet (vlp16, vlp32, and hdl32 are currently supported)
    */
-  bool buildTimings();
+  bool buildTimings(bool print = true);
 
   void setParameters();
 

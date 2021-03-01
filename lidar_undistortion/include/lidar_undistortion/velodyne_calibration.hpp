@@ -30,8 +30,7 @@
 // ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef VELODYNE_POINTCLOUD_CALIBRATION_H
-#define VELODYNE_POINTCLOUD_CALIBRATION_H
+#pragma once
 
 #include <map>
 #include <vector>
@@ -105,5 +104,3 @@ public:
 };
 
 }  // namespace velodyne_pointcloud
-
-#endif  // VELODYNE_POINTCLOUD_CALIBRATION_H

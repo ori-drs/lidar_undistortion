@@ -15,7 +15,7 @@ namespace lidar_undistortion {
 template <class PointT>
 class VelodyneScanConverter {
 public:
-  VelodyneScanConverter() {
+  VelodyneScanConverter(bool print = true) {
     // Setup with a default constructor for VLP16.
     ROS_WARN_STREAM("Setting up with default values for VLP-16 LIDAR");
 
@@ -36,37 +36,41 @@ public:
     cfg.view_direction = 0;
     cfg.view_width = 2*M_PI;
 
-    data_.setup(cfg);
+    if(!data_.setup(cfg, print)){
+      throw std::runtime_error("Could not setup the velodyne scan converter. Invalid Velodyne parameters.");
+    }
   }
 
   VelodyneScanConverter(const velodyne::RawDataConfig& cfg) {
-    data_.setup(cfg);
+    if(!data_.setup(cfg)){
+      throw std::runtime_error("Could not setup the velodyne scan converter. Invalid Velodyne parameters.");
+    }
   }
 
-  VelodyneScanConverter(ros::NodeHandle& nh){
-    velodyne::RawDataConfig cfg;
+  VelodyneScanConverter(ros::NodeHandle& nh) : VelodyneScanConverter(false) {
+    // get the velodyne config already modified by the default constructor
+    velodyne::RawDataConfig cfg = data_.config();
+
     std::string velodyne_calibration_file;
     std::string velodyne_model = "VLP16";
 
+    // update the relevant fields of the velodyne config from ROS
     if(!nh.getParam("velodyne_model", velodyne_model)){
       ROS_WARN_STREAM("Could not get velodyne_model. Assuming VLP16");
+    } else {
+      cfg.model = velodyne_model;
     }
 
     if(!nh.getParam("velodyne_calibration_file", velodyne_calibration_file)){
       ROS_WARN_STREAM("Could not get calib file. Using default");
-      // have to use something: grab unit test version as a default
-      std::string pkgPath = ros::package::getPath("velodyne_pointcloud");
-      velodyne_calibration_file = pkgPath + "/params/VLP16db.yaml";
+    } else {
+      cfg.calibrationFile = velodyne_calibration_file;
     }
 
-    cfg.calibrationFile = velodyne_calibration_file;
-    cfg.max_range = 100;
-    cfg.min_range = 0;
-    cfg.model = velodyne_model;
-    cfg.view_direction = 0;
-    cfg.view_width = 2*M_PI;
-
-    data_.setup(cfg);
+    // setup the updated velodyne config
+    if(!data_.setup(cfg)){
+      throw std::runtime_error("Could not setup the velodyne scan converter. Invalid Velodyne parameters.");
+    }
   }
 
   void scanToPointCloud(const velodyne_msgs::VelodyneScan& scan_msg,
