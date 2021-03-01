@@ -56,7 +56,7 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle& nh)
 
   sensor_info info;
 
-  auto client = nh.serviceClient<ouster_ros::OSConfigSrv>("os_config");
+  ros::ServiceClient client = nh.serviceClient<ouster_ros::OSConfigSrv>("os_config");
   if (client.call(cfg_srv)) {
     info  = parse_metadata(cfg_srv.response.metadata);
   } else {
@@ -68,7 +68,7 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle& nh)
        is_regular_file(path(json_cfg_file)))
     {
       std::string metadata_string = read_metadata(json_cfg_file);
-      std::cerr << metadata_string << std::endl;
+      // std::cerr << metadata_string << std::endl;
       info  = parse_metadata(metadata_string);
     } else {
       // 3. if file is not available, fill in with default values from OS1-64 Gen1
@@ -104,11 +104,13 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle& nh)
       base_to_lidar_ = tf2::transformToEigen(temp_transform);
       break;
     }
-    catch (tf2::TransformException ex){
+    catch (const tf2::TransformException& ex){
       ROS_ERROR("%s",ex.what());
       ros::Duration(1.0).sleep();
     }
   }
+
+  ROS_INFO("OusterUndistorterROS ready.");
 }
 
 void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg) {
@@ -118,8 +120,9 @@ void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2& po
 
   // std::chrono::time_point<clock_> beg_ = clock_::now();
   if(!processCloud(pointcloud, pointcloud_msg.header.stamp.toNSec())){
+    ROS_DEBUG_STREAM("processCloud for ns=" << pointcloud_msg.header.stamp.toNSec() << " returned false, ignoring point cloud.");
     return;
-  };
+  }
   // std::cout << "Time for reprocessCloudBuffer: " << std::chrono::duration_cast<second_> (clock_::now() - beg_).count() << std::endl;
 
   // Create the corrected pointcloud ROS msg

@@ -64,9 +64,9 @@ public:
 
   }
 
-  virtual void newLine();
+  void newLine() override;
 
-  virtual void setup(const VelodyneContainerConfig& config);
+  void setup(const VelodyneContainerConfig& config) override;
 
   void addPoint(float x,
                 float y,

@@ -40,5 +40,5 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(velodyne::PointXYZIRT,
                                   (float, y, y)
                                   (float, z, z)
                                   (float, intensity, intensity)
-                                  (uint16_t, ring, ring)
-                                  (uint32_t, time, time))
+                                  (std::uint16_t, ring, ring)
+                                  (std::uint32_t, time, time))
