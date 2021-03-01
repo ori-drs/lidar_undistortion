@@ -5,7 +5,7 @@ project(lidar_undistortion_ros)
 SET(CMAKE_CXX_STANDARD 14)
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS roscpp image_transport cv_bridge tf2_ros lidar_undistortion lidar_undistortion_msgs ouster_ros)
+find_package(catkin REQUIRED COMPONENTS roscpp image_transport cv_bridge tf2_ros lidar_undistortion lidar_undistortion_msgs ouster_ros velodyne_msgs)
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
@@ -32,7 +32,7 @@ list(APPEND VELODYNE_TARGETS "velodyne_image_converter_node")
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${LIBRARIES_TO_BUILD}
-  CATKIN_DEPENDS lidar_undistortion_msgs
+  CATKIN_DEPENDS roscpp ouster_ros lidar_undistortion_msgs velodyne_msgs
   DEPENDS EIGEN3)
 
 ###########

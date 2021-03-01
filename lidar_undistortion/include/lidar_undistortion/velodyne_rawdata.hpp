@@ -170,8 +170,8 @@ public:
    * @param max_range_ cutoff for maximum range
    * @param min_range_ cutoff for minimum range
    * @param model
-   * @returns 0 if successful;
-   *           errno value for failure
+   * @returns true if successful, false otherwise
+   *
    */
   bool setup(const RawDataConfig& config, bool print = true);
 
