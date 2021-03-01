@@ -14,6 +14,7 @@ namespace lidar_undistortion {
 class OusterUndistorterROS : public OusterUndistorter {
 public:
  OusterUndistorterROS(ros::NodeHandle& nh);
+ ~OusterUndistorterROS() override = default;
 
  void pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg);
  void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
