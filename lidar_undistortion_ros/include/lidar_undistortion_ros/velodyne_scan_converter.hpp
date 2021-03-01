@@ -15,7 +15,7 @@ namespace lidar_undistortion {
 template <class PointT>
 class VelodyneScanConverter {
 public:
-  VelodyneScanConverter() {
+  VelodyneScanConverter(bool print = true) {
     // Setup with a default constructor for VLP16.
     ROS_WARN_STREAM("Setting up with default values for VLP-16 LIDAR");
 
@@ -36,7 +36,7 @@ public:
     cfg.view_direction = 0;
     cfg.view_width = 2*M_PI;
 
-    if(!data_.setup(cfg)){
+    if(!data_.setup(cfg, print)){
       throw std::runtime_error("Could not setup the velodyne scan converter. Invalid Velodyne parameters.");
     }
   }
@@ -47,7 +47,7 @@ public:
     }
   }
 
-  VelodyneScanConverter(ros::NodeHandle& nh) : VelodyneScanConverter() {
+  VelodyneScanConverter(ros::NodeHandle& nh) : VelodyneScanConverter(false) {
     // get the velodyne config already modified by the default constructor
     velodyne::RawDataConfig cfg = data_.config();
 

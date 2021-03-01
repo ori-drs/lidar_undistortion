@@ -173,7 +173,7 @@ public:
    * @returns 0 if successful;
    *           errno value for failure
    */
-  bool setup(const RawDataConfig& config);
+  bool setup(const RawDataConfig& config, bool print = true);
 
   template <class PointT>
   void unpack(const raw_packet_t* raw,

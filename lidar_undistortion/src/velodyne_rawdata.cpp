@@ -195,21 +195,22 @@ bool RawData::buildTimings(){
 //}
 
 /** Set up for offline operation */
-bool RawData::setup(const RawDataConfig& config) {
+bool RawData::setup(const RawDataConfig& config, bool print) {
   config_ = config;
-  std::cout << "data ranges to publish: ["
-                  << config_.min_range << ", "
-                  << config_.max_range << "]" << std::endl;
+  if(print){
+    std::cout << "data ranges to publish: ["
+              << config_.min_range << ", "
+              << config_.max_range << "]" << std::endl;
 
-  std::cout << "correction angles: " << config_.calibrationFile << std::endl;
-
+    std::cout << "correction angles: " << config_.calibrationFile << std::endl;
+  }
   calibration_.read(config_.calibrationFile);
   if (!calibration_.initialized) {
     std::cerr << "Unable to open calibration file: " << config_.calibrationFile <<std::endl;
     return false;
   }
   setParameters();
-  std::cout << "Number of lasers: " << calibration_.num_lasers << "." << std::endl;
+
   // Set up cached values for sin and cos of all the possible headings
   for (uint16_t rot_index = 0; rot_index < ROTATION_MAX_UNITS; ++rot_index) {
     float rotation = from_degrees(ROTATION_RESOLUTION * rot_index);
@@ -217,6 +218,10 @@ bool RawData::setup(const RawDataConfig& config) {
     sin_rot_table_[rot_index] = sinf(rotation);
   }
   buildTimings();
+  if(print){
+    std::cout << "Correctly setup Velodyne calibration. " << std::endl;
+    std::cout << "Number of lasers: " << calibration_.num_lasers << "." << std::endl;
+  }
   return true;
 }
 
