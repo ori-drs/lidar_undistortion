@@ -2,7 +2,6 @@
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
-#include <velodyne_pointcloud/rawdata.h>
 #include <lidar_undistortion/velodyne_point.hpp>
 #include <lidar_undistortion/velodyne_container.hpp>
 #include <lidar_undistortion/lidar_undistorter.hpp>

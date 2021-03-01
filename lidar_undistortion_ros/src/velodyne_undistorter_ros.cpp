@@ -5,7 +5,6 @@
 #include <tf2_eigen/tf2_eigen.h>
 
 using namespace lidar_undistortion;
-using namespace velodyne_pointcloud;
 
 VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh)
   : tf_listener_(tf_buffer_),
