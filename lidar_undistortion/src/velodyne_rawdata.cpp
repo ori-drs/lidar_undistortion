@@ -206,7 +206,15 @@ bool RawData::setup(const RawDataConfig& config, bool print) {
 
     std::cout << "correction angles: " << config_.calibrationFile << std::endl;
   }
+  // store ros info config
+  bool ros_info = calibration_.ros_info;
+  // if we don't print, we set temporarely the ros info to false
+  if(!print){
+    calibration_.ros_info = false;
+  }
   calibration_.read(config_.calibrationFile);
+  calibration_.ros_info = ros_info;
+
   if (!calibration_.initialized) {
     std::cerr << "Unable to open calibration file: " << config_.calibrationFile <<std::endl;
     return false;
