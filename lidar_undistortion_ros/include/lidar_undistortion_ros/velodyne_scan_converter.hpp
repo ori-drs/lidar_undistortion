@@ -48,12 +48,13 @@ public:
   }
 
   VelodyneScanConverter(ros::NodeHandle& nh) : VelodyneScanConverter() {
-    // get the config modified by the default constructor
+    // get the velodyne config already modified by the default constructor
     velodyne::RawDataConfig cfg = data_.config();
 
     std::string velodyne_calibration_file;
     std::string velodyne_model = "VLP16";
 
+    // update the relevant fields of the velodyne config from ROS
     if(!nh.getParam("velodyne_model", velodyne_model)){
       ROS_WARN_STREAM("Could not get velodyne_model. Assuming VLP16");
     } else {
@@ -66,6 +67,7 @@ public:
       cfg.calibrationFile = velodyne_calibration_file;
     }
 
+    // setup the updated velodyne config
     if(!data_.setup(cfg)){
       throw std::runtime_error("Could not setup the velodyne scan converter. Invalid Velodyne parameters.");
     }
