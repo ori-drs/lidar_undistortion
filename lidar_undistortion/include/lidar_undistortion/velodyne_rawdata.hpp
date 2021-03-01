@@ -210,7 +210,7 @@ private:
    * 
    *  NOTE: Does not support all sensors yet (vlp16, vlp32, and hdl32 are currently supported)
    */
-  bool buildTimings();
+  bool buildTimings(bool print = true);
 
   void setParameters();
 

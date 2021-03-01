@@ -77,7 +77,7 @@ int RawData::scansPerPacket() const {
 /**
    * Build a timing table for each block/firing. Stores in timing_offsets vector
    */
-bool RawData::buildTimings(){
+bool RawData::buildTimings(bool print){
   // vlp16
   if (config_.model == "VLP16"){
     // timing table calculation, from velodyne user manual
@@ -162,20 +162,22 @@ bool RawData::buildTimings(){
     std::cerr << "Timings not supported for model " << config_.model.c_str() << std::endl;
   }
 
-  if (timing_offsets.size()){
-    // ROS_INFO("VELODYNE TIMING TABLE:");
+  if(timing_offsets.empty()){
+    std::cerr << "NO TIMING OFFSETS CALCULATED. ARE YOU USING A SUPPORTED VELODYNE SENSOR?" << std::endl;
+    return false;
+  }
+
+  if(print){
+    std::cout << "VELODYNE TIMING TABLE:" << std::endl;
     for (size_t x = 0; x < timing_offsets.size(); ++x){
       for (size_t y = 0; y < timing_offsets[x].size(); ++y){
         printf("%04.3f ", timing_offsets[x][y] * 1e6);
       }
       printf("\n");
     }
-    return true;
   }
-  else{
-    std::cerr << "NO TIMING OFFSETS CALCULATED. ARE YOU USING A SUPPORTED VELODYNE SENSOR?" << std::endl;
-  }
-  return false;
+
+  return true;
 }
 
 /** Set up for on-line operation. */
@@ -217,7 +219,7 @@ bool RawData::setup(const RawDataConfig& config, bool print) {
     cos_rot_table_[rot_index] = cosf(rotation);
     sin_rot_table_[rot_index] = sinf(rotation);
   }
-  buildTimings();
+  buildTimings(print);
   if(print){
     std::cout << "Correctly setup Velodyne calibration. " << std::endl;
     std::cout << "Number of lasers: " << calibration_.num_lasers << "." << std::endl;
