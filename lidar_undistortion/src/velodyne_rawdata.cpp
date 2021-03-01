@@ -195,7 +195,7 @@ bool RawData::buildTimings(){
 //}
 
 /** Set up for offline operation */
-int RawData::setup(const RawDataConfig& config) {
+bool RawData::setup(const RawDataConfig& config) {
   config_ = config;
   std::cout << "data ranges to publish: ["
                   << config_.min_range << ", "
@@ -206,7 +206,7 @@ int RawData::setup(const RawDataConfig& config) {
   calibration_.read(config_.calibrationFile);
   if (!calibration_.initialized) {
     std::cerr << "Unable to open calibration file: " << config_.calibrationFile <<std::endl;
-    return -1;
+    return false;
   }
   setParameters();
   std::cout << "Number of lasers: " << calibration_.num_lasers << "." << std::endl;
@@ -217,7 +217,7 @@ int RawData::setup(const RawDataConfig& config) {
     sin_rot_table_[rot_index] = sinf(rotation);
   }
   buildTimings();
-  return 0;
+  return true;
 }
 
 
