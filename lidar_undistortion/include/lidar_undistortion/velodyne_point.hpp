@@ -32,7 +32,7 @@ namespace velodyne
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW     // ensure proper alignment
   } EIGEN_ALIGN16;
 
-}; // namespace velodyne
+} // namespace velodyne
 
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(velodyne::PointXYZIRT,

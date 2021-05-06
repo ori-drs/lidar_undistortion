@@ -7,7 +7,7 @@ namespace lidar_undistortion {
 
 struct EIGEN_ALIGN16 PointOuster {
     PCL_ADD_POINT4D;
-    PCL_ADD_INTENSITY;
+    PCL_ADD_INTENSITY
     uint32_t t;
     uint16_t reflectivity;
     uint8_t ring;

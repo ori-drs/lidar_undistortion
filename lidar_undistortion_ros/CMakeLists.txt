@@ -4,6 +4,8 @@ project(lidar_undistortion_ros)
 # Some of the code features require C++14
 SET(CMAKE_CXX_STANDARD 14)
 
+add_compile_options(-Wall -Wpedantic -Wextra)
+
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS roscpp image_transport cv_bridge tf2_ros lidar_undistortion lidar_undistortion_msgs ouster_ros velodyne_msgs)
 

@@ -35,6 +35,9 @@ public:
   void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
   void reprocessCloudBuffer() override;
 private:
+  tf2_ros::Buffer tf_buffer_;
+  tf2_ros::TransformListener tf_listener_;
+
   ros::Subscriber scan_sub_;
   ScanConverter velodyne_cvt_;
   VelodyneCloud pointcloud_;
@@ -51,9 +54,5 @@ private:
 
   ros::Publisher corrected_pointcloud_pub_;
   ros::Publisher original_pointcloud_pub_;
-
-  tf2_ros::Buffer tf_buffer_;
-  tf2_ros::TransformListener tf_listener_;
 };
-
 }

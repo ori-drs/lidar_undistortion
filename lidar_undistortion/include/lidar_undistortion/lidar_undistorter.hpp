@@ -208,7 +208,7 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
 
   // Correct the distortion on all points, using the LiDAR's true pose at
   // each point's timestamp
-  uint32_t last_transform_update_t = 0;
+  int32_t last_transform_update_t = 0;
 
   Eigen::Isometry3d T_S_original_S_corrected = Eigen::Isometry3d::Identity();
   size_t point_counter = 0;

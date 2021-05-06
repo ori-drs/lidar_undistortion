@@ -10,7 +10,6 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh)
   : tf_listener_(tf_buffer_),
     velodyne_cvt_(nh)
 {
-
   // set full 360 FoV and nominal range
   scan_sub_ = nh.subscribe("/velodyne_packets", 10, &VelodyneUndistorterROS::scanCallback, this);
 
@@ -49,7 +48,7 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh)
       base_to_lidar_ = tf2::transformToEigen(temp_transform);
       break;
     }
-    catch (tf2::TransformException ex){
+    catch (const tf2::TransformException& ex){
       ROS_ERROR("%s",ex.what());
       ros::Duration(1.0).sleep();
     }
