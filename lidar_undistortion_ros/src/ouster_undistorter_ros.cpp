@@ -15,14 +15,13 @@ using namespace boost::filesystem;
 using namespace ouster::sensor;
 
 OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle& nh)
-  : fixed_frame_id_("odom"),
+  : OusterUndistorter(2e9),
+    fixed_frame_id_("odom"),
     lidar_frame_id_("os_lidar"),
-    tf_listener_(tf_buffer_),
-    OusterUndistorter(2e9),
     img_transp_(nh),
-    corrected_range_pub_(img_transp_.advertise("corrected_range",1))
+    corrected_range_pub_(img_transp_.advertise("corrected_range",1)),
+    tf_listener_(tf_buffer_)
 {
-
   nh.getParam("point_cloud_input_topic", point_cloud_input_topic_);
   nh.getParam("pose_topic", pose_topic_);
   nh.getParam("point_cloud_output_topic", point_cloud_output_topic_);

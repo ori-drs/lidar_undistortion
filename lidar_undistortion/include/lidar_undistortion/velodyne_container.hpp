@@ -47,14 +47,12 @@ class VelodyneContainer : public VelodyneContainerBase<PointT> {
 
 public:
   VelodyneContainer(const VelodyneContainerConfig& cfg) :
-    pc(boost::make_shared<VelodyneCloud>()),
-    VelodyneContainerBase<PointT>(cfg)
+    VelodyneContainerBase<PointT>(cfg),
+    pc(boost::make_shared<VelodyneCloud>())
   {
-
   }
 
   VelodyneContainer() : VelodyneContainer(VelodyneContainerConfig()) {
-
   }
 
   VelodyneContainer(const double max_range,
@@ -63,11 +61,9 @@ public:
                     const unsigned int scans_per_block) :
     VelodyneContainer(VelodyneContainerConfig(max_range, min_range, 1800, 16, false, scans_per_block))
   {
-
   }
 
   ~VelodyneContainer() override {
-
   }
 
   void addPoint(float x,
@@ -101,8 +97,8 @@ void VelodyneContainer<PointT>::addPoint(float x,
                                          float distance,
                                          float intensity,
                                          uint64_t time,
-                                         const uint16_t noise,
-                                         const uint16_t reflectivity)
+                                         const uint16_t /*noise*/,
+                                         const uint16_t /*reflectivity*/)
 {
   PointT point;
   point.ring = ring;

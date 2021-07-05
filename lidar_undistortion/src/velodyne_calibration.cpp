@@ -156,7 +156,7 @@ namespace velodyne_undistortion
       std::pair<int, LaserCorrection> correction;
       lasers[i] >> correction;
       const int index = correction.first;
-      if( index >= calibration.laser_corrections.size() )
+      if( static_cast<std::size_t>(index) >= calibration.laser_corrections.size() )
       {
         calibration.laser_corrections.resize( index+1 );
       }

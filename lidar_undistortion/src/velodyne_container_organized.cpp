@@ -20,11 +20,11 @@ void VelodyneContainerOrganized::addPoint(float x,
                                           float z,
                                           uint16_t ring,
                                           uint16_t azimuth,
-                                          float distance,
-                                          float intensity,
+                                          float /*distance*/,
+                                          float /*intensity*/,
                                           uint64_t time,
-                                          const uint16_t noise,
-                                          const uint16_t reflectivity)
+                                          const uint16_t /*noise*/,
+                                          const uint16_t /*reflectivity*/)
 {
   pt.x = x;
   pt.y = y;
@@ -41,5 +41,3 @@ void VelodyneContainerOrganized::addPoint(float x,
 
   cloud->points[ring*cloud->width + cloud_indices[ring]++] = pt;
 }
-
-

@@ -9,9 +9,8 @@ void OusterImageConverter::convert(const OusterCloud& pc,
                                    cv::Mat& intensities,
                                    cv::Mat& reflectivities)
 {
-
-  for (int u = 0; u < cfg_.H; u++) {
-    for (int v = 0; v < cfg_.W; v++) {
+  for (std::size_t u = 0; u < cfg_.H; u++) {
+    for (std::size_t v = 0; v < cfg_.W; v++) {
       const size_t vv = (v + cfg_.W - cfg_.pixel_offsets_[u]) % cfg_.W;
       const size_t index = vv * cfg_.H + u;
       DEBUG_PRINTLN("u     : " << u                     );

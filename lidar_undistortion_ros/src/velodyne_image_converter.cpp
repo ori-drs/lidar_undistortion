@@ -4,17 +4,17 @@ using namespace lidar_undistortion;
 
 void VelodyneImageConverter::convert(const VelodyneCloud& pc,
                                      cv::Mat& ranges,
-                                     cv::Mat& altitudes,
-                                     cv::Mat& azimuths,
-                                     cv::Mat& intensities,
-                                     cv::Mat& reflectivities)
+                                     cv::Mat& /*altitudes*/,
+                                     cv::Mat& /*azimuths*/,
+                                     cv::Mat& /*intensities*/,
+                                     cv::Mat& /*reflectivities*/)
 {
   //std::cerr << "H = " << H << " W = " << W << std::endl;
 
-  for (size_t u = 0; u < H; u++) {
-    for (size_t v = 0; v < W; v++) {
-      const size_t vv = (v + pivot_offset+1) % W;
-      const size_t index = u * W + vv;
+  for (std::size_t u = 0; u < H; u++) {
+    for (std::size_t v = 0; v < W; v++) {
+      const std::size_t vv = (v + pivot_offset+1) % W;
+      const std::size_t index = u * W + vv;
 
       const auto& pt = pc[index];
       Eigen::Vector3d cartesian;
@@ -38,12 +38,6 @@ void VelodyneImageConverter::convert(const VelodyneCloud& pc,
 
         // altitudes.at<double>(cv::Point(v, u*8 + i)) = polar(1);
         // azimuths.at<double>(cv::Point(v, u*8 + i)) = polar(2);
-
-
     }
   }
 }
-
-
-
-

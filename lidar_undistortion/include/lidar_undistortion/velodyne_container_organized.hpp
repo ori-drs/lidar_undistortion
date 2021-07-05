@@ -57,7 +57,7 @@ public:
 
   VelodyneContainerOrganized(const double max_range,
                       const double min_range,
-                      const unsigned int num_lasers,
+                      const unsigned int /*num_lasers*/,
                       const unsigned int scans_per_block) :
     VelodyneContainerOrganized(VelodyneContainerConfig(max_range, min_range, 1800, 16, false, scans_per_block))
   {

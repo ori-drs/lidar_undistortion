@@ -379,10 +379,10 @@ void RawData::unpack(const raw_packet_t* raw,
         intensity = (intensity < min_intensity) ? min_intensity : intensity;
         intensity = (intensity > max_intensity) ? max_intensity : intensity;
 
-        float time = 0;
-        if (timing_offsets.size()){
-          time = timing_offsets[i][j] + time_diff_start_to_this_packet;
-        }
+        // float time = 0;
+        // if (timing_offsets.size()){
+        //   time = timing_offsets[i][j] + time_diff_start_to_this_packet;
+        // }
         data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, raw->blocks[i].rotation, distance, intensity, time_diff_start_to_this_packet, 0, 0);
       }
     }
@@ -569,10 +569,10 @@ void RawData::unpack_vlp16(const raw_packet_t* raw,
           intensity = (intensity < min_intensity) ? min_intensity : intensity;
           intensity = (intensity > max_intensity) ? max_intensity : intensity;
 
-          uint64_t time = 0;
-          if (timing_offsets.size())
-            time = static_cast<uint64_t>(timing_offsets[block][firing * 16 + dsr]*1e9)
-                + static_cast<uint64_t>(time_diff_start_to_this_packet);
+          // uint64_t time = 0;
+          // if (timing_offsets.size())
+          //   time = static_cast<uint64_t>(timing_offsets[block][firing * 16 + dsr]*1e9)
+          //       + static_cast<uint64_t>(time_diff_start_to_this_packet);
           //std::cerr << "[" << u++ << "]" << " data.addPoint("<<x_coord<<", "<<y_coord<<", " << z_coord << ", " << corrections.laser_ring << ", " << azimuth_corrected << ", " << distance << ", "<< intensity << ", " << time << ")" << std::endl;
           data.addPoint(x_coord, y_coord, z_coord, corrections.laser_ring, azimuth_corrected, distance, intensity, time_diff_start_to_this_packet, 0, 0);
         }

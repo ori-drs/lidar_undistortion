@@ -15,7 +15,7 @@ public:
 
   VelodyneImageConverter() = default;
 
-  VelodyneImageConverter(int w, int h) : W(w), H(h) {
+  VelodyneImageConverter(std::size_t w, std::size_t h) : W(w), H(h) {
 
     velodyne::RawDataConfig cfg;
 
@@ -64,8 +64,8 @@ public:
                cv::Mat& reflectivities) override;
 
 private:
-  int W;
-  int H;
+  std::size_t W;
+  std::size_t H;
   velodyne::VelodyneContainerOrganized org_cloud_;
   velodyne::RawData raw_data_;
 
@@ -73,6 +73,3 @@ private:
 };
 
 }
-
-
-
