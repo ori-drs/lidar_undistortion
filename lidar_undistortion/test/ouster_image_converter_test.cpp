@@ -1,5 +1,6 @@
 #include "lidar_undistortion/ouster_image_converter.hpp"
 #include "lidar_undistortion/ouster_point.hpp"
+#include "lidar_undistortion/ouster_metadata_utils.hpp"
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_cloud.h>
 #include <opencv2/highgui.hpp>
@@ -35,7 +36,7 @@ TEST(OusterImageConverter, DISABLED_convertRangeSpherical){
   EXPECT_TRUE(boost::filesystem::is_directory(drs_testing_data_path));
   EXPECT_TRUE(drs_testing_data_path.is_complete());
 
-  std::string cloud_file = "lidar_undistortion/new_college.pcd";
+  std::string cloud_file = "lidar_undistortion/spot.pcd";
   boost::filesystem::path cloud_path(cloud_file);
   auto cloud_path_complete = boost::filesystem::canonical(cloud_path, drs_testing_data_path);
   EXPECT_TRUE(boost::filesystem::is_regular_file(cloud_path_complete));
@@ -77,14 +78,14 @@ TEST(OusterImageConverter, converRangeMono){
   EXPECT_TRUE(boost::filesystem::is_directory(drs_testing_data_path));
   EXPECT_TRUE(drs_testing_data_path.is_complete());
 
-  std::string cloud_file = "lidar_undistortion/new_college.pcd";
+  std::string cloud_file = "lidar_undistortion/spot.pcd";
   boost::filesystem::path cloud_path(cloud_file);
   auto cloud_path_complete = boost::filesystem::canonical(cloud_path, drs_testing_data_path);
   EXPECT_TRUE(cloud_path_complete.is_complete());
 
   EXPECT_TRUE(boost::filesystem::is_regular_file(cloud_path_complete));
 
-  std::string range_file = "lidar_undistortion/ranges.pgm";
+  std::string range_file = "lidar_undistortion/spot_ranges.pgm";
   boost::filesystem::path range_path(range_file);
   auto range_path_complete = boost::filesystem::canonical(range_path, drs_testing_data_path);
   EXPECT_TRUE(range_path_complete.is_complete());
@@ -95,7 +96,18 @@ TEST(OusterImageConverter, converRangeMono){
   std::cerr << "Attempt to read " << cloud_path_complete.string() << std::endl;
   EXPECT_NE(loadPCDFile(cloud_path_complete.string(), in_cloud), -1);
 
-  OusterImageConverter oic;
+  std::string ouster_config_file = "lidar_undistortion/ouster_config.json";
+  boost::filesystem::path ouster_config_path(ouster_config_file);
+  auto ouster_config_path_complete = boost::filesystem::canonical(ouster_config_path, drs_testing_data_path);
+  EXPECT_TRUE(ouster_config_path_complete.is_complete());
+  EXPECT_TRUE(boost::filesystem::is_regular_file(ouster_config_path_complete));
+
+  std::string metadata_string = read_metadata(ouster_config_path_complete.string());
+  auto info  = ouster::sensor::parse_metadata(metadata_string);
+
+  OusterConfig cfg(info);
+
+  OusterImageConverter oic(cfg);
 
   cv::Mat ranges(64, 1024, CV_64FC1);
   cv::Mat altitudes(64, 1024, CV_64FC1);
@@ -120,11 +132,11 @@ TEST(OusterImageConverter, converRangeMono){
 
 
 /*
-  cv::namedWindow( "first", cv::WINDOW_AUTOSIZE );
-  cv::imshow("first", ranges_mono);
+  cv::namedWindow( "computed", cv::WINDOW_AUTOSIZE );
+  cv::imshow("computed", ranges_mono);
 
-  cv::namedWindow( "second", cv::WINDOW_AUTOSIZE );
-  cv::imshow("second", read_range_mono);
+  cv::namedWindow( "from_file", cv::WINDOW_AUTOSIZE );
+  cv::imshow("from_file", read_range_mono);
 
   cv::namedWindow( "diff", cv::WINDOW_AUTOSIZE );
   cv::imshow("diff", diff);

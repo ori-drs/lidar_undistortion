@@ -4,10 +4,10 @@
   <version>1.0.0</version>
   <description>Undistort pointclouds using an odometry input</description>
 
-  <maintainer email="victorr@ethz.ch">Victor Reijgwart</maintainer>
   <maintainer email="mcamurri@robots.ox.ac.uk">Marco Camurri</maintainer>
   
-  <author>Victor Reijgwart</author>
+  <author email="victorr@ethz.ch">Victor Reijgwart</author>
+  <author email="mcamurri@robots.ox.ac.uk">Marco Camurri</author>
 
   <license>ASL 2.0</license>
 
