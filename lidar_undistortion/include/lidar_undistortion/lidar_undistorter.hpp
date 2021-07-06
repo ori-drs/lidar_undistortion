@@ -131,13 +131,16 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
                                  << beams_ << " time look up table size is "
                                  << times_lut_.size());
   DEBUG_PRINTLN("minmax times : " << (*minmax_time.first ) << " " << (*minmax_time.second));
-  uint64_t t_start = start_timestamp + static_cast<uint64_t>(*minmax_time.first );
-  uint64_t t_end =   start_timestamp + static_cast<uint64_t>(*minmax_time.second);
+  uint64_t t_start = static_cast<uint64_t>(static_cast<int64_t>(start_timestamp) + static_cast<int64_t>(*minmax_time.first));
+  uint64_t t_end =   static_cast<uint64_t>(static_cast<int64_t>(start_timestamp) + static_cast<int64_t>(*minmax_time.second));
 
-  // Note: Compare to start_timestamp, not t_start since the points may begin
-  // shortly after the start_stamp (e.g. the point could start at 0.1ms after
-  // the point cloud timestamp, leading to this method failing).
-  if(desired_timestamp < start_timestamp || desired_timestamp > t_end){
+  if(start_timestamp != t_start){
+    ERROR_PRINTLN("[LidarUndistorter] ERROR: the start timestamp "
+                  << "is different than t_start: " << start_timestamp << " != " << t_start);
+    return false;
+  }
+
+  if(desired_timestamp < t_start || desired_timestamp > t_end){
     ERROR_PRINTLN("[LidarUndistorter] ERROR: the desired timestamp "
                   << "is outside the valid timestamp bounds for the point cloud");
     return false;
