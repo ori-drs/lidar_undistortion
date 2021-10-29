@@ -9,7 +9,6 @@
 #include "lidar_undistortion/print_macros.hpp"
 #include <algorithm>
 #include <pcl/io/pcd_io.h>
-#include <opencv2/core.hpp>
 
 namespace lidar_undistortion {
 
