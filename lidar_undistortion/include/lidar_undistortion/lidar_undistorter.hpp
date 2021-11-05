@@ -128,8 +128,8 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
                                  << beams_ << " time look up table size is "
                                  << times_lut_.size());
   DEBUG_PRINTLN("minmax times : " << (*minmax_time.first ) << " " << (*minmax_time.second));
-  uint64_t t_start = static_cast<uint64_t>(static_cast<int64_t>(start_timestamp) + static_cast<int64_t>(*minmax_time.first));
-  uint64_t t_end =   static_cast<uint64_t>(static_cast<int64_t>(start_timestamp) + static_cast<int64_t>(*minmax_time.second));
+  const uint64_t t_start = static_cast<uint64_t>(static_cast<int64_t>(start_timestamp) + static_cast<int64_t>(*minmax_time.first));
+  const uint64_t t_end =   static_cast<uint64_t>(static_cast<int64_t>(start_timestamp) + static_cast<int64_t>(*minmax_time.second));
 
   if(start_timestamp != t_start){
     ERROR_PRINTLN("[LidarUndistorter] ERROR: the start timestamp "
@@ -218,13 +218,16 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
   int32_t last_transform_update_t = 0;
 
   Eigen::Isometry3d T_S_original_S_corrected = Eigen::Isometry3d::Identity();
+  const Eigen::Isometry3d T_S_F_original_inverse = T_S_F_original.inverse(); // precompute
   size_t point_counter = 0;
   for (auto &point : pointcloud->points) {
     // Check if the current point's timestamp differs from the previous one
     // If so, lookup the new corresponding transform
     if (times_lut_[point_counter] != last_transform_update_t) {
       last_transform_update_t = times_lut_[point_counter];
-      uint64_t point_t = start_timestamp + times_lut_[point_counter];
+      const uint64_t point_t = static_cast<uint64_t>(
+          static_cast<int64_t>(start_timestamp) +
+          static_cast<int64_t>(times_lut_[point_counter]));
 
       Eigen::Isometry3d T_F_S_correct;
       if(!odometry_history_.getInterpolatedPose(point_t, T_F_S_correct)){
@@ -245,7 +248,7 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
         DEBUG_PRINTLN("Adding interpolated pose to pose history"
                         << "\n Pose history size: " << odometry_history_.size());
       }
-      T_S_original_S_corrected = T_S_F_original.inverse() * T_F_S_correct;
+      T_S_original_S_corrected = T_S_F_original_inverse * T_F_S_correct;
     }
 
     // Correct the point's distortion, by transforming it into the fixed
