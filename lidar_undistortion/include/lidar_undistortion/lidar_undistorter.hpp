@@ -244,9 +244,13 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
       } else {
         // add the just computed interpolated pose to the buffer of poses
         // in case we need it later
-        odometry_history_.addPose(point_t, T_F_S_correct);
-        DEBUG_PRINTLN("Adding interpolated pose to pose history"
-                        << "\n Pose history size: " << odometry_history_.size());
+        static constexpr bool SAVE_POSES_FOR_LATER = false;
+        if (SAVE_POSES_FOR_LATER) {
+          odometry_history_.addPose(point_t, T_F_S_correct);
+          DEBUG_PRINTLN("Adding interpolated pose to pose history"
+                        << "\n Pose history size: "
+                        << odometry_history_.size());
+        }
       }
       T_S_original_S_corrected = T_S_F_original_inverse * T_F_S_correct;
     }
