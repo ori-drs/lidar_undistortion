@@ -1,14 +1,12 @@
 #ifndef LIDAR_UNDISTORTION_LIDAR_UNDISTORTER_H_
 #define LIDAR_UNDISTORTION_LIDAR_UNDISTORTER_H_
 
-#include <Eigen/Eigen>
+#include <Eigen/Geometry>
 #include <string>
 #include <pcl/point_cloud.h>
-#include <pcl/common/transforms.h>
 #include "lidar_undistortion/pose_buffer.hpp"
 #include "lidar_undistortion/print_macros.hpp"
 #include <algorithm>
-#include <pcl/io/pcd_io.h>
 
 namespace lidar_undistortion {
 
@@ -256,7 +254,12 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
     // Correct the point's distortion, by transforming it into the fixed
     // frame based on the LiDAR sensor's current true pose, and then transform
     // it back into the lidar scan frame
-    point = pcl::transformPoint(point, T_S_original_S_corrected.cast<float>());
+    const Eigen::Vector3d pointTransformed =
+        T_S_original_S_corrected * Eigen::Vector3d{point.x, point.y, point.z};
+    point.x = pointTransformed[0];
+    point.y = pointTransformed[1];
+    point.z = pointTransformed[2];
+
     point_counter++;
   }
   return true;
