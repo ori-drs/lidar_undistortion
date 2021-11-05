@@ -137,10 +137,7 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
     return false;
   }
 
-  // 5 ms buffer to account for differences between header stamps and individual
-  // point times
-  const uint64_t buffer = 5000000; // ns
-  if(desired_timestamp < (t_start - buffer) || desired_timestamp > (t_end + buffer)){
+  if(desired_timestamp < t_start || desired_timestamp > t_end){
     ERROR_PRINTLN("[LidarUndistorter] ERROR: the desired timestamp "
                   << "is outside the valid timestamp bounds for the point cloud");
     ERROR_PRINTLN("[LidarUndistorter]"
