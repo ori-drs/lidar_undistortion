@@ -216,10 +216,11 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
   // Correct the distortion on all points, using the LiDAR's true pose at
   // each point's timestamp
   int32_t last_transform_update_t = 0;
-
+  Eigen::Isometry3d T_F_S_correct = Eigen::Isometry3d::Identity();
   Eigen::Isometry3d T_S_original_S_corrected = Eigen::Isometry3d::Identity();
   const Eigen::Isometry3d T_S_F_original_inverse = T_S_F_original.inverse(); // precompute
   size_t point_counter = 0;
+
   for (auto &point : pointcloud->points) {
     // Check if the current point's timestamp differs from the previous one
     // If so, lookup the new corresponding transform
@@ -229,7 +230,6 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
           static_cast<int64_t>(start_timestamp) +
           static_cast<int64_t>(times_lut_[point_counter]));
 
-      Eigen::Isometry3d T_F_S_correct;
       if(!odometry_history_.getInterpolatedPose(point_t, T_F_S_correct)){
         DEBUG_PRINTLN("Couldn't get interpolated point pose for time " << point_t
                         << "\n Starting time: " << (odometry_history_.empty() ? std::string("none") : std::to_string(odometry_history_.startTime()))
@@ -264,7 +264,7 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
     point.y = pointTransformed[1];
     point.z = pointTransformed[2];
 
-    point_counter++;
+    ++point_counter;
   }
   return true;
 }

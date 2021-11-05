@@ -73,10 +73,11 @@ bool PoseBuffer::getInterpolatedPose(const uint64_t &nsec,
   --it_low;
 
   // alpha is 1 if the requested time coincides with it_low, 0 if equal to it_high
-  double alpha = (double)(it_high->first - nsec) / (double)(it_high->first - it_low->first);
+  const double alpha = static_cast<double>(it_high->first - nsec) /
+                       static_cast<double>(it_high->first - it_low->first);
 
-  Eigen::Isometry3d iso_low = it_low->second;
-  Eigen::Isometry3d iso_high = it_high->second;
+  const Eigen::Isometry3d iso_low = it_low->second;
+  const Eigen::Isometry3d iso_high = it_high->second;
 
   pose.setIdentity();
 
