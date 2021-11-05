@@ -2,6 +2,7 @@
 #include "lidar_undistortion/ouster_image_converter.hpp"
 #include "lidar_undistortion/ouster_point.hpp"
 #include <gtest/gtest.h>
+#include <pcl/io/pcd_io.h>
 #include <pwd.h>
 
 using namespace pcl::io;
