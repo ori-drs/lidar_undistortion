@@ -1,5 +1,5 @@
 #pragma once
-#include <Eigen/Dense>
+#include <Eigen/Geometry>
 #include <map>
 
 class PoseBuffer {
