@@ -19,5 +19,5 @@
   </node>
 
   <!-- open up RViz -->
-  <node name="frontier_undistortion_rviz" pkg="rviz" type="rviz" args="-d $(find lidar_undistortion_ros)/config/ouster_undistortion.rviz" output="log" />
+  <node name="frontier_undistortion_rviz" pkg="rviz" type="rviz" args="-d $(find lidar_undistortion_ros)/config/ouster_undistortion.rviz" output="log" />   
 </launch>
