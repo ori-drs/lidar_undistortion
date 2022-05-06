@@ -17,7 +17,7 @@ using namespace ouster::sensor;
 OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle& nh)
   : OusterUndistorter(2e9),
     fixed_frame_id_("odom"),
-    lidar_frame_id_("os_lidar"),
+    lidar_frame_id_("os_sensor"),
     img_transp_(nh),
     corrected_range_pub_(img_transp_.advertise("corrected_range",1)),
     tf_listener_(tf_buffer_)
