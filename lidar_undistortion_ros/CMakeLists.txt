@@ -70,7 +70,8 @@ target_link_libraries(velodyne_image_converter_node velodyne_undistortion_ros
                                                     ${velodyne_pointcloud_LIBRARIES}
                                                     ${catkin_LIBRARIES})
 
-add_library(${PROJECT_NAME} src/ouster_undistorter_ros.cpp)
+add_library(${PROJECT_NAME} src/ouster_undistorter_ros.cpp
+                            src/hesai_undistorter_ros.cpp)
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
@@ -78,7 +79,9 @@ add_executable(ouster_undistortion_node src/ouster_undistortion_node.cpp)
 target_link_libraries(ouster_undistortion_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 add_dependencies(ouster_undistortion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-
+add_executable(hesai_undistortion_node src/hesai_undistortion_node.cpp)
+target_link_libraries(hesai_undistortion_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+add_dependencies(hesai_undistortion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(ouster_image_converter_node src/ouster_image_converter_node.cpp)
 target_link_libraries(ouster_image_converter_node ${catkin_LIBRARIES})
