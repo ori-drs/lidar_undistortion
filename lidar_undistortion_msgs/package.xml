@@ -36,8 +36,6 @@ Message from the Lidar Undistortion package
   <!--   <exec_depend>roscpp</exec_depend> -->
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>roscpp</depend>
-  <depend>rospy</depend>
 
   <!-- Use build_depend for packages you need at compile time: -->
   <build_depend>message_generation</build_depend>
