@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+    <node name="hesai_undistortion" pkg="lidar_undistortion_ros" type="hesai_undistortion_node" output="screen">
+        <param name="pose_topic" value="/vilens/pose_propagated" />
+        <param name="base_frame_id" value="base_vilens" />
+        <param name="fixed_frame_id" value="odom_vilens" />
+        <param name="lidar_frame_id" value="PandarXT-32" />
+    </node>
+    <node name="hesai_rviz" pkg="rviz" type="rviz" args="-d $(find lidar_undistortion_ros)/config/hesai_undistortion.rviz" output="log" />
+</launch>
