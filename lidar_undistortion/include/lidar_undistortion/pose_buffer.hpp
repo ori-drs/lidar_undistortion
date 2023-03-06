@@ -19,7 +19,7 @@ public:
 
   }
 
-  virtual std::string toString(){
+  std::string toString(){
     std::stringstream ss;
     Eigen::IOFormat fmt(4, 0, ", ", "\n", "[", "]");
     for(const auto& kv : pose_history_){
@@ -28,51 +28,51 @@ public:
     return ss.str();
   }
 
-  virtual void setBufferSize(uint64_t buffer_size) {
+  void setBufferSize(uint64_t buffer_size) {
     buffer_size_ = buffer_size;
   }
 
-  virtual uint64_t getBufferSize() {
+  uint64_t getBufferSize() {
     return buffer_size_;
   }
 
-  virtual bool empty() {
+  bool empty() {
     return pose_history_.empty();
   }
 
-  virtual bool getInterpolatedPose(const uint64_t &nsec,
+  bool getInterpolatedPose(const uint64_t &nsec,
                                    Eigen::Isometry3d& pose) const;
 
-  virtual bool canInterpolate(uint64_t nsec);
+  bool canInterpolate(uint64_t nsec);
 
-  virtual bool hasPose(uint64_t nsec) {
+  bool hasPose(uint64_t nsec) {
     return pose_history_.find(nsec) != pose_history_.end();
   }
 
-  virtual Eigen::Isometry3d getPose(uint64_t nsec){
+  Eigen::Isometry3d getPose(uint64_t nsec){
     if(hasPose(nsec)){
       return pose_history_[nsec];
     }
     return Eigen::Isometry3d::Identity();
   }
 
-  virtual void addPose(uint64_t nsec, const Eigen::Isometry3d& pose);
+  void addPose(uint64_t nsec, const Eigen::Isometry3d& pose);
 
-  virtual uint64_t startTime(){
+  uint64_t startTime(){
     if(pose_history_.empty()){
       return 0;
     }
     return pose_history_.begin()->first;
   }
 
-  virtual uint64_t endTime(){
+  uint64_t endTime(){
     if(pose_history_.empty()){
       return 0;
     }
     return pose_history_.rbegin()->first;
   }
 
-  virtual size_t size(){
+  size_t size(){
     return pose_history_.size();
   }
 
