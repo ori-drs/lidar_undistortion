@@ -95,7 +95,7 @@ public:
     reprocess_clouds_ = reprocess_clouds;
   }
 
-  bool getReprocessClouds() { return reprocess_clouds_; }
+  bool getReprocessClouds() const { return reprocess_clouds_; }
 
 protected:
   Eigen::Isometry3d base_to_lidar_ = Eigen::Isometry3d::Identity();
@@ -109,7 +109,6 @@ protected:
 
   bool reprocess_clouds_ = true;
 };
-
 
 template <class PointT>
 inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Ptr &pointcloud,
@@ -163,6 +162,7 @@ inline bool LidarUndistorter<PointT>::processCloud(const typename PointCloud::Pt
     }
     return false;
   }
+
   // Get the frame that the cloud should be expressed in
   if(!odometry_history_.getInterpolatedPose(desired_timestamp, T_S_F_original))
   {

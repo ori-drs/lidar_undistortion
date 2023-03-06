@@ -15,6 +15,8 @@ find_package(OpenCV REQUIRED COMPONENTS core imgcodecs)
 # comment above and uncomment below to enable unit test debugging with gui
 # find_package(OpenCV REQUIRED COMPONENTS core imgcodecs highgui)
 
+# Stop build warnings related to missing IO components
+set(PCL_FIND_QUIETLY ON)
 find_package(PCL REQUIRED COMPONENTS common io)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
 find_package(jsoncpp REQUIRED)
