@@ -76,6 +76,13 @@ bool PoseBuffer::getInterpolatedPose(const uint64_t &nsec,
   const double alpha = static_cast<double>(it_high->first - nsec) /
                        static_cast<double>(it_high->first - it_low->first);
 
+  if (alpha > 0.5) {
+    pose = it_low->second;
+  } else {
+    pose = it_high->second;
+  }
+
+  /*
   const Eigen::Isometry3d iso_low = it_low->second;
   const Eigen::Isometry3d iso_high = it_high->second;
 
@@ -92,5 +99,7 @@ bool PoseBuffer::getInterpolatedPose(const uint64_t &nsec,
   DEBUG_PRINTLN("iso low tran : " << iso_low.translation().transpose());
   DEBUG_PRINTLN("iso intr tran: " << pose.translation().transpose());
   DEBUG_PRINTLN("iso high tran: " << iso_high.translation().transpose()<< std::endl);
+  */
+
   return true;
 }
