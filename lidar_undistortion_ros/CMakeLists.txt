@@ -54,7 +54,7 @@ include_directories(${velodyne_pointcloud_INCLUDE_DIRS})
 add_library(velodyne_undistortion_ros src/velodyne_image_converter.cpp
                                       src/velodyne_scan_converter.cpp
                                       src/velodyne_undistorter_ros.cpp)
- 
+
 target_link_libraries(velodyne_undistortion_ros ${catkin_LIBRARIES}
                                                 ${velodyne_pointcloud_LIBRARIES}
                                                 ${OpenCV_LIBRARIES}
@@ -103,8 +103,13 @@ target_link_libraries(ouster_image_converter_node ${catkin_LIBRARIES})
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
-install(TARGETS ouster_undistortion_node ouster_image_converter_node
-        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+install(TARGETS
+  hesai_undistortion_node
+  ouster_image_converter_node
+  ouster_undistortion_node
+  velodyne_image_converter_node
+  velodyne_undistortion_node
+RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
