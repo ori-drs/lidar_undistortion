@@ -1,14 +1,13 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.8)
 project(lidar_undistortion)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_compile_options(-Wall -Wpedantic -Wextra)
 
-find_package(catkin REQUIRED)
-
+find_package(ament_cmake REQUIRED)
 find_package(Eigen3)
 
 find_package(OpenCV REQUIRED COMPONENTS core imgcodecs)
@@ -32,7 +31,6 @@ include_directories(
   include
   ${EIGEN3_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
   ${jsoncpp_INCLUDE_DIRS}
 )
 
