@@ -1,12 +1,13 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.8)
 project(lidar_undistortion_msgs)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS std_msgs geometry_msgs message_generation)
+find_package(ament_cmake REQUIRED COMPONENTS std_msgs geometry_msgs message_generation)
+find_package(std_msgs REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -41,8 +42,14 @@ find_package(catkin REQUIRED COMPONENTS std_msgs geometry_msgs message_generatio
 ##   * uncomment the generate_messages entry below
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
+find_package(rosidl_default_generators REQUIRED)
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/RangeImage.msg"
+  DEPENDENCIES std_msgs
+)
+
 ## Generate messages in the 'msg' folder
-add_message_files(FILES  RangeImage.msg)
+# add_message_files(FILES  RangeImage.msg)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -90,10 +97,10 @@ generate_messages(DEPENDENCIES std_msgs geometry_msgs)
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
+ament_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES pronto_msgs
-  CATKIN_DEPENDS message_runtime std_msgs geometry_msgs
+# CATKIN_DEPENDS message_runtime std_msgs geometry_msgs
 #  DEPENDS system_lib
 )
 
