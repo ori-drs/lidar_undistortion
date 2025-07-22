@@ -1,4 +1,4 @@
-Header header           # timestamp in the header is the time the ranger
+std_msgs/Header header           # timestamp in the header is the time the ranger
 
 uint32 width
 uint32 height
