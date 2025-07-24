@@ -2,7 +2,7 @@
 #include <lidar_undistortion_msgs/RangeImage.h>
 #include <ros/publisher.h>
 #include <ros/subscriber.h>
-#include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 #include <ros/node_handle.h>
 #include <image_transport/image_transport.h>
 #include <pcl_conversions/pcl_conversions.h>
