@@ -58,7 +58,7 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh)
 void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::ConstPtr &scan_msg){
   // // Create the corrected pointcloud ROS msg
   sensor_msgs::PointCloud2 pointcloud_corrected_msg;
-  VelodyneCloud::Ptr pc = boost::make_shared<VelodyneCloud>();
+  VelodyneCloud::Ptr pc; // = boost::make_shared<VelodyneCloud>();
 
   velodyne_cvt_.scanToPointCloud(*scan_msg, *pc);
   ros::Time time_start = scan_msg->packets.front().stamp;

@@ -10,7 +10,7 @@ void VelodyneContainerOrganized::newLine()
 void VelodyneContainerOrganized::setup(const VelodyneContainerConfig& config) {
   config_ = config;
   cloud_indices = std::vector<size_t>(config_.init_height, 0);
-  cloud = boost::make_shared<VelodyneCloud>(config_.init_width, config_.init_height);
+  // cloud = boost::make_shared<VelodyneCloud>(config_.init_width, config_.init_height);
   cloud->header.frame_id = "velodyne";
 }
 

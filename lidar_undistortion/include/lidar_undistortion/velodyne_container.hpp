@@ -47,8 +47,8 @@ class VelodyneContainer : public VelodyneContainerBase<PointT> {
 
 public:
   VelodyneContainer(const VelodyneContainerConfig& cfg) :
-    VelodyneContainerBase<PointT>(cfg),
-    pc(boost::make_shared<VelodyneCloud>())
+    VelodyneContainerBase<PointT>(cfg)
+    // pc(boost::make_shared<VelodyneCloud>())
   {
   }
 
