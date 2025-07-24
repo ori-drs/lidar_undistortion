@@ -52,20 +52,18 @@ target_link_libraries(velodyne_undistortion ${velodyne_pointcloud_LIBRARIES}
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
   ament_add_gtest(test_pose_buffer test/pose_buffer_test.cpp)
-  target_link_libraries(test_pose_buffer gtest_main ${PROJECT_NAME})
+  target_link_libraries(test_pose_buffer ${PROJECT_NAME})
 
   ament_add_gtest(test_ouster_undistortion test/fill_clouds.cpp
                                           test/ouster_undistortion_test.cpp)
   ament_target_dependencies(test_ouster_undistortion PCL jsoncpp)
-  target_link_libraries(test_ouster_undistortion gtest_main
-                                                 ouster_undistortion
+  target_link_libraries(test_ouster_undistortion ouster_undistortion
                                                  ${PCL_LIBRARIES}
                                                  ${Boost_LIBRARIES})
 
   ament_add_gtest(test_ouster_img_converter test/ouster_image_converter_test.cpp)
   ament_target_dependencies(test_ouster_img_converter OpenCV PCL jsoncpp)
-  target_link_libraries(test_ouster_img_converter gtest_main
-                                                  ouster_undistortion
+  target_link_libraries(test_ouster_img_converter ouster_undistortion
                                                   ${Boost_LIBRARIES}
                                                   ${PCL_LIBRARIES})
 endif()
