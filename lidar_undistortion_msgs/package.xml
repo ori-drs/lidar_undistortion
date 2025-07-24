@@ -40,7 +40,6 @@ Message from the Lidar Undistortion package
   <member_of_group>rosidl_interface_packages</member_of_group>
 
   <depend>std_msgs</depend>
-  <depend>geometry_msgs</depend>
 
   <!-- Use build_depend for packages you need at compile time: -->
   <build_depend>message_generation</build_depend>

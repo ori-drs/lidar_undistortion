@@ -8,7 +8,6 @@ set(CMAKE_CXX_STANDARD 17)
 ## is used, also find other catkin packages
 find_package(ament_cmake REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(geometry_msgs REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
