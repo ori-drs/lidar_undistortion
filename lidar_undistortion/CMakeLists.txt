@@ -36,20 +36,17 @@ add_library(ouster_undistortion src/ouster_undistorter.cpp
                                 src/ouster_metadata_utils.cpp
                                 src/ouster_config.cpp)
 
-target_link_libraries(ouster_undistortion ${PROJECT_NAME}
-                                          ${catkin_LIBRARIES}
-                                          ${OpenCV_LIBRARIES}
-                                          jsoncpp_lib)
+ament_target_dependencies(ouster_undistortion OpenCV PCL jsoncpp)
+target_link_libraries(ouster_undistortion ${PROJECT_NAME})
+                                            
 
 add_library(velodyne_undistortion src/velodyne_container.cpp
                                   src/velodyne_container_organized.cpp
                                   src/velodyne_rawdata.cpp
                                   src/velodyne_calibration.cpp)
 
-target_link_libraries(velodyne_undistortion ${catkin_LIBRARIES}
-                                            ${velodyne_pointcloud_LIBRARIES}
-                                            ${OpenCV_LIBRARIES}
-                                            ${PCL_LIBRARIES}
+ament_target_dependencies(velodyne_undistortion OpenCV PCL jsoncpp)
+target_link_libraries(velodyne_undistortion ${velodyne_pointcloud_LIBRARIES}
                                             yaml-cpp)
 
 if(BUILD_TESTING)
@@ -59,18 +56,17 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_ouster_undistortion test/fill_clouds.cpp
                                           test/ouster_undistortion_test.cpp)
-
+  ament_target_dependencies(test_ouster_undistortion PCL jsoncpp)
   target_link_libraries(test_ouster_undistortion gtest_main
                                                  ouster_undistortion
-                                                 ${Boost_LIBRARIES}
                                                  ${PCL_LIBRARIES}
-                                                 jsoncpp_lib)
+                                                 ${Boost_LIBRARIES})
 
   ament_add_gtest(test_ouster_img_converter test/ouster_image_converter_test.cpp)
+  ament_target_dependencies(test_ouster_img_converter OpenCV PCL jsoncpp)
   target_link_libraries(test_ouster_img_converter gtest_main
                                                   ouster_undistortion
                                                   ${Boost_LIBRARIES}
-                                                  ${OpenCV_LIBRARIES}
                                                   ${PCL_LIBRARIES})
 endif()
 
