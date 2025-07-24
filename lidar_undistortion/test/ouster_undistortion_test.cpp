@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <pcl/io/pcd_io.h>
 #include <pwd.h>
+#include <filesystem>
 
 using namespace pcl::io;
 using namespace lidar_undistortion;
@@ -108,18 +109,18 @@ TEST(OusterUndistorter, testOS128){
   // Load raw and undistorted point cloud from pcd files
   std::string drs_testing_data;
   getDrsTestingDataPath(drs_testing_data);
-  boost::filesystem::path drs_testing_data_path(drs_testing_data);
+  std::filesystem::path drs_testing_data_path(drs_testing_data);
 
-  EXPECT_TRUE(boost::filesystem::is_directory(drs_testing_data_path));
+  EXPECT_TRUE(std::filesystem::is_directory(drs_testing_data_path));
   EXPECT_TRUE(drs_testing_data_path.is_complete());
 
   std::string raw_cloud_file = "lidar_undistortion/raw_1608051903.291503872.pcd";
-  auto raw_cloud_path = boost::filesystem::canonical(raw_cloud_file, drs_testing_data_path);
-  EXPECT_TRUE(boost::filesystem::is_regular_file(raw_cloud_path));
+  auto raw_cloud_path = std::filesystem::canonical(raw_cloud_file, drs_testing_data_path);
+  EXPECT_TRUE(std::filesystem::is_regular_file(raw_cloud_path));
 
   std::string undistorted_pc_file = "lidar_undistortion/undistorted_1608051903.291503872.pcd";
-  auto undistorted_cloud_path = boost::filesystem::canonical(undistorted_pc_file, drs_testing_data_path);
-  EXPECT_TRUE(boost::filesystem::is_regular_file(undistorted_cloud_path));
+  auto undistorted_cloud_path = std::filesystem::canonical(undistorted_pc_file, drs_testing_data_path);
+  EXPECT_TRUE(std::filesystem::is_regular_file(undistorted_cloud_path));
 
   pcl::PointCloud<PointOuster> raw_point_cloud;
   EXPECT_NE(loadPCDFile(raw_cloud_path.string(), raw_point_cloud), -1);
