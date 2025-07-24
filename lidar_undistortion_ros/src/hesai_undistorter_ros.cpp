@@ -5,7 +5,7 @@
 
 using namespace lidar_undistortion;
 
-HesaiUndistorterROS::HesaiUndistorterROS(ros::NodeHandle &nh)
+HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
     : HesaiUndistorter(2e9), tf_listener_(tf_buffer_) {
   nh.getParam("point_cloud_input_topic", point_cloud_input_topic_);
   nh.getParam("pose_topic", pose_topic_);

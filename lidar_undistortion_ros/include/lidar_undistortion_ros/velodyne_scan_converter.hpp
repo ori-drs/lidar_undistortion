@@ -6,8 +6,8 @@
 
 #include <velodyne_msgs/VelodyneScan.h>
 #include <pcl/point_cloud.h>
-#include <ros/node_handle.h>
-#include <ros/package.h>
+#include <rclcpp/node.hpp>
+// #include <ros/package.h>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem/operations.hpp>
 namespace lidar_undistortion {
@@ -47,7 +47,7 @@ public:
     }
   }
 
-  VelodyneScanConverter(ros::NodeHandle& nh) : VelodyneScanConverter(false) {
+  VelodyneScanConverter(rclcpp::Node& nh) : VelodyneScanConverter(false) {
     // get the velodyne config already modified by the default constructor
     velodyne::RawDataConfig cfg = data_.config();
 

@@ -4,7 +4,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <chrono>
 #include <ouster_ros/OSConfigSrv.h>
-#include <ros/package.h>
+// #include <ros/package.h>
 
 
 typedef std::chrono::high_resolution_clock clock_;
@@ -14,7 +14,7 @@ using namespace lidar_undistortion;
 using namespace boost::filesystem;
 using namespace ouster::sensor;
 
-OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle& nh)
+OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
   : OusterUndistorter(2e9),
     fixed_frame_id_("odom"),
     lidar_frame_id_("os_sensor"),

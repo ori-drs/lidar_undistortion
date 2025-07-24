@@ -6,7 +6,7 @@
 
 using namespace lidar_undistortion;
 
-VelodyneUndistorterROS::VelodyneUndistorterROS(ros::NodeHandle& nh)
+VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
   : tf_listener_(tf_buffer_),
     velodyne_cvt_(nh)
 {

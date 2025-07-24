@@ -1,7 +1,7 @@
 #pragma once
 #include "lidar_undistortion/hesai_point.hpp"
 #include "lidar_undistortion/lidar_undistorter.hpp"
-#include <ros/node_handle.h>
+#include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2_ros/transform_listener.h>
@@ -13,7 +13,7 @@ public:
   using HesaiCloud = pcl::PointCloud<PointHesai>;
   using HesaiUndistorter = LidarUndistorter<PointHesai>;
 public:
- HesaiUndistorterROS(ros::NodeHandle& nh);
+ HesaiUndistorterROS(rclcpp::Node& nh);
  ~HesaiUndistorterROS() override = default;
  void pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg);
  // copied from OusterUndistorterROS

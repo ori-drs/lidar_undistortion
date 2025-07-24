@@ -21,7 +21,7 @@ public:
   using OusterCloud = OusterImageConverter::OusterCloud;
 public:
   OusterImageConverterNode() = delete;
-  OusterImageConverterNode(ros::NodeHandle& nh) : nh_(nh), img_transp_(nh_)
+  OusterImageConverterNode(rclcpp::Node& nh) : nh_(nh), img_transp_(nh_)
   {
     cloud_sub_ = nh_.subscribe("/os_cloud_node/points",10, &OusterImageConverterNode::ousterCloudCallback, this);
     range_img_pub_ = img_transp_.advertise("ouster_range_image", 1);
@@ -133,7 +133,7 @@ public:
     altitude_img_pub_.publish(img_msg);
   }
 private:
-  ros::NodeHandle& nh_;
+  rclcpp::Node& nh_;
   image_transport::ImageTransport img_transp_;
   image_transport::Publisher range_img_pub_;
   image_transport::Publisher intensity_img_pub_;
@@ -158,8 +158,8 @@ private:
 };
 
 int main(int argc, char** argv){
-  ros::init(argc, argv, "ouster_image_converter");
-  ros::NodeHandle nh("~");
-  OusterImageConverterNode node(nh);
+  rclcpp::init(argc, argv);
+  auto nh = rclcpp::Node::make_shared("ouster_image_converter");
+  OusterImageConverterNode node(*nh);
   return 0;
 }

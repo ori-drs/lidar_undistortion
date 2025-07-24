@@ -1,6 +1,6 @@
 #pragma once
 #include <lidar_undistortion/ouster_undistorter.hpp>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/PointCloud2.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <tf2_ros/transform_listener.h>
@@ -13,7 +13,7 @@ namespace lidar_undistortion {
 
 class OusterUndistorterROS : public OusterUndistorter {
 public:
- OusterUndistorterROS(ros::NodeHandle& nh);
+ OusterUndistorterROS(rclcpp::Node& nh);
  ~OusterUndistorterROS() override = default;
 
  void pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg);

@@ -27,7 +27,7 @@ public:
   using ScanConverter = VelodyneScanConverter<PointLidar>;
 
 public:
-  VelodyneUndistorterROS(ros::NodeHandle& nh);
+  VelodyneUndistorterROS(rclcpp::Node& nh);
   ~VelodyneUndistorterROS() override {
   }
 
