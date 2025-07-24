@@ -34,11 +34,11 @@ TEST(OusterImageConverter, DISABLED_convertRangeSpherical){
   std::filesystem::path drs_testing_data_path(drs_testing_data);
 
   EXPECT_TRUE(std::filesystem::is_directory(drs_testing_data_path));
-  EXPECT_TRUE(drs_testing_data_path.is_complete());
+  EXPECT_TRUE(drs_testing_data_path.is_absolute());
 
   std::string cloud_file = "lidar_undistortion/spot.pcd";
   std::filesystem::path cloud_path(cloud_file);
-  auto cloud_path_complete = std::filesystem::canonical(cloud_path, drs_testing_data_path);
+  auto cloud_path_complete = std::filesystem::canonical(drs_testing_data_path) / cloud_path;
   EXPECT_TRUE(std::filesystem::is_regular_file(cloud_path_complete));
 
   pcl::PointCloud<PointOuster> in_cloud;
@@ -76,19 +76,19 @@ TEST(OusterImageConverter, converRangeMono){
   std::filesystem::path drs_testing_data_path(drs_testing_data);
 
   EXPECT_TRUE(std::filesystem::is_directory(drs_testing_data_path));
-  EXPECT_TRUE(drs_testing_data_path.is_complete());
+  EXPECT_TRUE(drs_testing_data_path.is_absolute());
 
   std::string cloud_file = "lidar_undistortion/spot.pcd";
   std::filesystem::path cloud_path(cloud_file);
-  auto cloud_path_complete = std::filesystem::canonical(cloud_path, drs_testing_data_path);
-  EXPECT_TRUE(cloud_path_complete.is_complete());
+  auto cloud_path_complete = std::filesystem::canonical(drs_testing_data_path) / cloud_path;
+  EXPECT_TRUE(cloud_path_complete.is_absolute());
 
   EXPECT_TRUE(std::filesystem::is_regular_file(cloud_path_complete));
 
   std::string range_file = "lidar_undistortion/spot_ranges.pgm";
   std::filesystem::path range_path(range_file);
-  auto range_path_complete = std::filesystem::canonical(range_path, drs_testing_data_path);
-  EXPECT_TRUE(range_path_complete.is_complete());
+  auto range_path_complete = std::filesystem::canonical(drs_testing_data_path) / range_path;
+  EXPECT_TRUE(range_path_complete.is_absolute());
   EXPECT_TRUE(std::filesystem::is_regular_file(range_path_complete));
 
   pcl::PointCloud<PointOuster> in_cloud;
@@ -98,8 +98,8 @@ TEST(OusterImageConverter, converRangeMono){
 
   std::string ouster_config_file = "lidar_undistortion/ouster_config.json";
   std::filesystem::path ouster_config_path(ouster_config_file);
-  auto ouster_config_path_complete = std::filesystem::canonical(ouster_config_path, drs_testing_data_path);
-  EXPECT_TRUE(ouster_config_path_complete.is_complete());
+  auto ouster_config_path_complete = std::filesystem::canonical(drs_testing_data_path) / ouster_config_path;
+  EXPECT_TRUE(ouster_config_path_complete.is_absolute());
   EXPECT_TRUE(std::filesystem::is_regular_file(ouster_config_path_complete));
 
   std::string metadata_string = read_metadata(ouster_config_path_complete.string());

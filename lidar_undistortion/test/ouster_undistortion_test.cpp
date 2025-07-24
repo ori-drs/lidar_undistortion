@@ -112,14 +112,14 @@ TEST(OusterUndistorter, testOS128){
   std::filesystem::path drs_testing_data_path(drs_testing_data);
 
   EXPECT_TRUE(std::filesystem::is_directory(drs_testing_data_path));
-  EXPECT_TRUE(drs_testing_data_path.is_complete());
+  EXPECT_TRUE(drs_testing_data_path.is_absolute());
 
   std::string raw_cloud_file = "lidar_undistortion/raw_1608051903.291503872.pcd";
-  auto raw_cloud_path = std::filesystem::canonical(raw_cloud_file, drs_testing_data_path);
+  auto raw_cloud_path = std::filesystem::canonical(drs_testing_data_path) / raw_cloud_file;
   EXPECT_TRUE(std::filesystem::is_regular_file(raw_cloud_path));
 
   std::string undistorted_pc_file = "lidar_undistortion/undistorted_1608051903.291503872.pcd";
-  auto undistorted_cloud_path = std::filesystem::canonical(undistorted_pc_file, drs_testing_data_path);
+  auto undistorted_cloud_path = std::filesystem::canonical(drs_testing_data_path) / undistorted_pc_file;
   EXPECT_TRUE(std::filesystem::is_regular_file(undistorted_cloud_path));
 
   pcl::PointCloud<PointOuster> raw_point_cloud;
