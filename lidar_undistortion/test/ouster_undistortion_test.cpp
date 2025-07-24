@@ -46,7 +46,7 @@ TEST(OusterUndistorter, testOS64){
   lu.addPose(1565309877829768658, pose);
 
   OusterCloud oc_input;
-  OusterCloud::Ptr oc_output = boost::make_shared<OusterCloud>();
+  OusterCloud::Ptr oc_output = pcl::make_shared<OusterCloud>();
 
 // tedious code that fills of oc_input
   fillWithDistortedPointcloud(oc_input);
@@ -128,7 +128,7 @@ TEST(OusterUndistorter, testOS128){
   EXPECT_NE(loadPCDFile(undistorted_cloud_path.string(), undistorted_point_cloud), -1);
 
   // Undistort raw point cloud
-  OusterCloud::Ptr processed_point_cloud = boost::make_shared<OusterCloud>();
+  OusterCloud::Ptr processed_point_cloud = pcl::make_shared<OusterCloud>();
   pcl::copyPointCloud(raw_point_cloud, *processed_point_cloud);
   ASSERT_TRUE(lu.processCloud(processed_point_cloud, 1608051903291503872));
 

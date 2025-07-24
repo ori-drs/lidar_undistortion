@@ -56,7 +56,7 @@ HesaiUndistorterROS::HesaiUndistorterROS(ros::NodeHandle &nh)
 }
 
 void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2 &pointcloud_msg){
-  HesaiCloud::Ptr pointcloud = boost::make_shared<HesaiCloud>();
+  HesaiCloud::Ptr pointcloud = std::make_shared<HesaiCloud>();
   pcl::fromROSMsg(pointcloud_msg, *pointcloud);
   if(!processCloud(pointcloud, pointcloud_msg.header.stamp.toNSec())){
     ROS_INFO_STREAM("processCloud for ns=" << pointcloud_msg.header.stamp.toNSec() << " returned false, ignoring point cloud.");

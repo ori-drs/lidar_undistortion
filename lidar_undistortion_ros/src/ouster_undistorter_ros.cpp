@@ -114,7 +114,7 @@ OusterUndistorterROS::OusterUndistorterROS(ros::NodeHandle& nh)
 
 void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg) {
   // Convert the pointcloud to PCL
-  OusterCloud::Ptr pointcloud = boost::make_shared<OusterCloud>();
+  OusterCloud::Ptr pointcloud = pcl::make_shared<OusterCloud>();
   pcl::fromROSMsg(pointcloud_msg, *pointcloud);
 
   // std::chrono::time_point<clock_> beg_ = clock_::now();
