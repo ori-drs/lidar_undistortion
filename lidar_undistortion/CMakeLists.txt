@@ -16,9 +16,9 @@ find_package(OpenCV REQUIRED COMPONENTS core imgcodecs)
 
 # Stop build warnings related to missing IO components
 set(PCL_FIND_QUIETLY ON)
+find_package(jsoncpp REQUIRED)
 find_package(PCL REQUIRED COMPONENTS common io)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
-find_package(jsoncpp REQUIRED)
 get_target_property(jsoncpp_INCLUDE_DIRS jsoncpp_lib INTERFACE_INCLUDE_DIRECTORIES)
 
 
