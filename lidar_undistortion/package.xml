@@ -10,8 +10,10 @@
   <author email="mcamurri@robots.ox.ac.uk">Marco Camurri</author>
 
   <license>ASL 2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <buildtool_depend>catkin</buildtool_depend>
-
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
   <test_depend>rosunit</test_depend>
 </package>
