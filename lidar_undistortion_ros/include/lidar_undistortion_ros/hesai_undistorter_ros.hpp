@@ -3,7 +3,7 @@
 #include "lidar_undistortion/lidar_undistorter.hpp"
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/PointCloud2.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <tf2_ros/transform_listener.h>
 
 namespace lidar_undistortion {

@@ -2,7 +2,7 @@
 #include <lidar_undistortion/ouster_undistorter.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/PointCloud2.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <tf2_ros/transform_listener.h>
 #include <lidar_undistortion_msgs/RangeImage.h>
 #include <cv_bridge/cv_bridge.h>
