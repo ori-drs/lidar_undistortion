@@ -37,15 +37,15 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
   pose_sub_ = nh.subscribe(pose_topic_, 100, &OusterUndistorterROS::poseCallback, this);
 
   // Read the odom and lidar frame names from ROS params
-  if(!nh.param("fixed_frame_id", fixed_frame_id_, fixed_frame_id_)){
+  if(!nh.get_parameter_or("fixed_frame_id", fixed_frame_id_, fixed_frame_id_)){
     RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"fixed_frame_id\". "
                     << "Setting to default: " << fixed_frame_id_);
   }
-  if(!nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)){
+  if(!nh.get_parameter_or("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)){
     RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"lidar_frame_id\". "
                     << "Setting to default: " << lidar_frame_id_);
   }
-  if(!nh.param("base_frame_id", base_frame_id_, base_frame_id_)){
+  if(!nh.get_parameter_or("base_frame_id", base_frame_id_, base_frame_id_)){
     RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"base_frame_id\". "
                     << "Setting to default: " << base_frame_id_);
   }

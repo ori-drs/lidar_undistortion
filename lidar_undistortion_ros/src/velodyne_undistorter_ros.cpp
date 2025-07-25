@@ -21,7 +21,7 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
     original_pointcloud_pub_ = nh.create_publisher<sensor_msgs::msg::PointCloud2>("pointcloud_original", 100);
   }
 
-  if(!nh.param("pose_topic", pose_topic_, pose_topic_)){
+  if(!nh.get_parameter_or("pose_topic", pose_topic_, pose_topic_)){
     RCLCPP_WARN(nh.get_logger(), "pose_topic not specified");
   }
 
@@ -29,13 +29,13 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
       pose_topic_, 100, std::bind(&VelodyneUndistorterROS::poseCallback, this, std::placeholders::_1));
 
   // Read the odom and lidar frame names from ROS params
-  if(!nh.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_)){
+  if(!nh.get_parameter_or("odom_frame_id", fixed_frame_id_, fixed_frame_id_)){
     RCLCPP_WARN(nh.get_logger(), "odom_frame_id not specified");
   }
-  if(!nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)){
+  if(!nh.get_parameter_or("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)){
     RCLCPP_WARN(nh.get_logger(), "lidar_frame_id not specified");
   }
-  if(!nh.param("base_frame_id", base_frame_id_, base_frame_id_)){
+  if(!nh.get_parameter_or("base_frame_id", base_frame_id_, base_frame_id_)){
     RCLCPP_WARN(nh.get_logger(), "base_frame_id not specified");
   }
 
