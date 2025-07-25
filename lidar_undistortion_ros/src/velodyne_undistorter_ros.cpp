@@ -7,8 +7,7 @@
 using namespace lidar_undistortion;
 
 VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
-  : tf_listener_(tf_buffer_),
-    velodyne_cvt_(nh)
+  : velodyne_cvt_(nh)
 {
   // set full 360 FoV and nominal range
   scan_sub_ = nh.create_subscription<velodyne_msgs::msg::VelodyneScan>(
@@ -44,7 +43,7 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
   while(rclcpp::ok()){
     try{
       geometry_msgs::msg::TransformStamped temp_transform;
-      temp_transform = tf_buffer_.lookupTransform(base_frame_id_, lidar_frame_id_,
+      temp_transform = tf_buffer_->lookupTransform(base_frame_id_, lidar_frame_id_,
                                                   rclcpp::Time(0));
 
       base_to_lidar_ = tf2::transformToEigen(temp_transform);

@@ -5,6 +5,7 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
 
 namespace lidar_undistortion {
 
@@ -42,8 +43,10 @@ private:
  std::string point_cloud_output_topic_ = "/hesai/pandar_corrected";
  std::string pose_topic_;
  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr corrected_pointcloud_pub_;
- tf2_ros::TransformListener tf_listener_;
- tf2_ros::Buffer tf_buffer_;
+ //  tf2_ros::TransformListener tf_listener_;
+ //  tf2_ros::Buffer tf_buffer_;
+ std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
+ std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
  // ROS subscriber and publisher for the (un)corrected pointclouds
  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_sub_;
  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_sub_;

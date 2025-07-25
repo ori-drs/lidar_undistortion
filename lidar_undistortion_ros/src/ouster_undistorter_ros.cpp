@@ -20,7 +20,6 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
     lidar_frame_id_("os_sensor"),
     img_transp_(nh),
     corrected_range_pub_(img_transp_.advertise("corrected_range",1)),
-    tf_listener_(tf_buffer_)
 {
   nh.get_parameter("point_cloud_input_topic", point_cloud_input_topic_);
   nh.get_parameter("pose_topic", pose_topic_);
@@ -97,7 +96,7 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
   while(rclcpp::ok()){
     try{
       geometry_msgs::msg::TransformStamped temp_transform;
-      temp_transform = tf_buffer_.lookupTransform(base_frame_id_, lidar_frame_id_,
+      temp_transform = tf_buffer_->lookupTransform(base_frame_id_, lidar_frame_id_,
                                                   rclcpp::Time(0));
 
       base_to_lidar_ = tf2::transformToEigen(temp_transform);

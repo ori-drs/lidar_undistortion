@@ -6,7 +6,7 @@
 using namespace lidar_undistortion;
 
 HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
-    : HesaiUndistorter(2e9), tf_listener_(tf_buffer_), nh_(nh) {
+    : HesaiUndistorter(2e9), nh_(nh) {
   nh.get_parameter("point_cloud_input_topic", point_cloud_input_topic_);
   nh.get_parameter("pose_topic", pose_topic_);
   nh.get_parameter("point_cloud_output_topic", point_cloud_output_topic_);
@@ -43,7 +43,7 @@ HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
   while (rclcpp::ok()) {
     try {
       geometry_msgs::msg::TransformStamped temp_transform;
-      temp_transform = tf_buffer_.lookupTransform(
+      temp_transform = tf_buffer_->lookupTransform(
           base_frame_id_, lidar_frame_id_, rclcpp::Time(0));
 
       base_to_lidar_ = tf2::transformToEigen(temp_transform);

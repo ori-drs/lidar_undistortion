@@ -7,6 +7,8 @@
 #include <lidar_undistortion_msgs/RangeImage.h>
 #include <cv_bridge/cv_bridge.h>
 #include <image_transport/image_transport.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
 
 
 namespace lidar_undistortion {
@@ -46,8 +48,8 @@ private:
  image_transport::Publisher corrected_range_pub_;
  sensor_msgs::ImagePtr range_img_msg_;
 
- tf2_ros::Buffer tf_buffer_;
- tf2_ros::TransformListener tf_listener_;
+ std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+ std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
 protected:
   std::unique_ptr<OusterImageConverter> cvt_;

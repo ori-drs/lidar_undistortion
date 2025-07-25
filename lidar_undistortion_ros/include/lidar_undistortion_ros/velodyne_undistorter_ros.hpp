@@ -36,8 +36,8 @@ public:
   void poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& pose_msg);
   void reprocessCloudBuffer() override;
 private:
-  tf2_ros::Buffer tf_buffer_;
-  tf2_ros::TransformListener tf_listener_;
+  std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
   rclcpp::Subscription<velodyne_msgs::msg::VelodyneScan>::SharedPtr scan_sub_;
   ScanConverter velodyne_cvt_;
