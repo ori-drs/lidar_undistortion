@@ -13,16 +13,18 @@ HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
 
   // Subscribe to the undistorted pointcloud topic
   pointcloud_sub_ =
-      nh.subscribe(point_cloud_input_topic_, 100,
-                   &HesaiUndistorterROS::pointcloudCallback, this);
+      nh.create_subscription<sensor_msgs::msg::PointCloud2>(
+          point_cloud_input_topic_, 100,
+          std::bind(&HesaiUndistorterROS::pointcloudCallback, this, std::placeholders::_1));
 
   // Advertise the corrected pointcloud topic
-  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::msg::PointCloud2>(
-      point_cloud_output_topic_, 100, false);
+  corrected_pointcloud_pub_ = nh.create_publisher<sensor_msgs::msg::PointCloud2>(
+      point_cloud_output_topic_, 100);
 
   pose_sub_ =
-      nh.subscribe(pose_topic_, 100, &HesaiUndistorterROS::poseCallback, this);
-
+      nh.create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+          pose_topic_, 100, std::bind(&HesaiUndistorterROS::poseCallback, this, std::placeholders::_1));
+  
   // Read the odom and lidar frame names from ROS params
   if (!nh.param("fixed_frame_id", fixed_frame_id_, fixed_frame_id_)) {
     RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"fixed_frame_id\". "
@@ -72,7 +74,7 @@ void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud2
   pointcloud_corrected_msg.header.frame_id = lidar_frame_id_;
 
   // Publish the corrected pointcloud
-  corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
+  corrected_pointcloud_pub_->publish(pointcloud_corrected_msg);
 }
 
 void HesaiUndistorterROS::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped &pose_msg){
@@ -134,7 +136,7 @@ void HesaiUndistorterROS::reprocessCloudBuffer(){
         pcl::toROSMsg(*it->second, out_msg);
         out_msg.header.stamp = ros::Time().fromNSec(it->first);
         out_msg.header.frame_id = lidar_frame_id_;
-        corrected_pointcloud_pub_.publish(out_msg);
+        corrected_pointcloud_pub_->publish(out_msg);
         DEBUG_PRINTLN("Processed. Cloud size is: " << cloud_history_.size());
         // the point cloud has been transformed successfully
         // we remove it from the buffer and return

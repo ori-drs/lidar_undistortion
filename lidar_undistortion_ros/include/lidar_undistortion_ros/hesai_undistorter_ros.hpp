@@ -41,12 +41,12 @@ private:
  std::string point_cloud_input_topic_ = "/hesai/pandar";
  std::string point_cloud_output_topic_ = "/hesai/pandar_corrected";
  std::string pose_topic_;
- ros::Publisher corrected_pointcloud_pub_;
+ rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr corrected_pointcloud_pub_;
  tf2_ros::TransformListener tf_listener_;
  tf2_ros::Buffer tf_buffer_;
  // ROS subscriber and publisher for the (un)corrected pointclouds
- ros::Subscriber pointcloud_sub_;
- ros::Subscriber pose_sub_;
+ rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr pointcloud_sub_;
+ rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr pose_sub_;
 
  void minTimePoint(const HesaiCloud::Ptr& cloud, double& min_time);
 

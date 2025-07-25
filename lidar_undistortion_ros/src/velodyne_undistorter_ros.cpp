@@ -11,20 +11,22 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
     velodyne_cvt_(nh)
 {
   // set full 360 FoV and nominal range
-  scan_sub_ = nh.subscribe("/velodyne_packets", 10, &VelodyneUndistorterROS::scanCallback, this);
+  scan_sub_ = nh.create_subscription<velodyne_msgs::msg::VelodyneScan>(
+      "velodyne_packets", 10, std::bind(&VelodyneUndistorterROS::scanCallback, this, std::placeholders::_1));
 
   // Advertise the corrected pointcloud topic
-  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::msg::PointCloud2>("pointcloud_corrected", 100, false);
+  corrected_pointcloud_pub_ = nh.create_publisher<sensor_msgs::msg::PointCloud2>("pointcloud_corrected", 100);
 
   if(republish_original_cloud_){
-    original_pointcloud_pub_ = nh.advertise<sensor_msgs::msg::PointCloud2>("pointcloud_original", 100, false);
+    original_pointcloud_pub_ = nh.create_publisher<sensor_msgs::msg::PointCloud2>("pointcloud_original", 100);
   }
 
   if(!nh.param("pose_topic", pose_topic_, pose_topic_)){
     RCLCPP_WARN(nh.get_logger(), "pose_topic not specified");
   }
 
-  pose_sub_ = nh.subscribe(pose_topic_, 100, &VelodyneUndistorterROS::poseCallback, this);
+  pose_sub_ = nh.create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+      pose_topic_, 100, std::bind(&VelodyneUndistorterROS::poseCallback, this, std::placeholders::_1));
 
   // Read the odom and lidar frame names from ROS params
   if(!nh.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_)){
@@ -75,7 +77,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::msg::VelodyneScan
     pointcloud_original_msg.header.frame_id = lidar_frame_id_;
 
     // publish the accumulated cloud message
-    original_pointcloud_pub_.publish(pointcloud_original_msg);
+    original_pointcloud_pub_->publish(pointcloud_original_msg);
   }
 
   if(!processCloud(pc, time_start.nanosec)){
@@ -92,7 +94,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::msg::VelodyneScan
   pointcloud_corrected_msg.header.frame_id = lidar_frame_id_;
 
   // publish the accumulated cloud message
-  corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
+  corrected_pointcloud_pub_->publish(pointcloud_corrected_msg);
 }
 
 void VelodyneUndistorterROS::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped &pose_msg){
@@ -116,7 +118,7 @@ void VelodyneUndistorterROS::reprocessCloudBuffer(){
         pcl::toROSMsg(*it->second, out_msg);
         out_msg.header.stamp = ros::Time().fromNSec(it->first);
         out_msg.header.frame_id = lidar_frame_id_;
-        corrected_pointcloud_pub_.publish(out_msg);
+        corrected_pointcloud_pub_->publish(out_msg);
         // the point cloud has been transformed successfully
         // we remove it from the buffer and return
         it = cloud_history_.erase(it);
