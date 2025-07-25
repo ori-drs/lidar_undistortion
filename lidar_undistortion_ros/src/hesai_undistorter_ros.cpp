@@ -40,7 +40,7 @@ HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
   }
 
   // retrieve the transform from base to lidar frame
-  while (nh.ok()) {
+  while (rclcpp::ok()) {
     try {
       geometry_msgs::msg::TransformStamped temp_transform;
       temp_transform = tf_buffer_.lookupTransform(

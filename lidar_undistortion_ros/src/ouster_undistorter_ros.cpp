@@ -94,7 +94,7 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
   ranges_viz_.create(rings_, beams_, CV_8UC1);
 
   // retrieve the transform from base to lidar frame
-  while(nh.ok()){
+  while(rclcpp::ok()){
     try{
       geometry_msgs::msg::TransformStamped temp_transform;
       temp_transform = tf_buffer_.lookupTransform(base_frame_id_, lidar_frame_id_,

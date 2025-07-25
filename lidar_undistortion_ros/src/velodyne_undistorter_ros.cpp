@@ -41,7 +41,7 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
 
 
   // retrieve the transform from base to lidar frame
-  while(nh.ok()){
+  while(rclcpp::ok()){
     try{
       geometry_msgs::msg::TransformStamped temp_transform;
       temp_transform = tf_buffer_.lookupTransform(base_frame_id_, lidar_frame_id_,
@@ -80,7 +80,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::msg::VelodyneScan
     original_pointcloud_pub_->publish(pointcloud_original_msg);
   }
 
-  if(!processCloud(pc, time_start.nanoseconds)){
+  if(!processCloud(pc, time_start.nanoseconds())){
     return;
   }
 
