@@ -21,7 +21,7 @@ public:
 
     velodyne::RawDataConfig cfg;
 
-    std::string cfg_file = ros::package::getPath("lidar_undistortion") + "/config/VLP16db_example.yaml";
+    std::string cfg_file; // = ros::package::getPath("lidar_undistortion") + "/config/VLP16db_example.yaml";
     boost::filesystem::path cfg_path(cfg_file);
 
     if(!boost::filesystem::is_regular_file(cfg_path)){
