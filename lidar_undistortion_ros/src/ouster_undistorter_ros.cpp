@@ -38,15 +38,15 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
 
   // Read the odom and lidar frame names from ROS params
   if(!nh.param("fixed_frame_id", fixed_frame_id_, fixed_frame_id_)){
-    ROS_WARN_STREAM("Could not read param \"fixed_frame_id\". "
+    RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"fixed_frame_id\". "
                     << "Setting to default: " << fixed_frame_id_);
   }
   if(!nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)){
-    ROS_WARN_STREAM("Could not read param \"lidar_frame_id\". "
+    RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"lidar_frame_id\". "
                     << "Setting to default: " << lidar_frame_id_);
   }
   if(!nh.param("base_frame_id", base_frame_id_, base_frame_id_)){
-    ROS_WARN_STREAM("Could not read param \"base_frame_id\". "
+    RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"base_frame_id\". "
                     << "Setting to default: " << base_frame_id_);
   }
 
@@ -59,7 +59,7 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
   if (client.call(cfg_srv)) {
     info  = parse_metadata(cfg_srv.response.metadata);
   } else {
-    ROS_WARN_STREAM("Could not get the ROS client to get sensor info. "
+    RCLCPP_WARN_STREAM(nh.get_logger(), "Could not get the ROS client to get sensor info. "
                     << "Attempting to read file name from param server.");
     std::string json_cfg_file;
     // 2. if server unavailable, load the file from parameter server and parse it
@@ -71,7 +71,7 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
       info  = parse_metadata(metadata_string);
     } else {
       // 3. if file is not available, fill in with default values from OS1-64 Gen1
-      ROS_WARN_STREAM("Could not read param \"config_file\" from param server. "
+      RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"config_file\" from param server. "
                       << "Setting to default values for OS1-64 Gen1");
     }
   }
@@ -104,12 +104,12 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
       break;
     }
     catch (const tf2::TransformException& ex){
-      ROS_ERROR("%s",ex.what());
+      rclcpp_ERROR(nh.get_logger(), "%s",ex.what());
       ros::Duration(1.0).sleep();
     }
   }
 
-  ROS_INFO("OusterUndistorterROS ready.");
+  RCLCPP_INFO(nh.get_logger(), "OusterUndistorterROS ready.");
 }
 
 void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud2& pointcloud_msg) {

@@ -21,20 +21,20 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
   }
 
   if(!nh.param("pose_topic", pose_topic_, pose_topic_)){
-        ROS_WARN("pose_topic not specified");
+    RCLCPP_WARN(nh.get_logger(), "pose_topic not specified");
   }
 
   pose_sub_ = nh.subscribe(pose_topic_, 100, &VelodyneUndistorterROS::poseCallback, this);
 
   // Read the odom and lidar frame names from ROS params
   if(!nh.param("odom_frame_id", fixed_frame_id_, fixed_frame_id_)){
-    ROS_WARN("odom_frame_id not specified");
+    RCLCPP_WARN(nh.get_logger(), "odom_frame_id not specified");
   }
   if(!nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)){
-    ROS_WARN("lidar_frame_id not specified");
+    RCLCPP_WARN(nh.get_logger(), "lidar_frame_id not specified");
   }
   if(!nh.param("base_frame_id", base_frame_id_, base_frame_id_)){
-    ROS_WARN("base_frame_id not specified");
+    RCLCPP_WARN(nh.get_logger(), "base_frame_id not specified");
   }
 
 
@@ -49,7 +49,7 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
       break;
     }
     catch (const tf2::TransformException& ex){
-      ROS_ERROR("%s",ex.what());
+      RCLCPP_ERROR(nh.get_logger(), "%s",ex.what());
       ros::Duration(1.0).sleep();
     }
   }
@@ -96,7 +96,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::msg::VelodyneScan
 }
 
 void VelodyneUndistorterROS::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped &pose_msg){
-//  ROS_WARN_STREAM("Got pose " << pose_msg.header.stamp.toNSec());
+//  RCLCPP_WARN_STREAM("Got pose " << pose_msg.header.stamp.toNSec());
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
   tf2::fromMsg(pose_msg.pose.pose, pose);
   addPose(pose_msg.header.stamp.toNSec(), pose);

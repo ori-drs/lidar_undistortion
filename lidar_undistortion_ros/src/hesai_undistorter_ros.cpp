@@ -25,15 +25,15 @@ HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
 
   // Read the odom and lidar frame names from ROS params
   if (!nh.param("fixed_frame_id", fixed_frame_id_, fixed_frame_id_)) {
-    ROS_WARN_STREAM("Could not read param \"fixed_frame_id\". "
+    RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"fixed_frame_id\". "
                     << "Setting to default: " << fixed_frame_id_);
   }
   if (!nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)) {
-    ROS_WARN_STREAM("Could not read param \"lidar_frame_id\". "
+    RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"lidar_frame_id\". "
                     << "Setting to default: " << lidar_frame_id_);
   }
   if (!nh.param("base_frame_id", base_frame_id_, base_frame_id_)) {
-    ROS_WARN_STREAM("Could not read param \"base_frame_id\". "
+    RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"base_frame_id\". "
                     << "Setting to default: " << base_frame_id_);
   }
 
@@ -47,19 +47,19 @@ HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
       base_to_lidar_ = tf2::transformToEigen(temp_transform);
       break;
     } catch (const tf2::TransformException &ex) {
-      ROS_ERROR("%s", ex.what());
+      RCLCPP_ERROR(nh.get_logger(), "%s", ex.what());
       ros::Duration(1.0).sleep();
     }
   }
 
-  ROS_INFO("HesaiUndistorterROS ready.");
+  RCLCPP_INFO(nh.get_logger(), "HesaiUndistorterROS ready.");
 }
 
 void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud2 &pointcloud_msg){
   HesaiCloud::Ptr pointcloud = std::make_shared<HesaiCloud>();
   pcl::fromROSMsg(pointcloud_msg, *pointcloud);
   if(!processCloud(pointcloud, pointcloud_msg.header.stamp.toNSec())){
-    ROS_INFO_STREAM("processCloud for ns=" << pointcloud_msg.header.stamp.toNSec() << " returned false, ignoring point cloud.");
+    // RCLCPP_INFO_STREAM(nh.get_logger(), "processCloud for ns=" << pointcloud_msg.header.stamp.toNSec() << " returned false, ignoring point cloud.");
     return;
   }
   sensor_msgs::msg::PointCloud2 pointcloud_corrected_msg;

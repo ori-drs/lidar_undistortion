@@ -37,7 +37,7 @@ public:
     if (client.call(cfg_srv)) {
       info  = parse_metadata(cfg_srv.response.metadata);
     } else {
-      ROS_WARN_STREAM("Could not get the ROS client to get sensor info. "
+      RCLCPP_WARN_STREAM(nh.get_logger(), "Could not get the ROS client to get sensor info. "
                       << "Attempting to read file name from param server.");
       std::string json_cfg_file;
       // 2. if server unavailable, load the file from parameter server and parse it
@@ -49,7 +49,7 @@ public:
         info  = parse_metadata(metadata_string);
       } else {
         // 3. if file is not available, fill in with default values from OS1-64 Gen1
-        ROS_WARN_STREAM("Could not read param \"ouster_config_file\" from param server. "
+        RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"ouster_config_file\" from param server. "
                         << "Setting to default values for OS1-64 Gen1");
       }
     }

@@ -17,7 +17,7 @@ class VelodyneScanConverter {
 public:
   VelodyneScanConverter(bool print = true) {
     // Setup with a default constructor for VLP16.
-    ROS_WARN_STREAM("Setting up with default values for VLP-16 LIDAR");
+    // RCLCPP_WARN_STREAM("Setting up with default values for VLP-16 LIDAR");
 
     velodyne::RawDataConfig cfg;
 
@@ -25,7 +25,7 @@ public:
     boost::filesystem::path cfg_path(cfg_file);
 
     if(!boost::filesystem::is_regular_file(cfg_path)){
-      ROS_FATAL_STREAM("Could not load file " << cfg_file << " for Velodyne calibration!");
+      // RCLCPP_FATAL_STREAM("Could not load file " << cfg_file << " for Velodyne calibration!");
       return;
     }
 
@@ -56,13 +56,13 @@ public:
 
     // update the relevant fields of the velodyne config from ROS
     if(!nh.getParam("velodyne_model", velodyne_model)){
-      ROS_WARN_STREAM("Could not get velodyne_model. Assuming VLP16");
+      RCLCPP_WARN_STREAM(nh.get_logger(), "Could not get velodyne_model. Assuming VLP16");
     } else {
       cfg.model = velodyne_model;
     }
 
     if(!nh.getParam("velodyne_calibration_file", velodyne_calibration_file)){
-      ROS_WARN_STREAM("Could not get calib file. Using default");
+      RCLCPP_WARN_STREAM(nh.get_logger(), "Could not get calib file. Using default");
     } else {
       cfg.calibrationFile = velodyne_calibration_file;
     }
