@@ -80,7 +80,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::msg::VelodyneScan
     original_pointcloud_pub_->publish(pointcloud_original_msg);
   }
 
-  if(!processCloud(pc, time_start.nanosec)){
+  if(!processCloud(pc, time_start.nanoseconds)){
     return;
   }
 
