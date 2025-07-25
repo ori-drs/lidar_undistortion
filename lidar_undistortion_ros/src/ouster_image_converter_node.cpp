@@ -1,9 +1,6 @@
 #include "lidar_undistortion/ouster_image_converter.hpp"
 #include <lidar_undistortion_msgs/RangeImage.h>
-#include <ros/publisher.h>
-#include <ros/subscriber.h>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <ros/node_handle.h>
 #include <image_transport/image_transport.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <cv_bridge/cv_bridge.h>
@@ -76,7 +73,7 @@ public:
     range_msg_.altitude.resize(range_msg_.height * range_msg_.width);
 
 
-    ros::spin();
+    rcl::spin(nh);
   }
 
   void ousterCloudCallback(const sensor_msgs::PointCloud2ConstPtr& msg){
