@@ -32,7 +32,7 @@ public:
   }
 
   void scanCallback(const velodyne_msgs::VelodyneScan::ConstPtr& scan_msg);
-  void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
+  void poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& pose_msg);
   void reprocessCloudBuffer() override;
 private:
   tf2_ros::Buffer tf_buffer_;

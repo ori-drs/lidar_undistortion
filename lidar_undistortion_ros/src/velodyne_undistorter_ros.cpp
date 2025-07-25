@@ -41,7 +41,7 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
   // retrieve the transform from base to lidar frame
   while(nh.ok()){
     try{
-      geometry_msgs::TransformStamped temp_transform;
+      geometry_msgs::msg::TransformStamped temp_transform;
       temp_transform = tf_buffer_.lookupTransform(base_frame_id_, lidar_frame_id_,
                                                   ros::Time(0));
 
@@ -95,7 +95,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::Con
   corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
 }
 
-void VelodyneUndistorterROS::poseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose_msg){
+void VelodyneUndistorterROS::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped &pose_msg){
 //  ROS_WARN_STREAM("Got pose " << pose_msg.header.stamp.toNSec());
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
   tf2::fromMsg(pose_msg.pose.pose, pose);

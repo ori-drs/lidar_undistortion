@@ -40,7 +40,7 @@ HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
   // retrieve the transform from base to lidar frame
   while (nh.ok()) {
     try {
-      geometry_msgs::TransformStamped temp_transform;
+      geometry_msgs::msg::TransformStamped temp_transform;
       temp_transform = tf_buffer_.lookupTransform(
           base_frame_id_, lidar_frame_id_, ros::Time(0));
 
@@ -75,7 +75,7 @@ void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud2
   corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
 }
 
-void HesaiUndistorterROS::poseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose_msg){
+void HesaiUndistorterROS::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped &pose_msg){
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
   tf2::fromMsg(pose_msg.pose.pose, pose);
   addPose(pose_msg.header.stamp.toNSec(), pose);

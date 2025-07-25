@@ -17,7 +17,7 @@ public:
  ~OusterUndistorterROS() override = default;
 
  void pointcloudCallback(const sensor_msgs::msg::PointCloud2& pointcloud_msg);
- void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
+ void poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& pose_msg);
 
  // this re-implementation is identical in all ROS implementations, but
  // an abstraction would lead to the Inheritance Diamond Problem so we leave it

@@ -18,7 +18,7 @@ public:
  void pointcloudCallback(const sensor_msgs::msg::PointCloud2& pointcloud_msg);
  // copied from OusterUndistorterROS
  // TODO move into a common class
- void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
+ void poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& pose_msg);
 
  bool processCloud(const HesaiCloud::Ptr& pointcloud,
                    const uint64_t start_timestamp,
