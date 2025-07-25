@@ -49,7 +49,7 @@ public:
 
       const velodyne::raw_packet_t *raw = (const velodyne::raw_packet_t *) &scan.packets[i].data[0];
 
-      raw_data_.unpack(raw, scan.packets[i].stamp.toNSec(), org_cloud_, scan.header.stamp.toNSec());
+      raw_data_.unpack(raw, scan.packets[i].stamp.nanosec, org_cloud_, scan.header.stamp.nanosec);
     }
     auto cloud_ptr = org_cloud_.getCloud();
     cloud = *cloud_ptr;

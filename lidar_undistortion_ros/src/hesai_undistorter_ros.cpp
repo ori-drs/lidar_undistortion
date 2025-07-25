@@ -58,8 +58,8 @@ HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
 void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud2 &pointcloud_msg){
   HesaiCloud::Ptr pointcloud = std::make_shared<HesaiCloud>();
   pcl::fromROSMsg(pointcloud_msg, *pointcloud);
-  if(!processCloud(pointcloud, pointcloud_msg.header.stamp.toNSec())){
-    RCLCPP_INFO_STREAM(nh_.get_logger(), "processCloud for ns=" << pointcloud_msg.header.stamp.toNSec() << " returned false, ignoring point cloud.");
+  if(!processCloud(pointcloud, pointcloud_msg.header.stamp.nanosec)){
+    RCLCPP_INFO_STREAM(nh_.get_logger(), "processCloud for ns=" << pointcloud_msg.header.stamp.nanosec << " returned false, ignoring point cloud.");
     return;
   }
   sensor_msgs::msg::PointCloud2 pointcloud_corrected_msg;
@@ -78,7 +78,7 @@ void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud2
 void HesaiUndistorterROS::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped &pose_msg){
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
   tf2::fromMsg(pose_msg.pose.pose, pose);
-  addPose(pose_msg.header.stamp.toNSec(), pose);
+  addPose(pose_msg.header.stamp.nanosec, pose);
   reprocessCloudBuffer();
 }
 

@@ -85,13 +85,13 @@ public:
     pc->height = 1;
     // process each packet provided by the driver
 
-    int64_t time_start = scan_msg.packets.front().stamp.toNSec();
+    int64_t time_start = scan_msg.packets.front().stamp.nanosec;
     for (size_t next = 0; next < scan_msg.packets.size(); ++next) {
       // append all timings to the lut
 
       // unpack the raw data and append to cloud
       data_.unpack(reinterpret_cast<const velodyne::raw_packet_t*>(&scan_msg.packets[next].data[0]),
-                   scan_msg.packets[next].stamp.toNSec(),
+                   scan_msg.packets[next].stamp.nanosec,
                    container_,
                    time_start);
     }

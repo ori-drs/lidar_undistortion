@@ -118,8 +118,8 @@ void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud
   pcl::fromROSMsg(pointcloud_msg, *pointcloud);
 
   // std::chrono::time_point<clock_> beg_ = clock_::now();
-  if(!processCloud(pointcloud, pointcloud_msg.header.stamp.toNSec())){
-    ROS_DEBUG_STREAM("processCloud for ns=" << pointcloud_msg.header.stamp.toNSec() << " returned false, ignoring point cloud.");
+  if(!processCloud(pointcloud, pointcloud_msg.header.stamp.nanosec)){
+    ROS_DEBUG_STREAM("processCloud for ns=" << pointcloud_msg.header.stamp.nanosec << " returned false, ignoring point cloud.");
     return;
   }
   // std::cout << "Time for reprocessCloudBuffer: " << std::chrono::duration_cast<second_> (clock_::now() - beg_).count() << std::endl;
@@ -141,7 +141,7 @@ void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud
 void OusterUndistorterROS::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped &pose_msg){
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
   tf2::fromMsg(pose_msg.pose.pose, pose);
-  addPose(pose_msg.header.stamp.toNSec(), pose);
+  addPose(pose_msg.header.stamp.nanosec, pose);
   reprocessCloudBuffer();
 }
 

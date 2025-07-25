@@ -78,7 +78,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::msg::VelodyneScan
     original_pointcloud_pub_.publish(pointcloud_original_msg);
   }
 
-  if(!processCloud(pc, time_start.toNSec())){
+  if(!processCloud(pc, time_start.nanosec)){
     return;
   }
 
@@ -96,10 +96,10 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::msg::VelodyneScan
 }
 
 void VelodyneUndistorterROS::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped &pose_msg){
-//  RCLCPP_WARN_STREAM("Got pose " << pose_msg.header.stamp.toNSec());
+//  RCLCPP_WARN_STREAM("Got pose " << pose_msg.header.stamp.nanosec;
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
   tf2::fromMsg(pose_msg.pose.pose, pose);
-  addPose(pose_msg.header.stamp.toNSec(), pose);
+  addPose(pose_msg.header.stamp.nanosec, pose);
   reprocessCloudBuffer();
 }
 
