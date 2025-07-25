@@ -15,7 +15,7 @@ public:
 public:
  HesaiUndistorterROS(rclcpp::Node& nh);
  ~HesaiUndistorterROS() override = default;
- void pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg);
+ void pointcloudCallback(const sensor_msgs::msg::PointCloud2& pointcloud_msg);
  // copied from OusterUndistorterROS
  // TODO move into a common class
  void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);

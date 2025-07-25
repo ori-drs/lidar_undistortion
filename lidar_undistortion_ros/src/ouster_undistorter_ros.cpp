@@ -31,7 +31,7 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
                                  &OusterUndistorterROS::pointcloudCallback, this);
 
   // Advertise the corrected pointcloud topic
-  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>(
+  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::msg::PointCloud2>(
         point_cloud_output_topic_, 100, false);
 
   pose_sub_ = nh.subscribe(pose_topic_, 100, &OusterUndistorterROS::poseCallback, this);
@@ -112,7 +112,7 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
   ROS_INFO("OusterUndistorterROS ready.");
 }
 
-void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg) {
+void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud2& pointcloud_msg) {
   // Convert the pointcloud to PCL
   OusterCloud::Ptr pointcloud = pcl::make_shared<OusterCloud>();
   pcl::fromROSMsg(pointcloud_msg, *pointcloud);
@@ -125,7 +125,7 @@ void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2& po
   // std::cout << "Time for reprocessCloudBuffer: " << std::chrono::duration_cast<second_> (clock_::now() - beg_).count() << std::endl;
 
   // Create the corrected pointcloud ROS msg
-  sensor_msgs::PointCloud2 pointcloud_corrected_msg;
+  sensor_msgs::msg::PointCloud2 pointcloud_corrected_msg;
   pcl::toROSMsg(*pointcloud, pointcloud_corrected_msg);
   // Copy the pointcloud header correctly
   // NOTE: The header timestamp type in PCL pointclouds is narrower than in
@@ -157,7 +157,7 @@ void OusterUndistorterROS::reprocessCloudBuffer(){
           ++it;
         }
       } else {
-        sensor_msgs::PointCloud2 out_msg;
+        sensor_msgs::msg::PointCloud2 out_msg;
         pcl::toROSMsg(*it->second, out_msg);
         out_msg.header.stamp = ros::Time().fromNSec(it->first);
         out_msg.header.frame_id = lidar_frame_id_;

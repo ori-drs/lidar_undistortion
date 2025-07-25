@@ -76,7 +76,7 @@ public:
     rcl::spin(nh);
   }
 
-  void ousterCloudCallback(const sensor_msgs::PointCloud2ConstPtr& msg){
+  void ousterCloudCallback(const sensor_msgs::msg::PointCloud2ConstPtr& msg){
 
     pcl::fromROSMsg(*msg, cloud_in_);
 

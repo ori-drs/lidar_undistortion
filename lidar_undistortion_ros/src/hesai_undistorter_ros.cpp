@@ -17,7 +17,7 @@ HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
                    &HesaiUndistorterROS::pointcloudCallback, this);
 
   // Advertise the corrected pointcloud topic
-  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>(
+  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::msg::PointCloud2>(
       point_cloud_output_topic_, 100, false);
 
   pose_sub_ =
@@ -55,14 +55,14 @@ HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
   ROS_INFO("HesaiUndistorterROS ready.");
 }
 
-void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2 &pointcloud_msg){
+void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud2 &pointcloud_msg){
   HesaiCloud::Ptr pointcloud = std::make_shared<HesaiCloud>();
   pcl::fromROSMsg(pointcloud_msg, *pointcloud);
   if(!processCloud(pointcloud, pointcloud_msg.header.stamp.toNSec())){
     ROS_INFO_STREAM("processCloud for ns=" << pointcloud_msg.header.stamp.toNSec() << " returned false, ignoring point cloud.");
     return;
   }
-  sensor_msgs::PointCloud2 pointcloud_corrected_msg;
+  sensor_msgs::msg::PointCloud2 pointcloud_corrected_msg;
   pcl::toROSMsg(*pointcloud, pointcloud_corrected_msg);
   // Copy the pointcloud header correctly
   // NOTE: The header timestamp type in PCL pointclouds is narrower than in
@@ -130,7 +130,7 @@ void HesaiUndistorterROS::reprocessCloudBuffer(){
           ++it;
         }
       } else {
-        sensor_msgs::PointCloud2 out_msg;
+        sensor_msgs::msg::PointCloud2 out_msg;
         pcl::toROSMsg(*it->second, out_msg);
         out_msg.header.stamp = ros::Time().fromNSec(it->first);
         out_msg.header.frame_id = lidar_frame_id_;

@@ -14,10 +14,10 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
   scan_sub_ = nh.subscribe("/velodyne_packets", 10, &VelodyneUndistorterROS::scanCallback, this);
 
   // Advertise the corrected pointcloud topic
-  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>("pointcloud_corrected", 100, false);
+  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::msg::PointCloud2>("pointcloud_corrected", 100, false);
 
   if(republish_original_cloud_){
-    original_pointcloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>("pointcloud_original", 100, false);
+    original_pointcloud_pub_ = nh.advertise<sensor_msgs::msg::PointCloud2>("pointcloud_original", 100, false);
   }
 
   if(!nh.param("pose_topic", pose_topic_, pose_topic_)){
@@ -57,14 +57,14 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
 
 void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::ConstPtr &scan_msg){
   // // Create the corrected pointcloud ROS msg
-  sensor_msgs::PointCloud2 pointcloud_corrected_msg;
+  sensor_msgs::msg::PointCloud2 pointcloud_corrected_msg;
   VelodyneCloud::Ptr pc; // = boost::make_shared<VelodyneCloud>();
 
   velodyne_cvt_.scanToPointCloud(*scan_msg, *pc);
   ros::Time time_start = scan_msg->packets.front().stamp;
 
   if(republish_original_cloud_){
-    sensor_msgs::PointCloud2 pointcloud_original_msg;
+    sensor_msgs::msg::PointCloud2 pointcloud_original_msg;
     pcl::toROSMsg(*pc, pointcloud_original_msg);
     // Copy the pointcloud header correctly
     // NOTE: The header timestamp type in PCL pointclouds is narrower than in
@@ -112,7 +112,7 @@ void VelodyneUndistorterROS::reprocessCloudBuffer(){
       if(!processCloud(it->second, it->first)){
         ++it;
       } else {
-        sensor_msgs::PointCloud2 out_msg;
+        sensor_msgs::msg::PointCloud2 out_msg;
         pcl::toROSMsg(*it->second, out_msg);
         out_msg.header.stamp = ros::Time().fromNSec(it->first);
         out_msg.header.frame_id = lidar_frame_id_;

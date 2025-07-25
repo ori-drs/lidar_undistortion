@@ -16,7 +16,7 @@ public:
  OusterUndistorterROS(rclcpp::Node& nh);
  ~OusterUndistorterROS() override = default;
 
- void pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg);
+ void pointcloudCallback(const sensor_msgs::msg::PointCloud2& pointcloud_msg);
  void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
 
  // this re-implementation is identical in all ROS implementations, but
