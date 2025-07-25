@@ -3,7 +3,7 @@
 
 int main(int argc, char **argv) {
   // Register with ROS master
-  rclcpp::init(argc, argv)
+  rclcpp::init(argc, argv);
 
   // Create node handles
   auto nh = rclcpp::Node::make_shared("hesai_undistortion");
