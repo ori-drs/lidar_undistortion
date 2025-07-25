@@ -7,9 +7,9 @@ using namespace lidar_undistortion;
 
 HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
     : HesaiUndistorter(2e9), tf_listener_(tf_buffer_), nh_(nh) {
-  nh.getParam("point_cloud_input_topic", point_cloud_input_topic_);
-  nh.getParam("pose_topic", pose_topic_);
-  nh.getParam("point_cloud_output_topic", point_cloud_output_topic_);
+  nh.get_parameter("point_cloud_input_topic", point_cloud_input_topic_);
+  nh.get_parameter("pose_topic", pose_topic_);
+  nh.get_parameter("point_cloud_output_topic", point_cloud_output_topic_);
 
   // Subscribe to the undistorted pointcloud topic
   pointcloud_sub_ =

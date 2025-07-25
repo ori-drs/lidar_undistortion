@@ -55,13 +55,13 @@ public:
     std::string velodyne_model = "VLP16";
 
     // update the relevant fields of the velodyne config from ROS
-    if(!nh.getParam("velodyne_model", velodyne_model)){
+    if(!nh.get_parameter("velodyne_model", velodyne_model)){
       RCLCPP_WARN_STREAM(nh.get_logger(), "Could not get velodyne_model. Assuming VLP16");
     } else {
       cfg.model = velodyne_model;
     }
 
-    if(!nh.getParam("velodyne_calibration_file", velodyne_calibration_file)){
+    if(!nh.get_parameter("velodyne_calibration_file", velodyne_calibration_file)){
       RCLCPP_WARN_STREAM(nh.get_logger(), "Could not get calib file. Using default");
     } else {
       cfg.calibrationFile = velodyne_calibration_file;

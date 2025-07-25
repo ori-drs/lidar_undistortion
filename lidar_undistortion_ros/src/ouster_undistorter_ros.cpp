@@ -22,9 +22,9 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
     corrected_range_pub_(img_transp_.advertise("corrected_range",1)),
     tf_listener_(tf_buffer_)
 {
-  nh.getParam("point_cloud_input_topic", point_cloud_input_topic_);
-  nh.getParam("pose_topic", pose_topic_);
-  nh.getParam("point_cloud_output_topic", point_cloud_output_topic_);
+  nh.get_parameter("point_cloud_input_topic", point_cloud_input_topic_);
+  nh.get_parameter("pose_topic", pose_topic_);
+  nh.get_parameter("point_cloud_output_topic", point_cloud_output_topic_);
 
   // Subscribe to the undistorted pointcloud topic
   pointcloud_sub_ = nh.subscribe(point_cloud_input_topic_, 100,
@@ -63,7 +63,7 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
                     << "Attempting to read file name from param server.");
     std::string json_cfg_file;
     // 2. if server unavailable, load the file from parameter server and parse it
-    if(nh.getParam("ouster_config_file", json_cfg_file) &&
+    if(nh.get_parameter("ouster_config_file", json_cfg_file) &&
        is_regular_file(path(json_cfg_file)))
     {
       std::string metadata_string = read_metadata(json_cfg_file);
