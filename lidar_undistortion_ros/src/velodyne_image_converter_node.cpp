@@ -5,7 +5,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/core.hpp>
-#include <velodyne_msgs/VelodyneScan.h>
+#include <velodyne_msgs/msg/velodyne_scan.hpp>
 #include <lidar_undistortion/ouster_point.hpp>
 
 using namespace lidar_undistortion;
@@ -26,7 +26,7 @@ public:
     ros::spin();
   }
 
-  void velodyneCloudCallback(const velodyne_msgs::VelodyneScanConstPtr& msg)
+  void velodyneCloudCallback(const velodyne_msgs::msg::VelodyneScanConstPtr& msg)
   {
     // TODO some conversion from msg to cloud_in_
     scan_cvt_.scanToPointCloud(*msg, cloud_in_);

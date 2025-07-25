@@ -4,7 +4,7 @@
 #include <lidar_undistortion/velodyne_container.hpp>
 #include <lidar_undistortion/velodyne_rawdata.hpp>
 
-#include <velodyne_msgs/VelodyneScan.h>
+#include <velodyne_msgs/msg/velodyne_scan.hpp>
 #include <pcl/point_cloud.h>
 #include <rclcpp/node.hpp>
 // #include <ros/package.h>
@@ -73,7 +73,7 @@ public:
     }
   }
 
-  void scanToPointCloud(const velodyne_msgs::VelodyneScan& scan_msg,
+  void scanToPointCloud(const velodyne_msgs::msg::VelodyneScan& scan_msg,
                         pcl::PointCloud<PointT>& cloud) {
     //
     // beams_ = scan_msg.packets.size();

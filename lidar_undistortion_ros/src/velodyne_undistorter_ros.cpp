@@ -55,7 +55,7 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
   }
 }
 
-void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::VelodyneScan::ConstPtr &scan_msg){
+void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::msg::VelodyneScan::ConstPtr &scan_msg){
   // // Create the corrected pointcloud ROS msg
   sensor_msgs::msg::PointCloud2 pointcloud_corrected_msg;
   VelodyneCloud::Ptr pc; // = boost::make_shared<VelodyneCloud>();

@@ -4,7 +4,7 @@
 #include <lidar_undistortion/velodyne_rawdata.hpp>
 #include <lidar_undistortion/velodyne_point.hpp>
 #include "lidar_undistortion_ros/velodyne_scan_converter.hpp"
-#include <velodyne_msgs/VelodyneScan.h>
+#include <velodyne_msgs/msg/velodyne_scan.hpp>
 #include <lidar_undistortion/ouster_point.hpp>
 
 namespace lidar_undistortion {

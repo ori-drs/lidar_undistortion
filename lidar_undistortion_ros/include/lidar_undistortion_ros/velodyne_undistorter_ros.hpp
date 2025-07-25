@@ -31,7 +31,7 @@ public:
   ~VelodyneUndistorterROS() override {
   }
 
-  void scanCallback(const velodyne_msgs::VelodyneScan::ConstPtr& scan_msg);
+  void scanCallback(const velodyne_msgs::msg::VelodyneScan::ConstPtr& scan_msg);
   void poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& pose_msg);
   void reprocessCloudBuffer() override;
 private:
