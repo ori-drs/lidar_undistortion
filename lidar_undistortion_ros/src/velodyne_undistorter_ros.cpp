@@ -45,14 +45,14 @@ VelodyneUndistorterROS::VelodyneUndistorterROS(rclcpp::Node& nh)
     try{
       geometry_msgs::msg::TransformStamped temp_transform;
       temp_transform = tf_buffer_.lookupTransform(base_frame_id_, lidar_frame_id_,
-                                                  ros::Time(0));
+                                                  rclcpp::Time(0));
 
       base_to_lidar_ = tf2::transformToEigen(temp_transform);
       break;
     }
     catch (const tf2::TransformException& ex){
       RCLCPP_ERROR(nh.get_logger(), "%s",ex.what());
-      ros::Duration(1.0).sleep();
+      sleep(1);
     }
   }
 }
@@ -63,7 +63,7 @@ void VelodyneUndistorterROS::scanCallback(const velodyne_msgs::msg::VelodyneScan
   VelodyneCloud::Ptr pc; // = boost::make_shared<VelodyneCloud>();
 
   velodyne_cvt_.scanToPointCloud(*scan_msg, *pc);
-  ros::Time time_start = scan_msg->packets.front().stamp;
+  rclcpp::Time time_start = scan_msg->packets.front().stamp;
 
   if(republish_original_cloud_){
     sensor_msgs::msg::PointCloud2 pointcloud_original_msg;
@@ -116,7 +116,7 @@ void VelodyneUndistorterROS::reprocessCloudBuffer(){
       } else {
         sensor_msgs::msg::PointCloud2 out_msg;
         pcl::toROSMsg(*it->second, out_msg);
-        out_msg.header.stamp = ros::Time().fromNSec(it->first);
+        out_msg.header.stamp = rclcpp::Time(it->first);
         out_msg.header.frame_id = lidar_frame_id_;
         corrected_pointcloud_pub_->publish(out_msg);
         // the point cloud has been transformed successfully

@@ -44,14 +44,14 @@ HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
     try {
       geometry_msgs::msg::TransformStamped temp_transform;
       temp_transform = tf_buffer_.lookupTransform(
-          base_frame_id_, lidar_frame_id_, ros::Time(0));
+          base_frame_id_, lidar_frame_id_, rclcpp::Time(0));
 
       base_to_lidar_ = tf2::transformToEigen(temp_transform);
       break;
     } catch (const tf2::TransformException &ex) {
       RCLCPP_ERROR(nh.get_logger(), "%s", ex.what());
-      ros::Duration(1.0).sleep();
-    }
+      sleep(1);
+   }
   }
 
   RCLCPP_INFO(nh.get_logger(), "HesaiUndistorterROS ready.");
@@ -134,7 +134,7 @@ void HesaiUndistorterROS::reprocessCloudBuffer(){
       } else {
         sensor_msgs::msg::PointCloud2 out_msg;
         pcl::toROSMsg(*it->second, out_msg);
-        out_msg.header.stamp = ros::Time().fromNSec(it->first);
+        out_msg.header.stamp = rclcpp::Time(it->first);
         out_msg.header.frame_id = lidar_frame_id_;
         corrected_pointcloud_pub_->publish(out_msg);
         DEBUG_PRINTLN("Processed. Cloud size is: " << cloud_history_.size());
