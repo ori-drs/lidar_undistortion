@@ -6,7 +6,7 @@
 using namespace lidar_undistortion;
 
 HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
-    : HesaiUndistorter(2e9), tf_listener_(tf_buffer_) {
+    : HesaiUndistorter(2e9), tf_listener_(tf_buffer_), nh_(nh) {
   nh.getParam("point_cloud_input_topic", point_cloud_input_topic_);
   nh.getParam("pose_topic", pose_topic_);
   nh.getParam("point_cloud_output_topic", point_cloud_output_topic_);
@@ -59,7 +59,7 @@ void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud2
   HesaiCloud::Ptr pointcloud = std::make_shared<HesaiCloud>();
   pcl::fromROSMsg(pointcloud_msg, *pointcloud);
   if(!processCloud(pointcloud, pointcloud_msg.header.stamp.toNSec())){
-    // RCLCPP_INFO_STREAM(nh.get_logger(), "processCloud for ns=" << pointcloud_msg.header.stamp.toNSec() << " returned false, ignoring point cloud.");
+    RCLCPP_INFO_STREAM(nh_.get_logger(), "processCloud for ns=" << pointcloud_msg.header.stamp.toNSec() << " returned false, ignoring point cloud.");
     return;
   }
   sensor_msgs::msg::PointCloud2 pointcloud_corrected_msg;

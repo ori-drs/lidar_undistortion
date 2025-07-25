@@ -34,6 +34,7 @@ public:
  // TODO reconsider making a LidarUndistortionROS class and solve the IDP.
  void reprocessCloudBuffer() override;
 private:
+ rclcpp::Node& nh_; 
  std::string lidar_frame_id_ = "pandar";
  std::string fixed_frame_id_ = "odom";
  std::string base_frame_id_ = "imu";
