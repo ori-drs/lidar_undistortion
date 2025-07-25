@@ -97,22 +97,22 @@ public:
         range_msg_.altitude[i*range_msg_.width + j] = altitude_in_.at<double>(i,j);
       }
     }
-    range_data_pub_.publish(range_msg_);
+    range_data_pub_->publish(range_msg_);
 
     cv::Mat range_mono(range_in_.rows, range_in_.cols, CV_8UC1);
     img_cvt_->floatImageToMono(range_in_, range_mono);
     sensor_msgs::ImagePtr img_msg = cv_bridge::CvImage(msg->header, "mono8", range_mono).toImageMsg();
-    range_img_pub_.publish(img_msg);
+    range_img_pub_->publish(img_msg);
 
     cv::Mat intensity_mono(intensity_in_.rows, intensity_in_.cols, CV_8UC1);
     img_cvt_->floatImageToMono(intensity_in_, intensity_mono, 4096);
     img_msg = cv_bridge::CvImage(msg->header, "mono8", intensity_mono).toImageMsg();
-    intensity_img_pub_.publish(img_msg);
+    intensity_img_pub_->publish(img_msg);
 
     cv::Mat reflectivity_mono(reflectivity_in_.rows, reflectivity_in_.cols, CV_8UC1);
     img_cvt_->floatImageToMono(reflectivity_in_, reflectivity_mono, 9000);
     img_msg = cv_bridge::CvImage(msg->header, "mono8", reflectivity_mono).toImageMsg();
-    reflectivity_img_pub_.publish(img_msg);
+    reflectivity_img_pub_->publish(img_msg);
 
     double azimuth_max, azimuth_min, altitude_max, altitude_min;
     cv::minMaxLoc(azimuth_in_,&azimuth_min, &azimuth_max);
@@ -121,13 +121,13 @@ public:
     cv::Mat azimuth_mono(azimuth_in_.rows, azimuth_in_.cols, CV_8UC1);
     img_cvt_->floatImageToMono(azimuth_in_, azimuth_mono, azimuth_max, azimuth_min);
     img_msg = cv_bridge::CvImage(msg->header, "mono8", azimuth_mono).toImageMsg();
-    azimuth_img_pub_.publish(img_msg);
+    azimuth_img_pub_->publish(img_msg);
 
 
       cv::Mat altitude_mono(altitude_in_.rows, altitude_in_.cols, CV_8UC1);
     img_cvt_->floatImageToMono(altitude_in_, altitude_mono, altitude_max, altitude_min);
     img_msg = cv_bridge::CvImage(msg->header, "mono8", altitude_mono).toImageMsg();
-    altitude_img_pub_.publish(img_msg);
+    altitude_img_pub_->publish(img_msg);
   }
 private:
   rclcpp::Node& nh_;

@@ -31,8 +31,8 @@ OusterUndistorterROS::OusterUndistorterROS(rclcpp::Node& nh)
                                  &OusterUndistorterROS::pointcloudCallback, this);
 
   // Advertise the corrected pointcloud topic
-  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::msg::PointCloud2>(
-        point_cloud_output_topic_, 100, false);
+  corrected_pointcloud_pub_ = nh.create_publisher<sensor_msgs::msg::PointCloud2>(
+        point_cloud_output_topic_, 100);
 
   pose_sub_ = nh.subscribe(pose_topic_, 100, &OusterUndistorterROS::poseCallback, this);
 
@@ -135,7 +135,7 @@ void OusterUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud
   pointcloud_corrected_msg.header.frame_id = lidar_frame_id_;
 
   // Publish the corrected pointcloud
-  corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
+  corrected_pointcloud_pub_->publish(pointcloud_corrected_msg);
 }
 
 void OusterUndistorterROS::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped &pose_msg){
@@ -161,7 +161,7 @@ void OusterUndistorterROS::reprocessCloudBuffer(){
         pcl::toROSMsg(*it->second, out_msg);
         out_msg.header.stamp = ros::Time().fromNSec(it->first);
         out_msg.header.frame_id = lidar_frame_id_;
-        corrected_pointcloud_pub_.publish(out_msg);
+        corrected_pointcloud_pub_->publish(out_msg);
         DEBUG_PRINTLN("Processed. Cloud size is: " << cloud_history_.size());
 
         cvt_->convert(*it->second, ranges_, altitudes_, azimuths_, intensities_, reflectivities_);
@@ -170,7 +170,7 @@ void OusterUndistorterROS::reprocessCloudBuffer(){
         range_img_msg_ = cv_bridge::CvImage(std_msgs::Header(), "mono8", ranges_viz_).toImageMsg();
 
         range_img_msg_->header.stamp.fromNSec(it->first);
-        corrected_range_pub_.publish(range_img_msg_);
+        corrected_range_pub_->publish(range_img_msg_);
 
         // the point cloud has been transformed successfully
         // we remove it from the buffer and return
