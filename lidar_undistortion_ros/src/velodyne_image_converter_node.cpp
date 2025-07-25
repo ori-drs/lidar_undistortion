@@ -35,7 +35,7 @@ public:
     cv::Mat range_mono(range_in_.rows, range_in_.cols, CV_8UC1);
     img_cvt_.floatImageToMono(range_in_, range_mono);
     sensor_msgs::msg::Image::SharedPtr img_msg = cv_bridge::CvImage(msg->header, "mono8", range_mono).toImageMsg();
-    img_pub_->publish(img_msg);
+    img_pub_->publish(*img_msg.get());
   }
 private:
   rclcpp::Node& nh_;
