@@ -1,7 +1,7 @@
 #include "lidar_undistortion_ros/velodyne_image_converter.hpp"
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 #include <pcl_conversions/pcl_conversions.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/core.hpp>

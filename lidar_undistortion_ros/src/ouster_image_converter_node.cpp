@@ -1,7 +1,7 @@
 #include "lidar_undistortion/ouster_image_converter.hpp"
 #include <lidar_undistortion_msgs/RangeImage.h>
 #include <sensor_msgs/msg/point_cloud2.hpp>
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 #include <pcl_conversions/pcl_conversions.h>
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/core.hpp>

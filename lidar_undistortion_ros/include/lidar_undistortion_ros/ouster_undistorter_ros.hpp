@@ -6,7 +6,7 @@
 #include <tf2_ros/transform_listener.h>
 #include <lidar_undistortion_msgs/RangeImage.h>
 #include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/buffer.h>
 
