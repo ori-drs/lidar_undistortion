@@ -3,7 +3,9 @@ project(lidar_undistortion_ros)
 
 # Some of the code features require C++14
 SET(CMAKE_CXX_STANDARD 17)
-
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
