@@ -102,7 +102,7 @@ ament_target_dependencies(hesai_undistortion_node
   tf2_eigen
   pcl_conversions
 )
-# target_link_libraries(hesai_undistortion_node ${PROJECT_NAME})
+target_link_libraries(hesai_undistortion_node ${PROJECT_NAME})
 
 # add_executable(ouster_image_converter_node src/ouster_image_converter_node.cpp)
 # target_link_libraries(ouster_image_converter_node ${catkin_LIBRARIES})
