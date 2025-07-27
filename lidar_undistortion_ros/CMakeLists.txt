@@ -13,12 +13,14 @@ find_package(ament_cmake REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(tf2_eigen REQUIRED)
 find_package(lidar_undistortion REQUIRED)
 find_package(lidar_undistortion_msgs REQUIRED)
 find_package(velodyne_msgs REQUIRED)
 
 find_package(OpenCV REQUIRED)
 find_package(pcl_conversions REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
@@ -56,7 +58,10 @@ ament_target_dependencies(velodyne_undistortion_ros
   pcl_conversions
   cv_bridge
   tf2_ros
+  tf2_eigen
+  yaml-cpp
 )
+target_link_libraries(velodyne_undistortion_ros yaml-cpp)
 
 
 add_executable(velodyne_undistortion_node src/velodyne_undistortion_node.cpp)
@@ -71,7 +76,7 @@ ament_target_dependencies(velodyne_image_converter_node
 target_link_libraries(velodyne_image_converter_node velodyne_undistortion_ros
                                                     ${velodyne_pointcloud_LIBRARIES})
 
-add_library(${PROJECT_NAME} src/ouster_undistorter_ros.cpp
+add_library(${PROJECT_NAME} # src/ouster_undistorter_ros.cpp
                             src/hesai_undistorter_ros.cpp)
 ament_target_dependencies(${PROJECT_NAME}
   lidar_undistortion
@@ -79,6 +84,7 @@ ament_target_dependencies(${PROJECT_NAME}
   image_transport
   cv_bridge
   tf2_ros
+  tf2_eigen
   pcl_conversions
 )
 
@@ -93,6 +99,7 @@ ament_target_dependencies(hesai_undistortion_node
   image_transport
   cv_bridge
   tf2_ros
+  tf2_eigen
   pcl_conversions
 )
 # target_link_libraries(hesai_undistortion_node ${PROJECT_NAME})
