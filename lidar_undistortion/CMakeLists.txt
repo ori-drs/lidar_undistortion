@@ -29,9 +29,9 @@ include_directories(
 )
 
 
-add_library(${PROJECT_NAME} src/pose_buffer.cpp)
+add_library(${PROJECT_NAME} SHARED src/pose_buffer.cpp)
 
-add_library(ouster_undistortion src/ouster_undistorter.cpp
+add_library(ouster_undistortion SHARED src/ouster_undistorter.cpp
                                 src/ouster_image_converter.cpp
                                 src/ouster_metadata_utils.cpp
                                 src/ouster_config.cpp)
@@ -40,7 +40,7 @@ ament_target_dependencies(ouster_undistortion OpenCV PCL jsoncpp)
 target_link_libraries(ouster_undistortion ${PROJECT_NAME})
                                             
 
-add_library(velodyne_undistortion src/velodyne_container.cpp
+add_library(velodyne_undistortion SHARED src/velodyne_container.cpp
                                   src/velodyne_container_organized.cpp
                                   src/velodyne_rawdata.cpp
                                   src/velodyne_calibration.cpp)
