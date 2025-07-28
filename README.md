@@ -5,7 +5,13 @@ This package contains libraries and ROS nodes that perform the following operati
 - Conversion of range data into regular single channel images, for visualization purposes
 - Pose buffering with interpolation
 
+## History
+The code in this repo was originally developed and open sourced by the ASL group of ETH Zurich [in this repo](https://github.com/ethz-asl/lidar_undistortion) in 2020.
+
+Between 2020-2023 members of Oxford Robotics Institute added extra features to support the Hesai lidar and to fix bugs. In 2025 ORI ported the code to ROS2 and open sourced this particular repo.
+
 ## Supported devices
+- Hesai XT32 and QT64
 - Ouster OS1
 - Velodyne VLP-16 (range conversion partially working)
 
@@ -41,4 +47,3 @@ To run the image converter node, just run it with no paramenters:
 ```
 rosrun lidar_undistortion ouster_image_converter_node
 ```
-
