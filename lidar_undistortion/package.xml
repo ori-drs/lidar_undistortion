@@ -4,12 +4,10 @@
   <version>1.0.0</version>
   <description>Undistort pointclouds using an odometry input</description>
 
-  <maintainer email="mcamurri@robots.ox.ac.uk">Marco Camurri</maintainer>
-  
-  <author email="victorr@ethz.ch">Victor Reijgwart</author>
-  <author email="mcamurri@robots.ox.ac.uk">Marco Camurri</author>
+  <maintainer email="yifu@robots.ox.ac.uk">Ethan Yifu Tao</maintainer>
+  <maintainer email="mfallon@robots.ox.ac.uk">Maurice Fallon</maintainer>
+  <license>BSD</license>
 
-  <license>ASL 2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <export>
