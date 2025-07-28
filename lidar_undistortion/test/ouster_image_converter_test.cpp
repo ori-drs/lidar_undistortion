@@ -8,7 +8,7 @@
 #include <pwd.h> // to get home directory
 #include <random>
 #include <pcl/range_image/range_image_spherical.h>
-#include <boost/filesystem/operations.hpp>
+#include <filesystem>
 
 using namespace pcl::io;
 using namespace lidar_undistortion;
@@ -31,20 +31,20 @@ TEST(OusterImageConverter, DISABLED_convertRangeSpherical){
 
   std::string drs_testing_data;
   getDrsTestingDataPath(drs_testing_data);
-  boost::filesystem::path drs_testing_data_path(drs_testing_data);
+  std::filesystem::path drs_testing_data_path(drs_testing_data);
 
-  EXPECT_TRUE(boost::filesystem::is_directory(drs_testing_data_path));
-  EXPECT_TRUE(drs_testing_data_path.is_complete());
+  EXPECT_TRUE(std::filesystem::is_directory(drs_testing_data_path));
+  EXPECT_TRUE(drs_testing_data_path.is_absolute());
 
   std::string cloud_file = "lidar_undistortion/spot.pcd";
-  boost::filesystem::path cloud_path(cloud_file);
-  auto cloud_path_complete = boost::filesystem::canonical(cloud_path, drs_testing_data_path);
-  EXPECT_TRUE(boost::filesystem::is_regular_file(cloud_path_complete));
+  std::filesystem::path cloud_path(cloud_file);
+  auto cloud_path_complete = std::filesystem::canonical(drs_testing_data_path) / cloud_path;
+  EXPECT_TRUE(std::filesystem::is_regular_file(cloud_path_complete));
 
   pcl::PointCloud<PointOuster> in_cloud;
   EXPECT_NE(loadPCDFile(cloud_path_complete.string(), in_cloud), -1);
 
-  EXPECT_TRUE(boost::filesystem::is_regular_file(cloud_path_complete));
+  EXPECT_TRUE(std::filesystem::is_regular_file(cloud_path_complete));
   EXPECT_NE(loadPCDFile(cloud_path_complete.string(), in_cloud), -1);
 
   // We now want to create a range image from the above point cloud, with a 1deg angular resolution
@@ -73,23 +73,23 @@ TEST(OusterImageConverter, DISABLED_convertRangeSpherical){
 TEST(OusterImageConverter, converRangeMono){
   std::string drs_testing_data;
   getDrsTestingDataPath(drs_testing_data);
-  boost::filesystem::path drs_testing_data_path(drs_testing_data);
+  std::filesystem::path drs_testing_data_path(drs_testing_data);
 
-  EXPECT_TRUE(boost::filesystem::is_directory(drs_testing_data_path));
-  EXPECT_TRUE(drs_testing_data_path.is_complete());
+  EXPECT_TRUE(std::filesystem::is_directory(drs_testing_data_path));
+  EXPECT_TRUE(drs_testing_data_path.is_absolute());
 
   std::string cloud_file = "lidar_undistortion/spot.pcd";
-  boost::filesystem::path cloud_path(cloud_file);
-  auto cloud_path_complete = boost::filesystem::canonical(cloud_path, drs_testing_data_path);
-  EXPECT_TRUE(cloud_path_complete.is_complete());
+  std::filesystem::path cloud_path(cloud_file);
+  auto cloud_path_complete = std::filesystem::canonical(drs_testing_data_path) / cloud_path;
+  EXPECT_TRUE(cloud_path_complete.is_absolute());
 
-  EXPECT_TRUE(boost::filesystem::is_regular_file(cloud_path_complete));
+  EXPECT_TRUE(std::filesystem::is_regular_file(cloud_path_complete));
 
   std::string range_file = "lidar_undistortion/spot_ranges.pgm";
-  boost::filesystem::path range_path(range_file);
-  auto range_path_complete = boost::filesystem::canonical(range_path, drs_testing_data_path);
-  EXPECT_TRUE(range_path_complete.is_complete());
-  EXPECT_TRUE(boost::filesystem::is_regular_file(range_path_complete));
+  std::filesystem::path range_path(range_file);
+  auto range_path_complete = std::filesystem::canonical(drs_testing_data_path) / range_path;
+  EXPECT_TRUE(range_path_complete.is_absolute());
+  EXPECT_TRUE(std::filesystem::is_regular_file(range_path_complete));
 
   pcl::PointCloud<PointOuster> in_cloud;
 
@@ -97,10 +97,10 @@ TEST(OusterImageConverter, converRangeMono){
   EXPECT_NE(loadPCDFile(cloud_path_complete.string(), in_cloud), -1);
 
   std::string ouster_config_file = "lidar_undistortion/ouster_config.json";
-  boost::filesystem::path ouster_config_path(ouster_config_file);
-  auto ouster_config_path_complete = boost::filesystem::canonical(ouster_config_path, drs_testing_data_path);
-  EXPECT_TRUE(ouster_config_path_complete.is_complete());
-  EXPECT_TRUE(boost::filesystem::is_regular_file(ouster_config_path_complete));
+  std::filesystem::path ouster_config_path(ouster_config_file);
+  auto ouster_config_path_complete = std::filesystem::canonical(drs_testing_data_path) / ouster_config_path;
+  EXPECT_TRUE(ouster_config_path_complete.is_absolute());
+  EXPECT_TRUE(std::filesystem::is_regular_file(ouster_config_path_complete));
 
   std::string metadata_string = read_metadata(ouster_config_path_complete.string());
   auto info  = ouster::sensor::parse_metadata(metadata_string);

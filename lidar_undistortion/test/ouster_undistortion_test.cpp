@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <pcl/io/pcd_io.h>
 #include <pwd.h>
+#include <filesystem>
 
 using namespace pcl::io;
 using namespace lidar_undistortion;
@@ -46,7 +47,7 @@ TEST(OusterUndistorter, testOS64){
   lu.addPose(1565309877829768658, pose);
 
   OusterCloud oc_input;
-  OusterCloud::Ptr oc_output = boost::make_shared<OusterCloud>();
+  OusterCloud::Ptr oc_output = pcl::make_shared<OusterCloud>();
 
 // tedious code that fills of oc_input
   fillWithDistortedPointcloud(oc_input);
@@ -108,18 +109,18 @@ TEST(OusterUndistorter, testOS128){
   // Load raw and undistorted point cloud from pcd files
   std::string drs_testing_data;
   getDrsTestingDataPath(drs_testing_data);
-  boost::filesystem::path drs_testing_data_path(drs_testing_data);
+  std::filesystem::path drs_testing_data_path(drs_testing_data);
 
-  EXPECT_TRUE(boost::filesystem::is_directory(drs_testing_data_path));
-  EXPECT_TRUE(drs_testing_data_path.is_complete());
+  EXPECT_TRUE(std::filesystem::is_directory(drs_testing_data_path));
+  EXPECT_TRUE(drs_testing_data_path.is_absolute());
 
   std::string raw_cloud_file = "lidar_undistortion/raw_1608051903.291503872.pcd";
-  auto raw_cloud_path = boost::filesystem::canonical(raw_cloud_file, drs_testing_data_path);
-  EXPECT_TRUE(boost::filesystem::is_regular_file(raw_cloud_path));
+  auto raw_cloud_path = std::filesystem::canonical(drs_testing_data_path) / raw_cloud_file;
+  EXPECT_TRUE(std::filesystem::is_regular_file(raw_cloud_path));
 
   std::string undistorted_pc_file = "lidar_undistortion/undistorted_1608051903.291503872.pcd";
-  auto undistorted_cloud_path = boost::filesystem::canonical(undistorted_pc_file, drs_testing_data_path);
-  EXPECT_TRUE(boost::filesystem::is_regular_file(undistorted_cloud_path));
+  auto undistorted_cloud_path = std::filesystem::canonical(drs_testing_data_path) / undistorted_pc_file;
+  EXPECT_TRUE(std::filesystem::is_regular_file(undistorted_cloud_path));
 
   pcl::PointCloud<PointOuster> raw_point_cloud;
   EXPECT_NE(loadPCDFile(raw_cloud_path.string(), raw_point_cloud), -1);
@@ -128,7 +129,7 @@ TEST(OusterUndistorter, testOS128){
   EXPECT_NE(loadPCDFile(undistorted_cloud_path.string(), undistorted_point_cloud), -1);
 
   // Undistort raw point cloud
-  OusterCloud::Ptr processed_point_cloud = boost::make_shared<OusterCloud>();
+  OusterCloud::Ptr processed_point_cloud = pcl::make_shared<OusterCloud>();
   pcl::copyPointCloud(raw_point_cloud, *processed_point_cloud);
   ASSERT_TRUE(lu.processCloud(processed_point_cloud, 1608051903291503872));
 

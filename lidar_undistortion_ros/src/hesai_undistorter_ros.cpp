@@ -5,64 +5,66 @@
 
 using namespace lidar_undistortion;
 
-HesaiUndistorterROS::HesaiUndistorterROS(ros::NodeHandle &nh)
-    : HesaiUndistorter(2e9), tf_listener_(tf_buffer_) {
-  nh.getParam("point_cloud_input_topic", point_cloud_input_topic_);
-  nh.getParam("pose_topic", pose_topic_);
-  nh.getParam("point_cloud_output_topic", point_cloud_output_topic_);
+HesaiUndistorterROS::HesaiUndistorterROS(rclcpp::Node& nh)
+    : HesaiUndistorter(2e9), nh_(nh) {
+  nh.get_parameter("point_cloud_input_topic", point_cloud_input_topic_);
+  nh.get_parameter("pose_topic", pose_topic_);
+  nh.get_parameter("point_cloud_output_topic", point_cloud_output_topic_);
 
   // Subscribe to the undistorted pointcloud topic
   pointcloud_sub_ =
-      nh.subscribe(point_cloud_input_topic_, 100,
-                   &HesaiUndistorterROS::pointcloudCallback, this);
+      nh.create_subscription<sensor_msgs::msg::PointCloud2>(
+          point_cloud_input_topic_, 100,
+          std::bind(&HesaiUndistorterROS::pointcloudCallback, this, std::placeholders::_1));
 
   // Advertise the corrected pointcloud topic
-  corrected_pointcloud_pub_ = nh.advertise<sensor_msgs::PointCloud2>(
-      point_cloud_output_topic_, 100, false);
+  corrected_pointcloud_pub_ = nh.create_publisher<sensor_msgs::msg::PointCloud2>(
+      point_cloud_output_topic_, 100);
 
   pose_sub_ =
-      nh.subscribe(pose_topic_, 100, &HesaiUndistorterROS::poseCallback, this);
-
+      nh.create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+          pose_topic_, 100, std::bind(&HesaiUndistorterROS::poseCallback, this, std::placeholders::_1));
+  
   // Read the odom and lidar frame names from ROS params
-  if (!nh.param("fixed_frame_id", fixed_frame_id_, fixed_frame_id_)) {
-    ROS_WARN_STREAM("Could not read param \"fixed_frame_id\". "
+  if (!nh.get_parameter_or("fixed_frame_id", fixed_frame_id_, fixed_frame_id_)) {
+    RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"fixed_frame_id\". "
                     << "Setting to default: " << fixed_frame_id_);
   }
-  if (!nh.param("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)) {
-    ROS_WARN_STREAM("Could not read param \"lidar_frame_id\". "
+  if (!nh.get_parameter_or("lidar_frame_id", lidar_frame_id_, lidar_frame_id_)) {
+    RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"lidar_frame_id\". "
                     << "Setting to default: " << lidar_frame_id_);
   }
-  if (!nh.param("base_frame_id", base_frame_id_, base_frame_id_)) {
-    ROS_WARN_STREAM("Could not read param \"base_frame_id\". "
+  if (!nh.get_parameter_or("base_frame_id", base_frame_id_, base_frame_id_)) {
+    RCLCPP_WARN_STREAM(nh.get_logger(), "Could not read param \"base_frame_id\". "
                     << "Setting to default: " << base_frame_id_);
   }
 
   // retrieve the transform from base to lidar frame
-  while (nh.ok()) {
+  while (rclcpp::ok()) {
     try {
-      geometry_msgs::TransformStamped temp_transform;
-      temp_transform = tf_buffer_.lookupTransform(
-          base_frame_id_, lidar_frame_id_, ros::Time(0));
+      geometry_msgs::msg::TransformStamped temp_transform;
+      temp_transform = tf_buffer_->lookupTransform(
+          base_frame_id_, lidar_frame_id_, rclcpp::Time(0));
 
       base_to_lidar_ = tf2::transformToEigen(temp_transform);
       break;
     } catch (const tf2::TransformException &ex) {
-      ROS_ERROR("%s", ex.what());
-      ros::Duration(1.0).sleep();
-    }
+      RCLCPP_ERROR(nh.get_logger(), "%s", ex.what());
+      sleep(1);
+   }
   }
 
-  ROS_INFO("HesaiUndistorterROS ready.");
+  RCLCPP_INFO(nh.get_logger(), "HesaiUndistorterROS ready.");
 }
 
-void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2 &pointcloud_msg){
-  HesaiCloud::Ptr pointcloud = boost::make_shared<HesaiCloud>();
+void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::msg::PointCloud2 &pointcloud_msg){
+  HesaiCloud::Ptr pointcloud = std::make_shared<HesaiCloud>();
   pcl::fromROSMsg(pointcloud_msg, *pointcloud);
-  if(!processCloud(pointcloud, pointcloud_msg.header.stamp.toNSec())){
-    ROS_INFO_STREAM("processCloud for ns=" << pointcloud_msg.header.stamp.toNSec() << " returned false, ignoring point cloud.");
+  if(!processCloud(pointcloud, pointcloud_msg.header.stamp.nanosec)){
+    RCLCPP_INFO_STREAM(nh_.get_logger(), "processCloud for ns=" << pointcloud_msg.header.stamp.nanosec << " returned false, ignoring point cloud.");
     return;
   }
-  sensor_msgs::PointCloud2 pointcloud_corrected_msg;
+  sensor_msgs::msg::PointCloud2 pointcloud_corrected_msg;
   pcl::toROSMsg(*pointcloud, pointcloud_corrected_msg);
   // Copy the pointcloud header correctly
   // NOTE: The header timestamp type in PCL pointclouds is narrower than in
@@ -72,13 +74,13 @@ void HesaiUndistorterROS::pointcloudCallback(const sensor_msgs::PointCloud2 &poi
   pointcloud_corrected_msg.header.frame_id = lidar_frame_id_;
 
   // Publish the corrected pointcloud
-  corrected_pointcloud_pub_.publish(pointcloud_corrected_msg);
+  corrected_pointcloud_pub_->publish(pointcloud_corrected_msg);
 }
 
-void HesaiUndistorterROS::poseCallback(const geometry_msgs::PoseWithCovarianceStamped &pose_msg){
+void HesaiUndistorterROS::poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped &pose_msg){
   Eigen::Isometry3d pose(Eigen::Isometry3d::Identity());
   tf2::fromMsg(pose_msg.pose.pose, pose);
-  addPose(pose_msg.header.stamp.toNSec(), pose);
+  addPose(pose_msg.header.stamp.nanosec, pose);
   reprocessCloudBuffer();
 }
 
@@ -130,11 +132,11 @@ void HesaiUndistorterROS::reprocessCloudBuffer(){
           ++it;
         }
       } else {
-        sensor_msgs::PointCloud2 out_msg;
+        sensor_msgs::msg::PointCloud2 out_msg;
         pcl::toROSMsg(*it->second, out_msg);
-        out_msg.header.stamp = ros::Time().fromNSec(it->first);
+        out_msg.header.stamp = rclcpp::Time(it->first);
         out_msg.header.frame_id = lidar_frame_id_;
-        corrected_pointcloud_pub_.publish(out_msg);
+        corrected_pointcloud_pub_->publish(out_msg);
         DEBUG_PRINTLN("Processed. Cloud size is: " << cloud_history_.size());
         // the point cloud has been transformed successfully
         // we remove it from the buffer and return

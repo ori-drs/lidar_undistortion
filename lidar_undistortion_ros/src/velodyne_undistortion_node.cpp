@@ -1,19 +1,19 @@
-#include <ros/ros.h>
-#include <ros/package.h>
+#include <rclcpp/rclcpp.hpp>
+// #include <ros/package.h>
 #include "lidar_undistortion_ros/velodyne_undistorter_ros.hpp"
 
 int main(int argc, char **argv) {
   // Register with ROS master
-  ros::init(argc, argv, "velodyne_undistortion");
+  rclcpp::init(argc, argv);
 
   // Create node handles
-  ros::NodeHandle nh("~");
+  auto nh = rclcpp::Node::make_shared("velodyne_undistortion");
 
   // Launch the lidar undistorter
-  lidar_undistortion::VelodyneUndistorterROS lidar_undistorter(nh);
+  lidar_undistortion::VelodyneUndistorterROS lidar_undistorter(*nh);
 
   // Spin
-  ros::spin();
+  rclcpp::spin(nh);
 
   // Exit normally
   return 0;

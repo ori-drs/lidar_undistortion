@@ -1,23 +1,25 @@
 #pragma once
 #include <lidar_undistortion/ouster_undistorter.hpp>
-#include <ros/ros.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <tf2_ros/transform_listener.h>
 #include <lidar_undistortion_msgs/RangeImage.h>
 #include <cv_bridge/cv_bridge.h>
-#include <image_transport/image_transport.h>
+#include <image_transport/image_transport.hpp>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_ros/buffer.h>
 
 
 namespace lidar_undistortion {
 
 class OusterUndistorterROS : public OusterUndistorter {
 public:
- OusterUndistorterROS(ros::NodeHandle& nh);
+ OusterUndistorterROS(rclcpp::Node& nh);
  ~OusterUndistorterROS() override = default;
 
- void pointcloudCallback(const sensor_msgs::PointCloud2& pointcloud_msg);
- void poseCallback(const geometry_msgs::PoseWithCovarianceStamped& pose_msg);
+ void pointcloudCallback(const sensor_msgs::msg::PointCloud2& pointcloud_msg);
+ void poseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped& pose_msg);
 
  // this re-implementation is identical in all ROS implementations, but
  // an abstraction would lead to the Inheritance Diamond Problem so we leave it
@@ -46,8 +48,8 @@ private:
  image_transport::Publisher corrected_range_pub_;
  sensor_msgs::ImagePtr range_img_msg_;
 
- tf2_ros::Buffer tf_buffer_;
- tf2_ros::TransformListener tf_listener_;
+ std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
+ std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
 protected:
   std::unique_ptr<OusterImageConverter> cvt_;

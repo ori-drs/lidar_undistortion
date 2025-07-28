@@ -1,17 +1,36 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.8)
 project(lidar_undistortion_ros)
 
 # Some of the code features require C++14
-SET(CMAKE_CXX_STANDARD 14)
-
-add_compile_options(-Wall -Wpedantic -Wextra)
+SET(CMAKE_CXX_STANDARD 17)
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
 ## Find catkin macros and libraries
-find_package(catkin REQUIRED COMPONENTS roscpp image_transport cv_bridge tf2_ros lidar_undistortion lidar_undistortion_msgs ouster_ros velodyne_msgs)
+find_package(ament_cmake REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(tf2_eigen REQUIRED)
+find_package(lidar_undistortion REQUIRED)
+find_package(lidar_undistortion_msgs REQUIRED)
+find_package(velodyne_msgs REQUIRED)
+
+find_package(OpenCV REQUIRED)
+find_package(pcl_conversions REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 find_package(Eigen3 REQUIRED)
-include_directories(include ${catkin_INCLUDE_DIRS} ${EIGEN3_INCLUDE_DIRS})
+include_directories(include 
+  ${EIGEN3_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+)
 
 
 list(APPEND LIBRARIES_TO_BUILD ${PROJECT_NAME})
@@ -22,31 +41,9 @@ list(APPEND VELODYNE_TARGETS "velodyne_undistortion_node")
 list(APPEND VELODYNE_TARGETS "velodyne_image_converter_node")
 
 
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if your package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES ${LIBRARIES_TO_BUILD}
-  CATKIN_DEPENDS roscpp ouster_ros lidar_undistortion_msgs velodyne_msgs
-  DEPENDS EIGEN3)
-
 ###########
 ## Build ##
 ###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-include_directories(
-# include
-  ${catkin_INCLUDE_DIRS}
-)
 
 ## Declare a C++ library
 
@@ -55,36 +52,62 @@ add_library(velodyne_undistortion_ros src/velodyne_image_converter.cpp
                                       src/velodyne_scan_converter.cpp
                                       src/velodyne_undistorter_ros.cpp)
 
-target_link_libraries(velodyne_undistortion_ros ${catkin_LIBRARIES}
-                                                ${velodyne_pointcloud_LIBRARIES}
-                                                ${OpenCV_LIBRARIES}
-                                                ${PCL_LIBRARIES})
+ament_target_dependencies(velodyne_undistortion_ros
+  lidar_undistortion
+  lidar_undistortion_msgs
+  velodyne_msgs
+  image_transport
+  pcl_conversions
+  cv_bridge
+  tf2_ros
+  tf2_eigen
+  yaml-cpp
+)
+target_link_libraries(velodyne_undistortion_ros yaml-cpp)
+
 
 add_executable(velodyne_undistortion_node src/velodyne_undistortion_node.cpp)
 
-target_link_libraries(velodyne_undistortion_node velodyne_undistortion_ros
-                                                 ${catkin_LIBRARIES})
+target_link_libraries(velodyne_undistortion_node velodyne_undistortion_ros)
 
 add_executable(velodyne_image_converter_node src/velodyne_image_converter_node.cpp)
+ament_target_dependencies(velodyne_image_converter_node
+  image_transport
+  cv_bridge
+)
 target_link_libraries(velodyne_image_converter_node velodyne_undistortion_ros
-                                                    ${velodyne_pointcloud_LIBRARIES}
-                                                    ${catkin_LIBRARIES})
+                                                    ${velodyne_pointcloud_LIBRARIES})
 
-add_library(${PROJECT_NAME} src/ouster_undistorter_ros.cpp
+add_library(${PROJECT_NAME} # src/ouster_undistorter_ros.cpp
                             src/hesai_undistorter_ros.cpp)
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ament_target_dependencies(${PROJECT_NAME}
+  lidar_undistortion
+  lidar_undistortion_msgs
+  image_transport
+  cv_bridge
+  tf2_ros
+  tf2_eigen
+  pcl_conversions
+)
 
-add_executable(ouster_undistortion_node src/ouster_undistortion_node.cpp)
-target_link_libraries(ouster_undistortion_node ${PROJECT_NAME} ${catkin_LIBRARIES})
-add_dependencies(ouster_undistortion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_executable(ouster_undistortion_node src/ouster_undistortion_node.cpp)
+# target_link_libraries(ouster_undistortion_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+# add_dependencies(ouster_undistortion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 add_executable(hesai_undistortion_node src/hesai_undistortion_node.cpp)
-target_link_libraries(hesai_undistortion_node ${PROJECT_NAME} ${catkin_LIBRARIES})
-add_dependencies(hesai_undistortion_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+ament_target_dependencies(hesai_undistortion_node
+  lidar_undistortion
+  lidar_undistortion_msgs
+  image_transport
+  cv_bridge
+  tf2_ros
+  tf2_eigen
+  pcl_conversions
+)
+target_link_libraries(hesai_undistortion_node ${PROJECT_NAME})
 
-add_executable(ouster_image_converter_node src/ouster_image_converter_node.cpp)
-target_link_libraries(ouster_image_converter_node ${catkin_LIBRARIES})
+# add_executable(ouster_image_converter_node src/ouster_image_converter_node.cpp)
+# target_link_libraries(ouster_image_converter_node ${catkin_LIBRARIES})
 
 
 #############
@@ -105,24 +128,20 @@ target_link_libraries(ouster_image_converter_node ${catkin_LIBRARIES})
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
 install(TARGETS
   hesai_undistortion_node
-  ouster_image_converter_node
-  ouster_undistortion_node
+  # ouster_image_converter_node
+  # ouster_undistortion_node
   velodyne_image_converter_node
   velodyne_undistortion_node
-RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-## Mark libraries for installation
-## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-install(TARGETS ${PROJECT_NAME} ${VELODYNE_TARGETS}
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+ DESTINATION ${PROJECT_NAME})
 
 ## Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+install(DIRECTORY include/
+        DESTINATION include
         FILES_MATCHING PATTERN "*.hpp")
 
+ament_export_include_directories(include)
+ament_export_dependencies(cv_bridge image_transport lidar_undistortion velodyne_msgs)
+ament_package()
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
 #   # myfile1
