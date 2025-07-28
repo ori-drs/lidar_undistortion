@@ -39,8 +39,9 @@ Both dependencies are optional. However, if neither of these are found on the sy
 minimal capabilities is built.
 
 ## Target System
-Tested only on `Ubuntu 18.04` and `ROS Melodic`
-In particular, the version for `velodyne_pointcloud` is the latest release for Melodic, which corresponds to version 1.5.2
+This code targets ROS2 Humble running on Ubuntu 22.04.
+
+Previous version of this code were tested on difference versions of ROS1 e.g. Melodic and Noetic.
 
 ## How to Run
 To run the undistortion nodes, look at the `os1_undistortion.launch` and `vlp16_undistortion.launch` launch files, edit the appropriate fields for the reference frames and topics and run them as usual.
