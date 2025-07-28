@@ -6,9 +6,11 @@ This package contains libraries and ROS nodes that perform the following operati
 - Pose buffering with interpolation
 
 ## History
-The code in this repo was originally developed and open sourced by the ASL group of ETH Zurich [in this repo](https://github.com/ethz-asl/lidar_undistortion) in 2020.
+The code in this repo was originally developed and open sourced by the ASL group of ETH Zurich [in this repo](https://github.com/ethz-asl/lidar_undistortion) in 2020. The original developer was Victor Reijgwart.
 
 Between 2020-2023 members of Oxford Robotics Institute added extra features to support the Hesai lidar and to fix bugs. In 2025 ORI ported the code to ROS2 and open sourced this particular repo.
+
+The original repo applied a BSD-3 license. This has been retained for this version.
 
 ## Supported devices
 - Hesai XT32 and QT64
